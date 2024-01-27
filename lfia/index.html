@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!--    <link rel="stylesheet" href="styles.css">-->
     <title>Lingwistyka Formalna i automaty</title>
     <style>
         /* Dodaj styl dla efektów wizualnych przy najechaniu */
@@ -14,6 +15,17 @@
         #gallery li:hover {
             color: blue; /* Zmień kolor na podkreślony */
             text-decoration: underline; /* Podkreśl nazwę zdjęcia */
+        }
+        @media (prefers-color-scheme: dark) {
+            /* Styl dla trybu ciemnego */
+            body {
+                background-color: #333;
+                color: #fff;
+            }
+            #gallery li:hover {
+                color: #11ff00; /* Zmień kolor na podkreślony */
+                text-decoration: underline; /* Podkreśl nazwę zdjęcia */
+            }
         }
     </style>
 </head>
