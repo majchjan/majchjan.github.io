@@ -3,16 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista Zdjęć</title>
+    <title>Lingwistyka Formalna i automaty</title>
 </head>
 <body>
-    <a href="https://majchjan.github.io/">
-    <button>Powrót do strony głównej</button>
-    </a>
-    <br>
-    <h1>Lista Dostępnych Zdjęć</h1>
-    <ul id="imageList"></ul>
 
-    <script src="script.js"></script>
+<!-- Lista nazw zdjęć -->
+<ul id="gallery"></ul>
+
+<script>
+    // Dane o zdjęciach
+    var photos = [
+        "img/s0.jpg",
+        "img/s1.jpg"
+        // Dodaj kolejne ścieżki do zdjęć
+    ];
+
+    // Utwórz listę na podstawie danych o zdjęciach
+    var galleryList = document.getElementById('gallery');
+    photos.forEach(function (photoPath) {
+        var fileName = getFileName(photoPath);
+        var listItem = document.createElement('li');
+        listItem.textContent = fileName;
+        listItem.setAttribute('data-src', photoPath);
+        galleryList.appendChild(listItem);
+    });
+
+    // Funkcja pomocnicza do pobierania nazwy pliku z pełnej ścieżki
+    function getFileName(path) {
+        return path.split('/').pop();
+    }
+
+    // Dodaj obsługę kliknięcia dla każdego elementu listy
+    var listItems = document.querySelectorAll('#gallery li');
+    listItems.forEach(function (item) {
+        item.addEventListener('click', function () {
+            var imageURL = item.getAttribute('data-src');
+            window.open(imageURL, '_blank');
+        });
+    });
+</script>
+
 </body>
 </html>
