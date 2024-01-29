@@ -67,7 +67,7 @@ var gameWords = new Array("Antyterrorystyczne karaluchy,",
     "Szczotka do włosów",
     "Prezenty pod choinką");
 
-var word = gameWords[randNum(1, 24)].toUpperCase();  //"Powiedzenia i przysłowia".toUpperCase();
+var word = gameWords[randNum(0, 24)].toUpperCase();  //"Powiedzenia i przysłowia".toUpperCase();
 console.log(word);
 // var word = "Powiedzenia i przysłowia".toUpperCase();
 
