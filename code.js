@@ -53,7 +53,19 @@ var gameWords = new Array("Antyterrorystyczne karaluchy,",
     "Wyimaginowany konsultant",
     "Florystyka",
     "Onomatopeja",
-    "Oksymoron");
+    "Oksymoron",
+    "Tabernakulum",
+    "wódka gorzka żołądkowa",
+    "Buty na wysokich obcasach",
+    "Nie ma róży bez kolców",
+    "Wąchać kwiatki od spodu",
+    "kluczyki od samochodu",
+    "Bogatemu to i byk się ocieli",
+    "Wróg u bram",
+    "Zakaz jazdy na rolkach",
+    "Albo rybki albo akwarium",
+    "Szczotka do włosów",
+    "Prezenty pod choinką");
 
 var word = gameWords[randNum(1, 12)].toUpperCase();  //"Powiedzenia i przysłowia".toUpperCase();
 console.log(word);
