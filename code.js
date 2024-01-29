@@ -1,5 +1,5 @@
 //Stała alfabet polski w tablicy znaków
-var ALPHABET = new Array(35); 
+var ALPHABET = new Array(35);
 ALPHABET[0] = 'A';
 ALPHABET[1] = 'Ą';
 ALPHABET[2] = 'B';
@@ -43,29 +43,17 @@ function randNum(A, B){
 //Hasła do gry:
 
 var gameWords = new Array("Antyterrorystyczne karaluchy,",
-                            "Prima Aprilis",
-                            "Metamorfoza",
-                            "Gżegżółka",
-                            "Oksymoron",
-                            "Aleksandryjskie królestwo",
-                            "Ewidencja podatkowa",
-                            "Europarlamentarzysta ortodoksyjny",
-                            "Wyimaginowany konsultant",
-                            "Florystyka",
-                            "Onomatopeja",
-                            "Oksymoron",
-                            "Tabernakulum",
-"wódka gorzka żołądkowa",
-"Buty na wysokich obcasach",
-"Nie ma róży bez kolców",
-"Wąchać kwiatki od spodu",
-"kluczyki od samochodu",
-"Bogatemu to i byk się ocieli",
-"Wróg u bram",
-"Zakaz jazdy na rolkach",
-"Albo rybki albo akwarium",
-"Szczotka do włosów",
-"Prezenty pod choinką");
+    "Prima Aprilis",
+    "Metamorfoza",
+    "Gżegżółka",
+    "Oksymoron",
+    "Aleksandryjskie królestwo",
+    "Ewidencja podatkowa",
+    "Europarlamentarzysta ortodoksyjny",
+    "Wyimaginowany konsultant",
+    "Florystyka",
+    "Onomatopeja",
+    "Oksymoron");
 
 var word = gameWords[randNum(1, 12)].toUpperCase();  //"Powiedzenia i przysłowia".toUpperCase();
 console.log(word);
@@ -137,7 +125,7 @@ function check(id){
         if(word.charAt(i) == ALPHABET[id]){
             flag = true;
             wordCovered = wordCovered.setLetter(i, ALPHABET[id]);
-            
+
         }
     }
     if(flag){
