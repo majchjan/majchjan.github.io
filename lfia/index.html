@@ -3,31 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!--    <link rel="stylesheet" href="styles.css">-->
-    <title>Lingwistyka Formalna i automaty</title>
-    <style>
-        /* Dodaj styl dla efektów wizualnych przy najechaniu */
-        #gallery li {
-            cursor: pointer;
-            transition: color 0.3s, text-decoration 0.3s;
-        }
-
-        #gallery li:hover {
-            color: #3961fd; /* Zmień kolor na podkreślony */
-            text-decoration: underline; /* Podkreśl nazwę zdjęcia */
-        }
-        @media (prefers-color-scheme: dark) {
-            /* Styl dla trybu ciemnego */
-            body {
-                background-color: #333;
-                color: #fff;
-            }
-            #gallery li:hover {
-                color: #11ff00; /* Zmień kolor na podkreślony */
-                text-decoration: underline; /* Podkreśl nazwę zdjęcia */
-            }
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="css/styles.css">
+    <title>Lingwistyka Formalna i Automaty</title>
 </head>
 <body>
 <a href="https://majchjan.github.io/">
@@ -39,36 +16,38 @@
 <ul id="gallery"></ul>
 
 <script>
-    // Dane o zdjęciach
-    var photos = [
-        "img/s0.jpg",
-        "img/s1.jpg"
-        // Dodaj kolejne ścieżki do zdjęć
-    ];
-
-    // Utwórz listę na podstawie danych o zdjęciach
-    var galleryList = document.getElementById('gallery');
-    photos.forEach(function (photoPath) {
-        var fileName = getFileName(photoPath);
-        var listItem = document.createElement('li');
-        listItem.textContent = fileName;
-        listItem.setAttribute('data-src', photoPath);
-        galleryList.appendChild(listItem);
-    });
-
     // Funkcja pomocnicza do pobierania nazwy pliku z pełnej ścieżki
     function getFileName(path) {
         return path.split('/').pop();
     }
 
-    // Dodaj obsługę kliknięcia dla każdego elementu listy
-    var listItems = document.querySelectorAll('#gallery li');
-    listItems.forEach(function (item) {
-        item.addEventListener('click', function () {
-            var imageURL = item.getAttribute('data-src');
-            window.open(imageURL, '_blank');
-        });
-    });
+    // Pobierz listę zdjęć z zewnętrznego pliku tekstowego
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'list.list', true);
+    xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+            var photos = xhr.responseText.split('\n');
+
+            // Utwórz listę na podstawie danych o zdjęciach
+            var galleryList = document.getElementById('gallery');
+            photos.forEach(function (photoPath) {
+                var listItem = document.createElement('li');
+                listItem.textContent = getFileName(photoPath);
+                listItem.setAttribute('data-src','img/' + photoPath);
+                galleryList.appendChild(listItem);
+            });
+
+            // Dodaj obsługę kliknięcia dla każdego elementu listy
+            var listItems = document.querySelectorAll('#gallery li');
+            listItems.forEach(function (item) {
+                item.addEventListener('click', function () {
+                    var imageURL = item.getAttribute('data-src');
+                    window.open(imageURL, '_blank');
+                });
+            });
+        }
+    };
+    xhr.send();
 </script>
 
 </body>

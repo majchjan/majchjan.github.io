@@ -1,0 +1,34 @@
+/*button {*/
+/*			color: #ffffff;*/
+/*			background-color: #787878;*/
+/*			font-size: 19px;*/
+/*			border: 2px solid #000000;*/
+/*			border-radius: 10px;*/
+/*			padding: 15px 75px;*/
+/*			letter-spacing: 1px;*/
+/*			cursor: pointer*/
+/*}*/
+/*button:hover {*/
+/*  color: #ffffff;*/
+/*  background-color: #a0a0a0;*/
+/*}*/
+#gallery li {
+	cursor: pointer;
+	transition: color 0.3s, text-decoration 0.3s;
+}
+
+#gallery li:hover {
+	color: #3961fd; /* Zmień kolor na podkreślony */
+	text-decoration: underline; /* Podkreśl nazwę zdjęcia */
+}
+@media (prefers-color-scheme: dark) {
+	/* Styl dla trybu ciemnego */
+	body {
+		background-color: #333;
+		color: #fff;
+	}
+	#gallery li:hover {
+		color: #11ff00; /* Zmień kolor na podkreślony */
+		text-decoration: underline; /* Podkreśl nazwę zdjęcia */
+	}
+}
