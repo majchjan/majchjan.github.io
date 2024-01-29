@@ -42,7 +42,7 @@ function randNum(A, B){
 }
 //Hasła do gry:
 
-var gameWords = new Array(["Antyterrorystyczne karaluchy,",
+var gameWords = new Array("Antyterrorystyczne karaluchy,",
                             "Prima Aprilis",
                             "Metamorfoza",
                             "Gżegżółka",
@@ -65,7 +65,7 @@ var gameWords = new Array(["Antyterrorystyczne karaluchy,",
 "Zakaz jazdy na rolkach",
 "Albo rybki albo akwarium",
 "Szczotka do włosów",
-"Prezenty pod choinką"]);
+"Prezenty pod choinką");
 
 var word = gameWords[randNum(1, 12)].toUpperCase();  //"Powiedzenia i przysłowia".toUpperCase();
 console.log(word);
@@ -81,7 +81,7 @@ var yesSound = new Audio("yes.wav");
 var noSound = new Audio("no.wav");
 
 for(i=0; i<word.length; i++){
-    if(word.charAt(i) === " ")
+    if(word.charAt(i) == " ")
     {
         wordCovered = wordCovered + " ";
     } else {
@@ -134,15 +134,15 @@ function check(id){
 
     for(var i = 0; i<word.length; i++){
 
-        if(word.charAt(i) === ALPHABET[id]){
+        if(word.charAt(i) == ALPHABET[id]){
             flag = true;
             wordCovered = wordCovered.setLetter(i, ALPHABET[id]);
             
         }
     }
-    var element = "let" + id;
     if(flag){
         yesSound.play();
+        var element = "let" + id;
         document.getElementById(element).style.background = "#00AA00";
         document.getElementById(element).style.color = "#FFFFFF";
         document.getElementById(element).style.cursor = "default";
@@ -152,6 +152,7 @@ function check(id){
         printWord();
     } else {
         noSound.play();
+        var element = "let" + id;
         document.getElementById(element).style.background = "#AA0000";
         document.getElementById(element).style.color = "#FFFFFF";
         document.getElementById(element).style.cursor = "default";
@@ -165,7 +166,7 @@ function check(id){
         document.getElementById("gallows").innerHTML = '<img src="' + image + '" alt="' + failed + '/9"/>';
     }
 
-    if (word === wordCovered){
+    if (word == wordCovered){
 
         document.getElementById("alphabet").innerHTML = "DOBRZE! Poprawne Hasło: " + word + '<br><br><span class=reset onclick="location.reload()"">JESZCZE RAZ?</span>'
     }
