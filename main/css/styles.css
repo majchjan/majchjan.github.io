@@ -80,7 +80,8 @@ body{
     background: radial-gradient(#ffffff 0%, rgba(124, 49, 49, 0) 80%);
 }
 
-.content{
+.content{"
+    font-family: "Lato", sans-serif;
     background-color: rgba(128, 128 ,128 , 0.50);
     margin: 15px auto;
     padding: 15px;
