@@ -3,43 +3,34 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Moja Strona</title>
+        <script>
+            window.onload = window.onload = function() {
+                window.location.href = "/main";
+            };
+        </script>
         <style>
-            #do_lfia {
-                color: #ffffff;
-                background-color: #787878;
-                font-size: 19px;
-                border: 2px solid #000000;
-                border-radius: 10px;
-                padding: 15px 75px;
-                letter-spacing: 1px;
-                cursor: pointer
+            body{
+                background: #ffffff url(main/img/webb-dark.png) center center/auto repeat;
             }
-            #do_lfia:hover {
-                color: #ffffff;
-                background-color: #a0a0a0;
-            }
-            #glowny{
-                text-align: center;
-                width: 1280px;
+            #container{
+                border-radius: 20px;
+                background: #585858;
+                color: white;
+                font-size: large;
+                width: 1024px;
+                margin-bottom: auto;
+                margin-top: 100px;
                 margin-left: auto;
                 margin-right: auto;
+                text-align: center;
+                padding: 20px;
             }
         </style>
+        <title>Wpisz hasło</title>
     </head>
-<!--    -->
     <body>
-        <div id="glowny">
-            <h1>Witaj na mojej stronie!</h1>
-            <!-- Przycisk przekierowujący do index.html w katalogu lfia -->
-            <a href="lfia">
-                <button id="do_lfia" type="button" name="guzik_lfia">Przejdź do katalogu LFiA</button>
-            </a>
-
-            <h2> Przejście do innych podstron </h2>
-            <a href="index_test.html">
-                <button>Przejdź do podstrony z szubienicą</button>
-            </a>
+        <div id="container">
+            <p>Jeśli widzisz tę wiadomość, twoja przeglądarka nie obsługuje automatycznego przekierowania.</p>
         </div>
     </body>
 </html>
