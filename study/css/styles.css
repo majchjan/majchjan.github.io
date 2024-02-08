@@ -70,6 +70,11 @@ section ul{
     text-decoration: none;
     padding: 0 15px;
 }
+
+section .hyperlink:hover {
+    background: radial-gradient(rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0) 80%);
+}
+
 .hyperlink:hover{
     background: radial-gradient(#940000 0%, rgba(124, 49, 49, 0) 80%);
     /*border-radius: 2px;*/
