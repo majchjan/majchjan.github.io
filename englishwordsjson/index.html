@@ -145,7 +145,7 @@
         totalWords++;
         accuracy = (points / totalWords * 100).toFixed(2);
 
-        pointsDisplay.textContent = `Points: ${points} / ${totalWords} Accuracy: ${accuracy}%`;
+        pointsDisplay.textContent = `Points: ${points} / ${totalWords} - ${accuracy}%`;
         inputWord.value = '';
         displayNextWord();
     }
