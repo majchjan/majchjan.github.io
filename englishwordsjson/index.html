@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        #points {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        #word {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 18px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        button#submitBtn {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+        }
+
+        button#resetBtn {
+            background-color: #dc3545;
+            color: #fff;
+            border: none;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .correct {
+            color: green;
+        }
+
+        .incorrect {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<div id="points">Points: 0 / 0</div>
+<div id="word">Loading...</div>
+<input type="text" id="inputWord" placeholder="Enter translation">
+<button id="submitBtn">Submit</button>
+<button id="resetBtn" style="display: none;">Reset</button>
+
+<script>
+    let jsonData;
+    let points = 0;
+    let totalWords = 0;
+    let shuffledWords = [];
+    let currentWordIndex = 0;
+
+    const pointsDisplay = document.getElementById('points');
+    const wordDisplay = document.getElementById('word');
+    const inputWord = document.getElementById('inputWord');
+    const submitBtn = document.getElementById('submitBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    function loadJson(callback) {
+        const xobj = new XMLHttpRequest();
+        xobj.overrideMimeType("application/json");
+        xobj.open('GET', 'data/words.json', true);
+        xobj.onreadystatechange = function () {
+            if (xobj.readyState == 4) {
+                if (xobj.status == "200") {
+                    callback(xobj.responseText);
+                } else {
+                    console.error('Failed to load JSON file: ', xobj.status);
+                }
+            }
+        };
+        xobj.send(null);
+    }
+
+
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function prepareWords() {
+        shuffledWords = shuffle(Object.keys(jsonData));
+        currentWordIndex = 0;
+    }
+
+    function displayNextWord() {
+        if (currentWordIndex < shuffledWords.length) {
+            const word = shuffledWords[currentWordIndex];
+            wordDisplay.textContent = word;
+            wordDisplay.className = '';
+            currentWordIndex++;
+        } else {
+            const accuracy = (points / totalWords * 100).toFixed(2);
+            wordDisplay.textContent = `Accuracy: ${accuracy}%`;
+            wordDisplay.className = '';
+            submitBtn.style.display = 'none';
+            resetBtn.style.display = 'inline';
+        }
+    }
+
+    function checkWord() {
+        const input = inputWord.value.trim().toLowerCase();
+        const currentWord = shuffledWords[currentWordIndex - 1];
+        const translations = jsonData[currentWord];
+
+        if (translations && translations.includes(input)) {
+            points++;
+            wordDisplay.className = 'correct';
+        } else {
+            wordDisplay.className = 'incorrect';
+        }
+        totalWords++;
+
+        pointsDisplay.textContent = `Points: ${points} / ${totalWords}`;
+        inputWord.value = '';
+        displayNextWord();
+    }
+
+    function resetGame() {
+        points = 0;
+        totalWords = 0;
+        prepareWords();
+        pointsDisplay.textContent = 'Points: 0 / 0';
+        inputWord.value = '';
+        submitBtn.style.display = 'inline';
+        resetBtn.style.display = 'none';
+        displayNextWord();
+    }
+
+    loadJson(function(response) {
+        jsonData = JSON.parse(response);
+        prepareWords();
+        displayNextWord();
+    });
+
+    submitBtn.addEventListener('click', checkWord);
+
+    inputWord.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            checkWord();
+        }
+    });
+
+    resetBtn.addEventListener('click', resetGame);
+</script>
+</body>
+</html>
