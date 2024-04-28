@@ -63,10 +63,16 @@
         .incorrect {
             color: red;
         }
+
+        #isCorrect{
+            font-size: 24px;
+        }
     </style>
 </head>
 <body>
 <div id="points">Points: 0 / 0</div>
+<div id="lastAnswer"></div>
+<div id="isCorrect"></div>
 <div id="word">Loading...</div>
 <input type="text" id="inputWord" placeholder="Enter translation">
 <button id="submitBtn">Submit</button>
@@ -85,6 +91,8 @@
     const inputWord = document.getElementById('inputWord');
     const submitBtn = document.getElementById('submitBtn');
     const resetBtn = document.getElementById('resetBtn');
+    const isCorrect = document.getElementById('isCorrect');
+    const lastAnswer = document.getElementById('lastAnswer');
 
     function loadJson(callback) {
         const xobj = new XMLHttpRequest();
@@ -135,12 +143,15 @@
         const input = inputWord.value.trim().toLowerCase();
         const currentWord = shuffledWords[currentWordIndex - 1];
         const translations = jsonData[currentWord];
+        lastAnswer.textContent = 'Twoja odpowiedź: ' + input;
 
         if (translations && translations.includes(input)) {
             points++;
-            wordDisplay.className = 'correct';
+            isCorrect.style.color = 'green';
+            isCorrect.textContent = 'Dobrze!'
         } else {
-            wordDisplay.className = 'incorrect';
+            isCorrect.style.color = 'red';
+            isCorrect.textContent = 'Źle! - Poprawna odpowiedź: ' + translations;
         }
         totalWords++;
         accuracy = (points / totalWords * 100).toFixed(2);
@@ -149,6 +160,7 @@
         inputWord.value = '';
         displayNextWord();
     }
+
 
     function resetGame() {
         points = 0;
