@@ -71,6 +71,7 @@
 </head>
 <body>
 <div id="points">Points: 0 / 0</div>
+<div id="lastWord"></div>
 <div id="lastAnswer"></div>
 <div id="isCorrect"></div>
 <div id="word">Loading...</div>
@@ -92,6 +93,7 @@
     const submitBtn = document.getElementById('submitBtn');
     const resetBtn = document.getElementById('resetBtn');
     const isCorrect = document.getElementById('isCorrect');
+    const lastWord = document.getElementById('lastWord');
     const lastAnswer = document.getElementById('lastAnswer');
 
     function loadJson(callback) {
@@ -143,6 +145,9 @@
         const input = inputWord.value.trim().toLowerCase();
         const currentWord = shuffledWords[currentWordIndex - 1];
         const translations = jsonData[currentWord];
+        lastWord.style.color = '#ffffff';
+        lastWord.style.fontSize = '21px';
+        lastWord.textContent = 'OSTATNIE HASŁO: ' + currentWord;
         lastAnswer.textContent = 'Twoja odpowiedź: ' + input;
 
         if (translations && translations.includes(input)) {
