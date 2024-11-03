@@ -136,7 +136,7 @@ function showNextPlayer() {
 
     const nextBTn = document.createElement('button');
     nextBTn.classList.add('nextbutton');
-    nextBTn.textContent = 'Pokaż moją rolę';
+    nextBTn.textContent = 'Pokaż miejsce';
     nextBTn.onclick = function() {
         showRole(player);
     };
@@ -158,7 +158,7 @@ function showRole(player){
         // return;
     } else {
         roleinfo.classList.add('placeshower');
-        roleinfo.textContent = "Twoje miejsce to: " + lokacja;
+        roleinfo.textContent = "Miejsce " + lokacja;
         inputContainer.appendChild(roleinfo);
         // return;
     }
