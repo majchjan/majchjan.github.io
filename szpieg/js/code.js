@@ -158,7 +158,7 @@ function showRole(player){
         // return;
     } else {
         roleinfo.classList.add('placeshower');
-        roleinfo.textContent = "Miejsce " + lokacja;
+        roleinfo.textContent = "Miejsce: " + lokacja.toUpperCase();
         inputContainer.appendChild(roleinfo);
         // return;
     }
