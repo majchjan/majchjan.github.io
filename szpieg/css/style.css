@@ -66,6 +66,7 @@ section{
     font-size: 1.5em;
     text-align: left;
     margin-top: 10px;
+    
 }
 .input-container {
     overflow-y: auto;
@@ -75,6 +76,7 @@ section{
     width: 80%;
     justify-content: center;
     align-items: center;
+    scrollbar-width:none;
 }
 
 .input-row {
