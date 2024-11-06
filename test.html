@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parametr URL z Inputa</title>
+</head>
+<body>
+    <h1>Wprowadź tekst, aby przekierować z parametrem `v`:</h1>
+    
+    <!-- Pole tekstowe do wprowadzenia wartości -->
+    <input type="text" id="inputText" placeholder="Wprowadź tekst">
+    <!-- Przycisk, który przekieruje użytkownika -->
+    <button onclick="redirectToPage()">Przejdź</button>
+
+    <h2>Wartość parametru `v`:</h2>
+    <p id="output">Pobieranie wartości...</p>
+
+    <script>
+        // Funkcja pobierająca wartość z parametru URL i wyświetlająca ją
+        function displayParam() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const value = urlParams.get('v');
+            document.getElementById("output").textContent = value || "Parametr `v` nie został podany!";
+        }
+
+        // Wywołanie funkcji przy załadowaniu strony, aby wyświetlić wartość parametru 'v'
+        displayParam();
+
+        // Funkcja przekierowująca na stronę z parametrem 'v' na podstawie inputa
+        function redirectToPage() {
+            const inputText = document.getElementById("inputText").value;
+            // Przekierowanie na URL z parametrem
+            window.location.href = `./test/?v=${encodeURIComponent(inputText)}`;
+        }
+    </script>
+</body>
+</html>
