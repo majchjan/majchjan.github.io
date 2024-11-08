@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>"TABU" - Jan Majchrowicz</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="/main/icon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/main/icon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/main/icon/favicon-16x16.png">
+    <link rel="manifest" href="/main/icon/site.webmanifest">
+    
+</head>
+<body>
+    <script src="js/code.js"></script>
+    <header class="logo">
+        <a href=".">"TABU"</a>
+    </header>
+    <section>
+        
+        <div class="input-container">
+            <div class="textinfo">Wybierz kategorie:</div>
+            <div class="categories">
+                <div class="category">
+                    <input type="checkbox" checked="true" id="persons" class="category-checkbox">
+                    <label for="persons">Postacie</label>
+                </div>
+                <div class="category">
+                    <input type="checkbox" checked="true" id="places" class="category-checkbox">
+                    <label for="places">Miejsca</label>
+                </div>
+                <div class="category">
+                    <input type="checkbox" checked="true" id="foods" class="category-checkbox">
+                <label for="foods">Jedzenie</label>
+                </div>
+                <div class="category">
+                    <input type="checkbox" checked="true" id="plants" class="category-checkbox">
+                    <label for="plants">Rośliny</label>
+                </div>
+                <div class="category">
+                    <input type="checkbox" checked="true" id="professions" class="category-checkbox">
+                    <label for="professions">Zawody</label>
+                </div>
+                <div class="category">
+                    <input type="checkbox" checked="true" id="weathers" class="category-checkbox">
+                <label for="weathers">Pogoda</label>
+                </div>
+            </div>
+            <div class="textinfo">Gracze:</div>
+            <div class="input-row">
+                <input type="text" placeholder="Wpisz imię/nazwę gracza" value="jacek">
+                <button class="remove-btn" onclick="removeInput(this)">x</button>
+            </div>
+            <div class="input-row">
+                <input type="text" placeholder="Wpisz imię/nazwę gracza" value="jacek">
+                <button class="remove-btn" onclick="removeInput(this)">x</button>
+            </div>
+            <div class="input-row">
+                <input type="text" placeholder="Wpisz imię/nazwę gracza" value="jacek">
+                <button class="remove-btn" onclick="removeInput(this)">x</button>
+            </div>
+            <div class="input-row">
+                <input type="text" placeholder="Wpisz imię/nazwę gracza" value="jacek">
+                <button class="remove-btn" onclick="removeInput(this)">x</button>
+            </div>
+            <button class="add-btn" onclick="addInput()">+</button>
+            <button class="start-btn" onclick="startGame()">Zacznij grę!</button>
+        </div>
+    </section>
+    <footer>
+        <div class="footer">
+            <a target="_blank" href="./rules.html">Zasady gry</a> | 
+            &copy; 2024 - <a target="_blank" style="color: white; text-decoration: none"
+                             href="https://github.com/majchjan">
+            GitHub/majchjan</a>
+        </div>
+    </footer>
+</body>
+</html>
