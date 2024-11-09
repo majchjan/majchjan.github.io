@@ -1,3 +1,9 @@
+/**
+ * TODO:
+ * Zbyt często powtarzające się słowa.
+ * Trzeba sprawdzić.
+ */
+
 let persons = [];
 let foods = [];
 let places = [];
@@ -9,6 +15,7 @@ let jsonData = {};
 
 let shuffledWords = [];
 
+let teams = 0;
 let players = [];
 let playersCopy = [];
 let availablePlayers = [];
@@ -149,6 +156,10 @@ function startGame(){
 
     shuffledWords = shuffledWords.sort(() => Math.random() - 0.5);
     console.log(shuffledWords);
+
+    const teamsInput = document.querySelector('input[type="number"]');
+    teams = teamsInput.value;
+
     players = [];
     inputs.forEach(input => {
         const playerName = input.value.trim();
@@ -156,10 +167,21 @@ function startGame(){
             players.push(playerName);
         }
     });
+    // console.log(players.length + " " + teams);
     if (players.length < 4) {
         alert('Musisz podać przynajmniej czterech graczy');
         return;
     }
+    if(!(players.length % teams === 0)){
+        alert('Drużyny powinny być równe!');
+        return;
+    }
+    if(teams >= players.length){
+        alert('Drużyna powinna być conajmniej dwuosobowa!');
+        return;
+    }
+
+
     playersCopy = [...players];
     availablePlayers = [...players];
     availablePlayers = availablePlayers.sort(() => Math.random() - 0.5);
@@ -195,8 +217,8 @@ function showWords(){
         player.textContent = availablePlayers.pop();
         startButton.textContent = 'Rozpocznij rundę!';
         startButton.onclick = function() {
-            secondsLeft = 10;
-            startAsyncCountdown(10);
+            secondsLeft = 60;
+            startAsyncCountdown(60);
             nextWord();
         };
     }

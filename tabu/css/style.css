@@ -98,11 +98,11 @@ input[type="text"] {
     padding: 8px;
     font-size: 16px;
 }
-/* input[type="number"] {
+input[type="number"] {
     flex: 1;
     padding: 8px;
     font-size: 16px;
-} */
+}
 button {
     border: none;
     background-color: #4CAF50;
