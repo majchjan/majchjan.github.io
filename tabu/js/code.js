@@ -245,7 +245,8 @@ function nextWord(){
     inputContainer.appendChild(word);
 
     const tabooWords = document.createElement('div');
-    tabooWords.classList.add('tabooshower');
+    // tabooWords.classList.add('infoshower');
+    tabooWords.style.fontSize = 1.5 + 'em';
     tabooWords.textContent = "Zakazane słowa: ";
 
     const taboo1 = document.createElement('div');
