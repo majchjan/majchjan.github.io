@@ -1,0 +1,108 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: white;
+    text-decoration: none;
+}
+body {
+    background: #000000 url(../img/webb-dark.png) center center/auto repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content:space-between;
+    align-items: center;
+    height: 100vh;
+}
+.logo {
+    background-color: black;
+    border-bottom: red solid 1px;
+    width: 100%;
+    /* height: 150%; */
+    color: white;
+    font-size: clamp(1.5em, 20vw, 4em);
+    font-weight: bolder;
+    text-align: center;
+    /*border: white solid 10px;*/
+    
+    font-family: 'Ubuntu', sans-serif;
+    /*border-radius: 50px 50px 50px 50px;*/
+    margin: 0;
+    padding: 15px 0 15px 0 ;
+}
+.logo a {
+    text-decoration: none;
+}
+.footer {
+    border-top: red solid 1px;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px;
+    width: 100vw;
+}
+.footer a{
+    color: white;
+    text-decoration: none;
+
+}
+.footer a:hover{
+    text-decoration: underline;
+}
+section{
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.textinfo{
+    color: white;
+    font-size: 1.5em;
+}
+
+.input-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 95%;
+    height: 100%;
+    justify-content:space-between;
+    align-items: center;
+    scrollbar-width: none;
+}
+
+.gameChoose{
+    background-color: black;
+    /* background: #000000 url(../img/szpieg.jpg) center center/auto repeat; */
+    flex:auto;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: red solid 5px;
+    border-radius: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.gameChoose:hover{
+    /* background-color: #9c9c9c; */
+    width: 95%;
+    height: 40%;
+}
+.gameChoose p{
+    color: white;
+    font-size: clamp(1em, 10vw, 3em);
+    font-weight: bolder;
+    text-decoration: none;
+    text-shadow: 1px 1px 10px rgb(0, 0, 0);
+}
+
+/* Większe niz telefon */
+@media (min-width: 768px) {
+    .input-container {
+        width: 95%;
+    }
+}

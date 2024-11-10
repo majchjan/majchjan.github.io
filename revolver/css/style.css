@@ -11,6 +11,7 @@ body {
     justify-content:space-between;
     align-items: center;
     height: 100vh;
+    overflow-x: auto;
 }
 .logo {
     background-color: black;
@@ -31,13 +32,16 @@ body {
 .logo a {
     text-decoration: none;
 }
+footer{
+    width: 100%;
+}
 .footer {
     border-top: red solid 1px;
     background-color: #333;
     color: white;
     text-align: center;
     padding: 10px;
-    width: 100vw;
+    /* width: 100vw; */
 }
 .footer a{
     color: white;
@@ -79,26 +83,6 @@ section{
     scrollbar-width:none;
 }
 
-.input-row {
-    color: black;
-    display: flex;
-    align-items: center;
-    width: 100%;
-    margin-top: 5px;
-    margin-bottom: 5px;
-}
-
-input[type="text"] {
-    color: black;
-    flex: 1;
-    padding: 8px;
-    font-size: 16px;
-}
-input[type="number"] {
-    flex: 1;
-    padding: 8px;
-    font-size: 16px;
-}
 button {
     border: none;
     background-color: #4CAF50;
@@ -110,65 +94,13 @@ button {
     border-radius: 4px;
 }
 
-button.add-btn {
+.wordshower{
     width: 100%;
-    background-color: #007bff;
-    margin: 0;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    
-}
-button.add-btn:hover {
-    width: 95%;
-    background-color: #3d9bff;
+    height: 100%;
+    text-align: center;
+    font-size: 3em;
 }
 
-button.remove-btn {
-    background-color: #ff4c4c;
-}
-button.remove-btn:hover {
-    background-color: #f10909;
-}
-button.start-btn {
-    width: 100%;
-    font-weight: bolder;
-    background-color: #00be20;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
-}
-button.start-btn:hover{
-    background-color: #00ff0d;
-    width: 95%;
-}
-.nickshower{
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    font-size: 2em;
-}
-.nickshower:hover{
-    cursor: pointer;
-}
-.placeshower{
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    font-size: 2em;
-}
-.placeshower:hover{
-    cursor: pointer;
-}
-.spieshower{
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    color:#ff1a1a;
-    font-size: 2em;
-}
-.spieshower:hover{
-    cursor: pointer;
-}
 .nextbutton{
     background-color: #ff4c4c;
     width: 100%;
@@ -179,19 +111,6 @@ button.start-btn:hover{
 }
 .nextbutton:hover{
     background-color: #f10909;
-    width: 95%;
-    
-}
-.endroundbutton{
-    background-color: #008cff;
-    width: 100%;
-    font-weight: bolder;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
-}
-.endroundbutton:hover{
-    background-color: #006cc4;
     width: 95%;
     
 }
