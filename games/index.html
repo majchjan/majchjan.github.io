@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jan Majchrowicz - "Szpieg"</title>
+    <title>Jan Majchrowicz - GAMES</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,33 +17,26 @@
 <body>
     <script src="js/code.js"></script>
     <header class="logo">
-        <a href=".">"SZPIEG"</a>
+        <a href=".">GAMES</a>
     </header>
     <section>
-        
         <div class="input-container">
-            <div class="textinfo">Ilość szpiegów w czasie gry:</div>
-            <input type="number" class="input-row" value="1" min="1">
-            <div class="textinfo">Gracze:</div>
-            <div class="input-row">
-                <input type="text" placeholder="Wpisz imię/nazwę gracza">
-                <button class="remove-btn" onclick="removeInput(this)">x</button>
-            </div>
-            <div class="input-row">
-                <input type="text" placeholder="Wpisz imię/nazwę gracza">
-                <button class="remove-btn" onclick="removeInput(this)">x</button>
-            </div>
-            <div class="input-row">
-                <input type="text" placeholder="Wpisz imię/nazwę gracza">
-                <button class="remove-btn" onclick="removeInput(this)">x</button>
-            </div>
-            <button class="add-btn" onclick="addInput()">+</button>
-            <button class="start-btn" onclick="startGame()">Zacznij grę!</button>
+            <a href="../game/" class="gameChoose" style="border-color:chocolate  ;background: #000000 url(./img/szubienica.jpg) center center/auto no-repeat; background-size: contain;">
+                <p>SZUBIENICA</p>
+            </a>
+            <a href="../szpieg/" class="gameChoose" style="border-color: burlywood; background: #000000 url(./img/szpieg.jpg) center center/auto repeat;">
+                <p>"SZPIEG"</p>
+            </a>
+            <a href="../tabu/" class="gameChoose" style="border-color: blueviolet;background: #24123c url(./img/taboo.png) no-repeat center center; background-size: contain;">
+                <p>"TABU"</p>
+            </a>
+            <a href="../revolver/" class="gameChoose" style="border-color: darkslategray ;background: #000000 url(./img/revolver.avif) center center/auto no-repeat;">
+                <p>REWOLWER</p>
+            </a>
         </div>
     </section>
     <footer>
         <div class="footer">
-            <a target="_blank" href="./rules.html">Zasady gry</a> | 
             &copy; 2024 - <a target="_blank" style="color: white; text-decoration: none"
                              href="https://github.com/majchjan">
             GitHub/majchjan</a>

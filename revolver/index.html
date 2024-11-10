@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jan Majchrowicz - "Szpieg"</title>
+    <title>Jan Majchrowicz - REWOLWER</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,28 +17,14 @@
 <body>
     <script src="js/code.js"></script>
     <header class="logo">
-        <a href=".">"SZPIEG"</a>
+        <a href=".">REWOLWER</a>
     </header>
     <section>
         
         <div class="input-container">
-            <div class="textinfo">Ilość szpiegów w czasie gry:</div>
-            <input type="number" class="input-row" value="1" min="1">
-            <div class="textinfo">Gracze:</div>
-            <div class="input-row">
-                <input type="text" placeholder="Wpisz imię/nazwę gracza">
-                <button class="remove-btn" onclick="removeInput(this)">x</button>
-            </div>
-            <div class="input-row">
-                <input type="text" placeholder="Wpisz imię/nazwę gracza">
-                <button class="remove-btn" onclick="removeInput(this)">x</button>
-            </div>
-            <div class="input-row">
-                <input type="text" placeholder="Wpisz imię/nazwę gracza">
-                <button class="remove-btn" onclick="removeInput(this)">x</button>
-            </div>
-            <button class="add-btn" onclick="addInput()">+</button>
-            <button class="start-btn" onclick="startGame()">Zacznij grę!</button>
+            <div class="textinfo">Słowo:</div>
+            <div class="wordshower"></div>
+            <button class="nextbutton" onclick="nextWord()">Kolejne słowo!</button>
         </div>
     </section>
     <footer>
