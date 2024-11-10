@@ -1,9 +1,3 @@
-/**
- * TODO:
- * Zbyt często powtarzające się słowa.
- * Trzeba sprawdzić.
- */
-
 let persons = [];
 let foods = [];
 let places = [];
