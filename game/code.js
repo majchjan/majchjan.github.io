@@ -1,40 +1,5 @@
 //Stała alfabet polski w tablicy znaków
-var ALPHABET = new Array(35);
-ALPHABET[0] = 'A';
-ALPHABET[1] = 'Ą';
-ALPHABET[2] = 'B';
-ALPHABET[3] = 'C';
-ALPHABET[4] = 'Ć';
-ALPHABET[5] = 'D';
-ALPHABET[6] = 'E';
-ALPHABET[7] = 'Ę';
-ALPHABET[8] = 'F';
-ALPHABET[9] = 'G';
-ALPHABET[10] = 'H';
-ALPHABET[11] = 'I';
-ALPHABET[12] = 'J';
-ALPHABET[13] = 'K';
-ALPHABET[14] = 'L';
-ALPHABET[15] = 'Ł';
-ALPHABET[16] = 'M';
-ALPHABET[17] = 'N';
-ALPHABET[18] = 'Ń';
-ALPHABET[19] = 'O';
-ALPHABET[20] = 'Ó';
-ALPHABET[21] = 'Q';
-ALPHABET[22] = 'P';
-ALPHABET[23] = 'R';
-ALPHABET[24] = 'S';
-ALPHABET[25] = 'Ś';
-ALPHABET[26] = 'T';
-ALPHABET[27] = 'U';
-ALPHABET[28] = 'V';
-ALPHABET[29] = 'W';
-ALPHABET[30] = 'X';
-ALPHABET[31] = 'Y';
-ALPHABET[32] = 'Z';
-ALPHABET[33] = 'Ź';
-ALPHABET[34] = 'Ż';
+var ALPHABET = new Array('A', 'Ą', 'B', 'C', 'Ć', 'D', 'E', 'Ę', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'Ł', 'M', 'N', 'Ń', 'O', 'Ó', 'Q', 'P', 'R', 'S', 'Ś', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Ź', 'Ż');
 
 function randNum(A, B){
     var wynik = Math.random();
