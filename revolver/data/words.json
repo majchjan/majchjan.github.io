@@ -1,6 +1,5 @@
 [
     "śrubokręt",
-    "kot",
     "latawiec",
     "ziele angielskie",
     "kotwica",
@@ -109,7 +108,6 @@
     "brat",
     "szczotka",
     "bańka",
-    "wiadro",
     "budynek",
     "żarówka",
     "kok",
@@ -402,7 +400,6 @@
     "czajnik",
     "klawisz",
     "pocałunek",
-    "latawiec",
     "kotek",
     "kolano",
     "nóż",
@@ -618,7 +615,6 @@
     "strach",
     "szalik",
     "scena",
-    "zapach",
     "szkoła",
     "nauka",
     "nożyczki",
@@ -727,7 +723,6 @@
     "czołg",
     "smak",
     "podatek",
-    "zespół",
     "zęby",
     "temperament",
     "tendencja",
@@ -836,5 +831,10 @@
     "zebra",
     "cynk",
     "zamek błyskawiczny",
-    "zoo"
+    "zoo",
+    "szop pracz",
+    "boazeria",
+    "gumka recepturka",
+    "karnisz",
+    "tłumik"
   ]
