@@ -455,5 +455,17 @@
     "spider man":["pająk", "peter parker", "sieci"],
     "fred flinston":["kreskówka", "jaskiniowiec", "główny bohater"],
     "robert burneika":["litwa", "stejki", "kanapeczki"],
-    "freddie mercury":["queen", "wokalista", "wielka brytania"]
+    "freddie mercury":["queen", "wokalista", "wielka brytania"],
+    "diego maradona":["piłkarz", "argentyna", "boska ręka"],
+    "nergal":["behemot", "biblia", "metal"],
+    "gordon ramsey":["kucharz", "hell's kitchen", "celebryta"],
+    "afrodyta":["mitologia", "bogini", "piękno"],
+    "wróżbita maciej":["astrologia", "tarot", "telewizja"],
+    "margaret thatcher":["wielka brytania", "premier", "robotnicy"],
+    "eddie murphy":["komik", "aktor", "czarny"],
+    "pan tik tak": ["peerel", "program telewizyjny", "zegar"],
+    "iwan groźny":["car", "rosja", "władca"],
+    "mona lisa":["obraz", "uśmiech", "kobieta"],
+    "kokosz":["kajko", "komiks", "mirmił"],
+    "jan borysewicz":["lady pank", "marchewkowe pole", "mniej niż zero"]
 }
