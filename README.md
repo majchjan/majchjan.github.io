@@ -4,4 +4,3 @@ Strona główna
 - GitHub
 - Studia
 - Gry
-- Testowa zmiana
