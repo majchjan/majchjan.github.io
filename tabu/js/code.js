@@ -228,6 +228,7 @@ function addPoint(){
 }
 function skipWord(){
     points--;
+    if(points < 0) points = 0;
     nextWord();
     return;
 }
