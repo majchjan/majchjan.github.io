@@ -227,6 +227,7 @@ function addPoint(){
     return;
 }
 function skipWord(){
+    points--;
     nextWord();
     return;
 }
