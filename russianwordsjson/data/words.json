@@ -46,5 +46,19 @@
 	"spodniom (C.)":["брюкам"],
 	"spodnie (B.)":["брюки"],
 	"spodniami (N.)":["брюками"],
-	"spodniach (Msc.)":["брюках"]
+	"spodniach (Msc.)":["брюках"],
+
+	"krawat (M.)":["галстук"],
+	"krawata (D.)":["галстука"],
+	"krawatowi (C.)":["галстуку"],
+	"krawat (B.)":["галстук"],
+	"krawatem (N.)":["галстуком"],
+	"krawacie (Msc.)":["галстуке"],
+
+	"krawaty (M.)":["галстуки"],
+	"krawatów (D.)":["галстуков"],
+	"krawatom (C.)":["галстукам"],
+	"krawaty (B.)":["галстуки"],
+	"krawatami (N.)":["галстуками"],
+	"krawatach (Msc.)":["галстуках"]
 }
