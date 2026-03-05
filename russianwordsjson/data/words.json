@@ -1,0 +1,50 @@
+{
+	"bejsbolówka (M.)":["бейсболка"],
+	"bejsbolówki (D.)":["бейсболки"],
+	"bejsbolówce (C.)":["бейсболке"],
+	"bejsbolówkę (B.)":["бейсболку"],
+	"bejsbolówką (N.)":["бейсболкой"],
+	"bejsbolówce (Msc.)":["бейсболке"],
+
+	"bejsbolówki (M.)":["бейсболки"],
+	"bejsbolówek (D.)":["бейсболок"],
+	"bejsbolówkom (C.)":["бейсболкам"],
+	"bejsbolówki (B.)":["бейсболки"],
+	"bejsbolówkami (N.)":["бейсболками"],
+	"bejsbolówkach (Msc.)":["бейсболках"],
+
+	"bluzka (M.)":["блузка"],
+	"bluzki (D.)":["блузки"],
+	"bluzce (C.)":["блузке"],
+	"bluzkę (B.)":["блузку"],
+	"bluzką (N.)":["блузкой"],
+	"bluzce (Msc.)":["блузке"],
+
+	"bluzki (M.)":["блузки"],
+	"bluzek (D.)":["блузок"],
+	"bluzkom (C.)":["блузкам"],
+	"bluzki (B.)":["блузки"],
+	"bluzkami (N.)":["блузками"],
+	"bluzkach (Msc.)":["блузках"],
+
+	"sandały (M.)":["босоножки", "сандалии"],
+	"sandałów (D.)":["босоножек", "сандалий"],
+	"sandałom (C.)":["босоножкам", "сандалиям"],
+	"sandały (B.)":["босоножки", "сандалии"],
+	"sandałami (N.)":["босоножками", "сандалиями"],
+	"sandałach (Msc.)":["босоножках", "сандалиях"],
+
+	"buty (wysoko sznurowane) (M.)":["ботинки"],
+	"butów (wysoko sznurowanych) (D.)":["ботинок"],
+	"butom (wysoko sznurowanym) (C.)":["ботинкам"],
+	"buty (wysoko sznurowane) (B.)":["ботинки"],
+	"butami (wysoko sznurowanymi) (N.)":["ботинками"],
+	"butach (wysoko sznurowanych) (Msc.)":["ботинках"],
+
+	"spodnie (M.)":["брюки"],
+	"spodni (D.)":["брюк"],
+	"spodniom (C.)":["брюкам"],
+	"spodnie (B.)":["брюки"],
+	"spodniami (N.)":["брюками"],
+	"spodniach (Msc.)":["брюках"]
+}
