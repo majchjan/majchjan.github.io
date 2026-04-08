@@ -68,6 +68,88 @@ section{
     margin-top: 10px;
     
 }
+
+/* Kontener przełącznika */
+/* Kontener przełącznika */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 100%; 
+    height: 50px; /* Nieco wyższy, by pomieścić większą czcionkę na desktopie */
+    margin: 10px 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Tło suwaka */
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #2196F3;
+    transition: 0.4s;
+    border-radius: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    
+    /* Dynamiczna czcionka i obwódka */
+    font-family: 'Arial Black', sans-serif;
+    font-weight: 900;
+    text-transform: uppercase;
+    
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: white;
+    -webkit-text-stroke: clamp(0.5px, 0.15vw, 1.5px) black;
+}
+
+/* Napisy */
+.slider::before {
+    content: "Przedmioty";
+    z-index: 1;
+    flex: 1;
+    text-align: center;
+}
+
+.slider::after {
+    content: "Lokalizacje";
+    z-index: 1;
+    flex: 1;
+    text-align: center;
+}
+
+/* Gałka (Handle) */
+.mode-toggle + .slider .handle {
+    position: absolute;
+    height: 42px; /* Wysokość slidera - 8px */
+    width: calc(50% - 8px);
+    left: 4px;
+    bottom: 4px;
+    background-color: rgba(255, 255, 255, 1); /* Efekt szkła */
+    backdrop-filter: blur(4px); /* Rozmycie tła pod gałką dla nowoczesnego wyglądu */
+    transition: 0.5s cubic-bezier(0.0, -0.55, 0.265, 1.0); /* Fajny efekt "sprężynowania" */
+    border-radius: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 2;
+    border: 2px solid white;
+}
+
+/* Zmiana koloru przy zaznaczeniu */
+.mode-toggle:checked + .slider {
+    background-color: #4CAF50;
+}
+
+/* Przesunięcie gałki */
+.mode-toggle:checked + .slider .handle {
+    transform: translateX(calc(100% + 0px)); /* Przesunięcie o całą swoją szerokość */
+}
 .input-container {
     overflow-y: auto;
     overflow-x: hidden;

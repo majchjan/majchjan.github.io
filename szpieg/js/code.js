@@ -1,4 +1,5 @@
 let places = [];
+let items = [];
 
 let questions = [];
 let players = [];
@@ -8,19 +9,24 @@ let spies = [];
 let lokacja = "";
 let currentQuestionIndex = 0;
 
+let gameMode = ""; // "items" lub "places"
+
 async function loadData() {
     try {
+        const itemsResponse = await fetch('./data/items.json');
         const placesResponse = await fetch('./data/places.json');
         const questionsResponse = await fetch('./data/questions.json');
 
-        if (!placesResponse.ok || !questionsResponse.ok) {
+        if (!placesResponse.ok || !questionsResponse.ok || !itemsResponse.ok) {
             throw new Error('Błąd ładowania plików JSON');
         }
 
         places = await placesResponse.json();
+        items = await itemsResponse.json();
         questions = await questionsResponse.json();
 
         console.log("Miejsca załadowane:", places);
+        console.log("Przedmioty załadowane:", items);
         console.log("Pytania załadowane:", questions);
     } catch (error) {
         console.error("Błąd wczytywania danych:", error);
@@ -66,6 +72,9 @@ function startGame(){
     const inputContainer = document.querySelector('.input-container');
     const inputs = inputContainer.querySelectorAll('input[type="text"]');
     const spiesNumber = inputContainer.querySelector('input[type="number"]').value;
+
+    gameMode = document.querySelector('.mode-toggle').checked ? "items" : "places";
+
     players = [];
     inputs.forEach(input => {
         const playerName = input.value.trim();
@@ -91,7 +100,11 @@ function assignRoles(spiesNumber) {
     playersCopy = [...players];
     availablePlayers = [...players];
     // console.log(availablePlayers);
-    lokacja = places[Math.floor(Math.random() * places.length)];
+    if(gameMode === "items"){
+        lokacja = items[Math.floor(Math.random() * items.length)];
+    } else if (gameMode === "places"){
+        lokacja = places[Math.floor(Math.random() * places.length)];
+    }
 
     // Losowanie szpiegów
     for (let i = 0; i < spiesNumber; i++) {
@@ -136,16 +149,18 @@ function showNextPlayer() {
 
     const nextBTn = document.createElement('button');
     nextBTn.classList.add('nextbutton');
-    nextBTn.textContent = 'Pokaż miejsce';
+    if(gameMode === "items"){
+        nextBTn.textContent = 'Pokaż przedmiot';
+    } else if(gameMode === "places"){
+        nextBTn.textContent = 'Pokaż miejsce';
+    }
     nextBTn.onclick = function() {
         showRole(player);
     };
     inputContainer.appendChild(nextBTn);
 
     return;
-
-    
-    
+   
 }
 function showRole(player){
     const inputContainer = document.querySelector('.input-container');
@@ -158,7 +173,11 @@ function showRole(player){
         // return;
     } else {
         roleinfo.classList.add('placeshower');
-        roleinfo.textContent = "Miejsce: " + lokacja.toUpperCase();
+        if(gameMode === "items"){
+            roleinfo.textContent = "Przedmiot: " + lokacja.toUpperCase();
+        } else if(gameMode === "places"){
+            roleinfo.textContent = "Miejsce: " + lokacja.toUpperCase();
+        }
         inputContainer.appendChild(roleinfo);
         // return;
     }
@@ -182,23 +201,27 @@ function displayQuestion() {
     // console.log("displayQuestion");
     // console.log(questions.length);
     if (currentQuestionIndex < questions.length) {
-        // console.log("displayQuestionad1");
         var inputContainer = document.querySelector('.input-container');
         inputContainer.replaceChildren();
-        var question = document.createElement('div');
-        question.classList.add('textinfo');
-        // console.log(questions[currentQuestionIndex]);
-        question.textContent = questions[currentQuestionIndex];
-        currentQuestionIndex++;
-        inputContainer.appendChild(question);
+        if (gameMode === "places") {
+            // console.log("displayQuestionad1");
+            
+            
+            var question = document.createElement('div');
+            question.classList.add('textinfo');
+            // console.log(questions[currentQuestionIndex]);
+            question.textContent = questions[currentQuestionIndex];
+            currentQuestionIndex++;
+            inputContainer.appendChild(question);
 
-        var nextBTn = document.createElement('button');
-        nextBTn.classList.add('nextbutton');
-        nextBTn.textContent = 'Dalej!';
-        nextBTn.onclick = function() {
-            displayQuestion();
-        }; 
-        inputContainer.appendChild(nextBTn);
+            var nextBTn = document.createElement('button');
+            nextBTn.classList.add('nextbutton');
+            nextBTn.textContent = 'Dalej!';
+            nextBTn.onclick = function() {
+                displayQuestion();
+            }; 
+            inputContainer.appendChild(nextBTn);
+        }
 
         var endroundBtn = document.createElement('button');
         endroundBtn.classList.add('endroundbutton');
@@ -221,7 +244,11 @@ function identifySpy(){
     const spyinfo = document.createElement('div');
     spyinfo.classList.add('nickshower');
     const par1 = document.createElement('p');
-    par1.textContent = "Miejsce to: " + lokacja + ".";
+    if (gameMode === "items") {
+        par1.textContent = "Przedmiot to: " + lokacja + ".";
+    } else if (gameMode === "places") {
+        par1.textContent = "Miejsce to: " + lokacja + ".";
+    }
     const par2 = document.createElement('p');
     par2.textContent = "Szpieg: " + spies;
     spyinfo.appendChild(par1);
