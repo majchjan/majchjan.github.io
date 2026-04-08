@@ -22,6 +22,14 @@
     <section>
         
         <div class="input-container">
+            <div class="textinfo">Wybierz tryb gry:</div>
+            <!-- Suwak -->
+            <label class="switch">
+                <input type="checkbox" class="mode-toggle" onchange="toggleMode(this)">
+                <span class="slider">
+                    <span class="handle"></span>
+                </span>
+            </label>
             <div class="textinfo">Ilość szpiegów w czasie gry:</div>
             <input type="number" class="input-row" value="1" min="1">
             <div class="textinfo">Gracze:</div>
