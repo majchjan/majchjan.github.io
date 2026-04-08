@@ -72,6 +72,9 @@ function startGame(){
     const inputContainer = document.querySelector('.input-container');
     const inputs = inputContainer.querySelectorAll('input[type="text"]');
     const spiesNumber = inputContainer.querySelector('input[type="number"]').value;
+
+    gameMode = document.querySelector('.mode-toggle').checked ? "items" : "places";
+
     players = [];
     inputs.forEach(input => {
         const playerName = input.value.trim();
@@ -259,17 +262,5 @@ function identifySpy(){
     };
     inputContainer.appendChild(endroundBtn);
     // console.log(spies.length);
-    return;
-}
-
-function toggleMode(checkbox) {
-    if (checkbox.checked) {
-        gameMode = "items";
-        // alert("Tryb przedmiotów aktywowany! Szpiedzy będą musieli odgadnąć przedmiot, a nie miejsce.");
-    } else {
-        gameMode = "places";
-        // alert("Tryb miejsc aktywowany! Szpiedzy będą musieli odgadnąć miejsce, a nie przedmiot.");
-    }
-
     return;
 }
