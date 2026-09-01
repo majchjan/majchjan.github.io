@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300">
+    <g stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.85">
+        <line x1="100" y1="25" x2="100" y2="275"/>
+        <line x1="200" y1="25" x2="200" y2="275"/>
+        <line x1="25" y1="100" x2="275" y2="100"/>
+        <line x1="25" y1="200" x2="275" y2="200"/>
+    </g>
+    <g stroke="#ff4c4c" stroke-width="16" stroke-linecap="round">
+        <line x1="25" y1="25" x2="75" y2="75"/>
+        <line x1="75" y1="25" x2="25" y2="75"/>
+        <line x1="125" y1="125" x2="175" y2="175"/>
+        <line x1="175" y1="125" x2="125" y2="175"/>
+        <line x1="225" y1="225" x2="275" y2="275"/>
+        <line x1="275" y1="225" x2="225" y2="275"/>
+    </g>
+    <g stroke="#008cff" stroke-width="16" fill="none">
+        <circle cx="150" cy="50" r="26"/>
+        <circle cx="250" cy="150" r="26"/>
+    </g>
+</svg>

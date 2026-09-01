@@ -1,0 +1,303 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: white;
+}
+body {
+    background: #ffffff url(../img/webb-dark.png) center center/auto repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content:space-between;
+    align-items: center;
+    height: 100vh;
+    overflow-x: auto;
+}
+.logo {
+    background-color: black;
+    border-bottom: red solid 1px;
+    width: 100%;
+    color: white;
+    font-size: clamp(1.5em, 20vw, 4em);
+    font-weight: bolder;
+    text-align: center;
+    font-family: 'Ubuntu', sans-serif;
+    margin: 0;
+    padding: 15px 0 15px 0 ;
+}
+.logo a {
+    text-decoration: none;
+}
+footer{
+    width: 100%;
+}
+.footer {
+    border-top: red solid 1px;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
+.footer a{
+    color: white;
+    text-decoration: none;
+
+}
+.footer a:hover{
+    text-decoration: underline;
+}
+section{
+    width: 100%;
+    height: 100%;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.textinfo{
+    color: white;
+    font-size: 1.5em;
+}
+.rules{
+    width: 100%;
+    height: 100%;
+    color: white;
+    font-size: 1.5em;
+    text-align: left;
+    margin-top: 10px;
+    
+}
+.input-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    justify-content: center;
+    align-items: center;
+    scrollbar-width:none;
+}
+.input-row {
+    color: black;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+input[type="text"] {
+    color: black;
+    flex: 1;
+    padding: 8px;
+    font-size: 16px;
+}
+button {
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 5px;
+    border-radius: 4px;
+}
+button.start-btn {
+    width: 100%;
+    font-weight: bolder;
+    background-color: #00be20;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
+}
+button.start-btn:hover{
+    background-color: #00ff0d;
+    width: 95%;
+}
+button.join-btn {
+    background-color: #007bff;
+}
+button.join-btn:hover {
+    background-color: #3d9bff;
+}
+.nextbutton{
+    background-color: #ff4c4c;
+    width: 100%;
+    font-weight: bolder;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
+}
+.nextbutton:hover{
+    background-color: #f10909;
+    width: 95%;
+    
+}
+.endroundbutton{
+    background-color: #008cff;
+    width: 100%;
+    font-weight: bolder;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
+}
+.endroundbutton:hover{
+    background-color: #006cc4;
+    width: 95%;
+    
+}
+
+/* Ekrany — widoczny jest zawsze tylko jeden */
+.screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+.screen.active {
+    display: flex;
+}
+
+/* Kod stołu */
+.code-input {
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: bolder;
+    letter-spacing: 5px;
+}
+.codeshower {
+    width: 100%;
+    text-align: center;
+    color: #00be20;
+    font-size: 3em;
+    font-weight: bolder;
+    letter-spacing: 10px;
+    padding-left: 10px;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
+}
+.codeshower:hover{
+    cursor: pointer;
+}
+.noteshower {
+    width: 100%;
+    min-height: 1.5em;
+    margin-top: 5px;
+    text-align: center;
+    font-size: 1.2em;
+}
+.noteshower.error {
+    color: #ff1a1a;
+}
+
+/* Pasek stanu nad planszą */
+.statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+}
+.turnshower {
+    font-size: 1.5em;
+    font-weight: bolder;
+}
+.turnshower.x, .seatshower.x, .resultshower.x {
+    color: #ff4c4c;
+}
+.turnshower.o, .seatshower.o, .resultshower.o {
+    color: #008cff;
+}
+.seatshower {
+    font-size: 1.2em;
+}
+
+/* Plansza 3x3 */
+.board {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 1 / 1;
+    background-color: #333;
+    padding: 8px;
+    border-radius: 4px;
+}
+.cell {
+    background-color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Ubuntu', sans-serif;
+    font-size: clamp(2em, 15vw, 4em);
+    font-weight: bolder;
+    line-height: 1;
+    text-shadow: 0px 0px 5px rgba(0, 0, 0, 1);
+}
+
+.cell:hover:not(:disabled) {
+    background-color: #2b2b2b;
+}
+.cell:disabled {
+    cursor: default;
+}
+.cell.x {
+    color: #ff4c4c;
+}
+.cell.o {
+    color: #008cff;
+}
+.cell.win {
+    background-color: #00be20;
+}
+
+/* Wynik */
+.resultshower {
+    width: 100%;
+    min-height: 1.2em;
+    margin-top: 10px;
+    text-align: center;
+    font-size: 2em;
+    font-weight: bolder;
+}
+.rematch-btn {
+    display: none;
+}
+/* Kręciołek na czas logowania, tworzenia i dołączania do stołu */
+.loader {
+    display: none;
+    width: 40px;
+    height: 40px;
+    margin: 15px auto;
+    border: 5px solid #333;
+    border-top-color: #00be20;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+.loader.active {
+    display: block;
+}
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+button:disabled:hover {
+    width: 100%;
+}
+
+/* Większe niz telefon */
+@media (min-width: 768px) {
+    .input-container {
+        width: 50%;
+    }
+}
