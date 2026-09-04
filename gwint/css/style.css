@@ -1,0 +1,529 @@
+/* ============ Baza wspólna z resztą serwisu ============ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    color: white;
+}
+body {
+    background: #ffffff url(../img/webb-dark.png) center center/auto repeat;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Ubuntu', sans-serif;
+}
+.logo {
+    background-color: black;
+    border-bottom: red solid 1px;
+    width: 100%;
+    min-width: 0;
+    color: white;
+    font-size: clamp(1.5em, 12vw, 3em);
+    font-weight: bolder;
+    text-align: center;
+    font-family: 'Ubuntu', sans-serif;
+    margin: 0;
+    padding: 12px 10px;
+}
+.logo a {
+    display: block;
+    text-decoration: none;
+}
+footer {
+    width: 100%;
+}
+.footer {
+    border-top: red solid 1px;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
+.footer a {
+    color: white;
+    text-decoration: none;
+}
+.footer a:hover {
+    text-decoration: underline;
+}
+section {
+    width: 100%;
+    flex: 1;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.textinfo {
+    color: white;
+    font-size: 1.2em;
+    margin-top: 6px;
+}
+.rules {
+    width: 100%;
+    color: white;
+    font-size: 1.2em;
+    text-align: left;
+    margin-top: 10px;
+}
+button {
+    border: none;
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px;
+    font-size: 15px;
+    cursor: pointer;
+    margin: 4px;
+    border-radius: 4px;
+    font-family: 'Ubuntu', sans-serif;
+}
+button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+button.start-btn {
+    width: 100%;
+    font-weight: bolder;
+    background-color: #00be20;
+    margin: 8px 0;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 1);
+}
+button.start-btn:hover:not(:disabled) {
+    background-color: #00ff0d;
+}
+button.join-btn {
+    background-color: #007bff;
+}
+button.join-btn:hover:not(:disabled) {
+    background-color: #3d9bff;
+}
+.nextbutton {
+    background-color: #ff4c4c;
+    font-weight: bolder;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 1);
+}
+.nextbutton:hover:not(:disabled) {
+    background-color: #f10909;
+}
+.input-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    margin: 5px 0;
+}
+input[type="text"] {
+    color: black;
+    flex: 1;
+    padding: 8px;
+    font-size: 16px;
+    font-family: 'Ubuntu', sans-serif;
+}
+.code-input {
+    text-align: center;
+    text-transform: uppercase;
+    font-weight: bolder;
+    letter-spacing: 5px;
+}
+.codeshower {
+    width: 100%;
+    text-align: center;
+    color: #00be20;
+    font-size: 2.4em;
+    font-weight: bolder;
+    letter-spacing: 8px;
+    cursor: pointer;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 1);
+}
+.noteshower {
+    width: 100%;
+    min-height: 1.4em;
+    margin-top: 6px;
+    text-align: center;
+    font-size: 1em;
+}
+.noteshower.error {
+    color: #ff6b6b;
+}
+.loader {
+    display: none;
+    width: 34px;
+    height: 34px;
+    margin: 12px auto;
+    border: 5px solid #333;
+    border-top-color: #00be20;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+.loader.active {
+    display: block;
+}
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============ Kontener i ekrany ============ */
+.stage {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.screen {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+.screen.active {
+    display: flex;
+}
+
+/* ============ Wybór frakcji ============ */
+.faction-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    width: 100%;
+    margin: 8px 0;
+}
+.faction {
+    flex: 1 1 200px;
+    border: 2px solid #444;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.55);
+    padding: 10px;
+    cursor: pointer;
+    text-align: left;
+}
+.faction:hover {
+    border-color: #00be20;
+}
+.faction.selected {
+    border-color: #00be20;
+    background-color: rgba(0, 190, 32, 0.15);
+}
+.faction .fname {
+    font-weight: bolder;
+    font-size: 1.1em;
+}
+.faction .fpassive {
+    font-size: 0.85em;
+    color: #9fb0c0;
+    margin-top: 4px;
+}
+.leader-info {
+    width: 100%;
+    border: 2px solid #ffcc33;
+    border-radius: 6px;
+    background-color: rgba(255, 204, 51, 0.08);
+    padding: 8px;
+    margin: 6px 0;
+    font-size: 0.95em;
+    min-height: 2.4em;
+}
+
+/* ============ Tablica wyników ============ */
+.scoreboard {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 8px;
+}
+.player {
+    flex: 1 1 0;
+    border: 2px solid #333;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.55);
+    padding: 6px 8px;
+}
+.player.active {
+    border-color: #00be20;
+}
+.player.passed {
+    opacity: 0.65;
+}
+.playername {
+    font-weight: bolder;
+}
+.playerfaction {
+    font-size: 0.8em;
+    color: #9fb0c0;
+}
+.playerstate {
+    font-size: 0.8em;
+    color: #ffcc33;
+    min-height: 1.2em;
+}
+.lives {
+    display: flex;
+    gap: 5px;
+    margin: 5px 0;
+}
+.life {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #444;
+    border: 1px solid #666;
+}
+.life.on {
+    background-color: #ff4c4c;
+    border-color: #ff8a8a;
+}
+.total {
+    font-size: 2em;
+    font-weight: bolder;
+    line-height: 1;
+}
+.roundinfo {
+    flex: 0 0 auto;
+    min-width: 150px;
+    text-align: center;
+    border: 2px solid #333;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.55);
+    padding: 6px;
+    font-size: 0.9em;
+}
+.roundnumber {
+    font-weight: bolder;
+    font-size: 1.1em;
+}
+.turninfo {
+    color: #00be20;
+    min-height: 1.2em;
+}
+.weatherbar {
+    font-size: 0.85em;
+    color: #6fc3ff;
+    min-height: 1.2em;
+}
+.historyinfo {
+    font-size: 0.75em;
+    color: #9fb0c0;
+}
+
+/* ============ Plansza ============ */
+.board {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.midline {
+    height: 3px;
+    background-color: #ff4c4c;
+    border-radius: 2px;
+    margin: 3px 0;
+}
+.row {
+    display: flex;
+    gap: 6px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 4px;
+    background-color: rgba(0, 0, 0, 0.55);
+}
+.row.melee  { border-left: 5px solid #ff4c4c; }
+.row.ranged { border-left: 5px solid #00be20; }
+.row.siege  { border-left: 5px solid #008cff; }
+.row.weathered {
+    background-color: rgba(0, 140, 255, 0.16);
+    border-color: #6fc3ff;
+}
+.row.targetable {
+    outline: 2px dashed #00be20;
+    outline-offset: -2px;
+    cursor: pointer;
+}
+.rowinfo {
+    flex: 0 0 88px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size: 0.7em;
+    color: #9fb0c0;
+}
+.rowscore {
+    font-size: 1.7em;
+    font-weight: bolder;
+    color: white;
+    line-height: 1;
+}
+.rowhorn {
+    color: #ffcc33;
+    min-height: 1em;
+}
+.rowcards {
+    flex: 1;
+    min-width: 0;
+    min-height: 88px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+/* ============ Karty ============ */
+.card {
+    flex: 0 0 auto;
+    width: 58px;
+    height: 82px;
+    border: 2px solid #666;
+    border-radius: 6px;
+    background-color: #16181d;
+    padding: 3px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+}
+.card.hero    { border-color: #ffcc33; }
+.card.special { border-color: #008cff; }
+.card.spy     { border-color: #b06bff; }
+.card.clickable {
+    cursor: pointer;
+}
+.card.clickable:hover {
+    border-color: #00be20;
+    transform: translateY(-3px);
+}
+.card.selected {
+    border-color: #00be20;
+    box-shadow: 0 0 0 2px #00be20;
+    transform: translateY(-6px);
+}
+.card .strength {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background-color: #333;
+    border: 1px solid #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75em;
+    font-weight: bolder;
+}
+.card.hero .strength {
+    background-color: #ffcc33;
+    border-color: #ffe08a;
+    color: #16181d;
+}
+.card.boosted .strength {
+    background-color: #00be20;
+    border-color: #6bff85;
+}
+.card.weakened .strength {
+    background-color: #008cff;
+    border-color: #6fc3ff;
+}
+.card .name {
+    font-size: 0.6em;
+    line-height: 1.15;
+    max-height: 3.5em;
+    overflow: hidden;
+}
+.card .tags {
+    font-size: 0.55em;
+    color: #9fb0c0;
+    min-height: 1em;
+}
+
+/* ============ Ręka, sterowanie, komunikaty ============ */
+.hand {
+    width: 100%;
+    display: flex;
+    gap: 5px;
+    overflow-x: auto;
+    padding: 8px 0;
+    min-height: 96px;
+    border-top: 1px solid #333;
+    scrollbar-width: none;
+}
+.controls {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+}
+.controls button {
+    flex: 1 1 130px;
+}
+.prompt {
+    width: 100%;
+    border: 2px solid #ffcc33;
+    border-radius: 6px;
+    background-color: rgba(255, 204, 51, 0.1);
+    padding: 8px;
+    margin: 8px 0;
+}
+.prompt.hidden {
+    display: none;
+}
+.prompt .promptext {
+    font-weight: bolder;
+    margin-bottom: 6px;
+}
+.prompt .promptrow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* ============ Panel debugowy ============ */
+.logpanel {
+    width: 100%;
+    margin-top: 12px;
+}
+.log-toggle {
+    background-color: #555;
+    width: 100%;
+}
+.logtext {
+    max-height: 180px;
+    overflow-y: auto;
+    font-size: 0.7em;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    background-color: #111;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 6px;
+    margin-top: 4px;
+    font-family: monospace;
+}
+.logpanel.collapsed .logtext {
+    display: none;
+}
+
+/* ============ Telefon ============ */
+@media (max-width: 700px) {
+    .scoreboard {
+        flex-wrap: wrap;
+    }
+    .roundinfo {
+        order: -1;
+        width: 100%;
+        flex: 1 1 100%;
+    }
+    .card {
+        width: 46px;
+        height: 66px;
+    }
+    .rowcards {
+        min-height: 72px;
+    }
+    .rowinfo {
+        flex-basis: 66px;
+    }
+    .hand {
+        min-height: 80px;
+    }
+}
