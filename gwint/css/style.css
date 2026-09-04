@@ -340,6 +340,13 @@ input[type="text"] {
     outline-offset: -2px;
     cursor: pointer;
 }
+.row.targetable:hover {
+    outline-style: solid;
+    outline-width: 3px;
+    border-color: #00be20;
+    background-color: rgba(0, 190, 32, 0.18);
+}
+
 .rowinfo {
     flex: 0 0 88px;
     display: flex;
@@ -501,6 +508,37 @@ input[type="text"] {
 }
 .logpanel.collapsed .logtext {
     display: none;
+}
+
+/* ============ Cmentarze ============ */
+.gravepanel {
+    width: 100%;
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+}
+.gravepanel.hidden {
+    display: none;
+}
+.gravecolumn {
+    flex: 1 1 0;
+    min-width: 0;
+    border: 1px solid #444;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.55);
+    padding: 6px;
+}
+.gravetitle {
+    font-size: 0.85em;
+    color: #9fb0c0;
+    margin-bottom: 4px;
+}
+.gravecards {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    min-height: 88px;
+    scrollbar-width: none;
 }
 
 /* ============ Telefon ============ */

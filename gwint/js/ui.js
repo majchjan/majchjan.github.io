@@ -25,6 +25,7 @@ let selected = null;        // { iid, needs: "row" | "target" }
 let leaderNeedsRow = false; // lider czeka na wskazanie rzędu
 let showGrave = false;
 let busy = false;
+let errorText = "";
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => Array.from(document.querySelectorAll(selector));
@@ -49,10 +50,7 @@ function note(text, isError = false) {
 function setBusy(value) {
     busy = value;
     $(".loader").classList.toggle("active", value);
-    const screen = activeScreen();
-    if (screen) {
-        screen.querySelectorAll("button").forEach(button => { button.disabled = value; });
-    }
+    render();
 }
 
 function showScreen(name) {
@@ -63,14 +61,14 @@ function showScreen(name) {
 /** Wykonuje ruch przez silnik i zapisuje transakcją. */
 async function submit(action) {
     if (busy) return;
+    errorText = "";
     setBusy(true);
     try {
         await net.applyMove(action);
         selected = null;
         leaderNeedsRow = false;
-        note("");
     } catch (error) {
-        note(error.message, true);
+        errorText = error.message;
         console.error(error);
     } finally {
         setBusy(false);
@@ -267,6 +265,8 @@ function renderScoreboard() {
         if (state.passed[side]) parts.push("spasował");
         if (state.leaderUsed[side]) parts.push("lider zużyty");
         parts.push("ręka: " + state.hand[side].length);
+        parts.push("talia: " + state.deck[side].length);
+        parts.push("cmentarz: " + state.grave[side].length);
         box.querySelector(".playerstate").textContent = parts.join(" · ");
     };
 
@@ -399,7 +399,28 @@ function renderControls() {
     leaderBtn.textContent = leader ? "Lider: " + leader.text : "Zdolność lidera";
 
     $(".pass-btn").disabled = !myTurn();
-    $(".grave-btn").textContent = showGrave ? "Ukryj cmentarze" : "Cmentarze";
+    $(".grave-btn").textContent = showGrave ? "Ukryj cmentarz" : "Cmentarz";
+}
+
+function renderGraves() {
+    const state = view.state;
+    $(".gravepanel").classList.toggle("hidden", !showGrave);
+    if (!showGrave) return;
+
+    const side = bottomSide();
+    const column = $(".grave-mine");
+    column.replaceChildren();
+
+    const heading = document.createElement("div");
+    heading.className = "gravetitle";
+    heading.textContent = "Twój cmentarz — " + state.grave[side].length + " kart";
+
+    const cards = document.createElement("div");
+    cards.className = "gravecards";
+    for (const iid of state.grave[side]) {
+        cards.appendChild(cardElement(iid));
+    }
+    column.append(heading, cards);
 }
 
 function renderPrompt() {
@@ -475,20 +496,6 @@ function renderPrompt() {
         return;
     }
 
-    if (showGrave) {
-        const row = open("Cmentarze — twój po lewej, przeciwnika po prawej.");
-        for (const side of [bottomSide(), topSide()]) {
-            const label = document.createElement("div");
-            label.style.width = "100%";
-            label.textContent = side === bottomSide() ? "Twój:" : "Przeciwnika:";
-            row.appendChild(label);
-            for (const iid of state.grave[side]) {
-                row.appendChild(cardElement(iid));
-            }
-        }
-        return;
-    }
-
     if (leaderNeedsRow) {
         const row = open("Wskaż rząd po swojej stronie dla zdolności lidera.");
         button(row, "Anuluj", () => { leaderNeedsRow = false; render(); });
@@ -510,27 +517,40 @@ function renderPrompt() {
    ============================================================ */
 
 function render() {
+    // Reset — renderery poniżej ustawiają stany przycisków od nowa
+    $$("button").forEach(button => { button.disabled = false; });
+
     if (!view) {
         showScreen("lobby");
-        return;
-    }
-    const status = view.state.status;
-
-    if (status === "lobby") {
-        showScreen("setup");
-        renderSetup();
-    } else if (status === "mulligan") {
-        showScreen("mulligan");
-        renderMulligan();
     } else {
-        showScreen("game");
-        renderScoreboard();
-        renderBoard();
-        renderHand();
-        renderControls();
-        renderPrompt();
+        const status = view.state.status;
+        if (status === "lobby") {
+            showScreen("setup");
+            renderSetup();
+        } else if (status === "mulligan") {
+            showScreen("mulligan");
+            renderMulligan();
+        } else {
+            showScreen("game");
+            renderScoreboard();
+            renderBoard();
+            renderHand();
+            renderControls();
+            renderGraves();
+            renderPrompt();
+        }
+        $(".logtext").textContent = view.state.log.join("\n");
     }
-    $(".logtext").textContent = view.state.log.join("\n");
+
+    if (busy) {
+        const screen = activeScreen();
+        if (screen) {
+            screen.querySelectorAll("button").forEach(button => { button.disabled = true; });
+        }
+    }
+    if (errorText) {
+        note(errorText, true);
+    }
 }
 
 /* ============================================================
