@@ -60,6 +60,13 @@ const RAW_CARDS = [
     { id: "geralt",         name: "Geralt z Rivii",  faction: "neutral", type: "hero", row: "melee", strength: 15 },
     { id: "dandelion",      name: "Jaskier",         faction: "neutral", type: "unit", row: "melee", strength: 2, abilities: ["horn"] },
     { id: "mysterious_elf", name: "Tajemniczy elf",  faction: "neutral", type: "unit", row: "melee", strength: 0, abilities: ["spy"] },
+    { id: "zoltan_chivay", name: "Zoltan Chivay",  faction: "neutral", type: "unit", row: "melee", strength: 5 },
+    { id: "yennefer", name: "Yennefer z Vengerbergu",  faction: "neutral", type: "hero", row: "ranged", strength: 7, abilities: ["medic"]},
+    { id: "villentretenmerth", name: "Villentretenmerth",  faction: "neutral", type: "unit", row: "melee", strength: 7, abilities: ["scorch"]}, //Pożoga ale tylko w rzędzie melee przeciwnika, gdy suma punktów w tym rzędzie >=10
+    { id: "vesemir", name: "Vesemir",  faction: "neutral", type: "unit", row: "melee", strength: 6},
+    { id: "triss", name: "Triss Merigold",  faction: "neutral", type: "hero", row: "melee", strength: 7},
+    { id: "regis", name: "Emiel Regis Rohellec Terzieff",  faction: "neutral", type: "unit", row: "melee", strength: 5},
+    { id: "ciri", name: "Cirilla",  faction: "neutral", type: "hero", row: "melee", strength: 15},
 
     /* ---------- Neutralne karty specjalne ---------- */
     { id: "frost",         name: "Trzaskający Mróz",    faction: "neutral", type: "special", special: "frost" },
@@ -162,16 +169,28 @@ export const DECKS = {
         name: "Królestwa Północy",
         leader: "foltest_king",
         cards: [
+            ["geralt", 1],
+            ["dandelion", 1],
+            ["mysterious_elf", 1],
+            ["zoltan_chivay", 1],
+            ["yennefer", 1],
+            ["villentretenmerth", 1],
+            ["vesemir", 1],
+            ["triss", 1],
+            ["regis", 1],
+            ["ciri", 1],
+            ["frost", 3],
+            ["fog", 3],
+            ["rain", 2],
+            ["clear_weather", 2],
+            ["horn", 3],
+            ["scorch", 3],
+            ["decoy", 3],
             ["blue_stripes", 3],        // Więź: 3 kopie po 4
             ["siege_tower", 2],         // Zagrzewanie
             ["dun_banner_medic", 2],    // Medyk
             ["sigismund_dijkstra", 1],  // Szpieg
-            ["john_natalis", 1],        // Bohater
-            ["geralt", 1],
-            ["dandelion", 1],           // Róg jako jednostka
-            ["mysterious_elf", 1],      // Szpieg 0 siły
-            ["frost", 1], ["fog", 1], ["rain", 1], ["clear_weather", 1],
-            ["horn", 1], ["scorch", 1], ["decoy", 2]
+            ["john_natalis", 1]        // Bohater
         ]
     },
 
@@ -180,16 +199,28 @@ export const DECKS = {
         name: "Cesarstwo Nilfgaardu",
         leader: "emhyr_white_flame",
         cards: [
+            ["geralt", 1],
+            ["dandelion", 1],
+            ["mysterious_elf", 1],
+            ["zoltan_chivay", 1],
+            ["yennefer", 1],
+            ["villentretenmerth", 1],
+            ["vesemir", 1],
+            ["triss", 1],
+            ["regis", 1],
+            ["ciri", 1],
+            ["frost", 3],
+            ["fog", 3],
+            ["rain", 2],
+            ["clear_weather", 2],
+            ["horn", 3],
+            ["scorch", 3],
+            ["decoy", 3],
             ["impera_brigade", 4],        // Więź: 4 kopie po 3
             ["siege_technician", 2],      // Medyk o sile 0
             ["black_infantry_archer", 2],
             ["stefan_skellen", 1],        // Szpieg o dużej sile
-            ["menno_coehoorn", 1],        // Bohater
-            ["geralt", 1],
-            ["dandelion", 1],
-            ["mysterious_elf", 1],
-            ["frost", 1], ["fog", 1], ["rain", 1], ["clear_weather", 1],
-            ["horn", 1], ["scorch", 1], ["decoy", 2]
+            ["menno_coehoorn", 1]       // Bohater
         ]
     },
 
@@ -206,8 +237,20 @@ export const DECKS = {
             ["geralt", 1],
             ["dandelion", 1],
             ["mysterious_elf", 1],
-            ["frost", 1], ["fog", 1], ["rain", 1], ["clear_weather", 1],
-            ["horn", 1], ["scorch", 1], ["decoy", 2]
+            ["zoltan_chivay", 1],
+            ["yennefer", 1],
+            ["villentretenmerth", 1],
+            ["vesemir", 1],
+            ["triss", 1],
+            ["regis", 1],
+            ["ciri", 1],
+            ["frost", 3],
+            ["fog", 3],
+            ["rain", 2],
+            ["clear_weather", 2],
+            ["horn", 3],
+            ["scorch", 3],
+            ["decoy", 3]
         ]
     },
 
@@ -224,18 +267,42 @@ export const DECKS = {
             ["geralt", 1],
             ["dandelion", 1],
             ["mysterious_elf", 1],
-            ["frost", 1], ["fog", 1], ["rain", 1], ["clear_weather", 1],
-            ["horn", 1], ["scorch", 1], ["decoy", 2]
+            ["zoltan_chivay", 1],
+            ["yennefer", 1],
+            ["villentretenmerth", 1],
+            ["vesemir", 1],
+            ["triss", 1],
+            ["regis", 1],
+            ["ciri", 1],
+            ["frost", 3],
+            ["fog", 3],
+            ["rain", 2],
+            ["clear_weather", 2],
+            ["horn", 3],
+            ["scorch", 3],
+            ["decoy", 3]
         ]
     }
 };
 
-/** Rozwija [id, liczba] na płaską listę identyfikatorów definicji. */
-export function expandDeckList(deckId) {
-    const deck = DECKS[deckId];
-    if (!deck) {
-        throw new Error("Nieznana talia: " + deckId);
+/** Przyjmuje identyfikator talii wbudowanej albo gotowy obiekt talii (np. z deck buildera). */
+export function resolveDeck(deckOrId) {
+    if (typeof deckOrId === "string") {
+        const deck = DECKS[deckOrId];
+        if (!deck) {
+            throw new Error("Nieznana talia: " + deckOrId);
+        }
+        return deck;
     }
+    if (!deckOrId || !Array.isArray(deckOrId.cards)) {
+        throw new Error("Nieprawidłowy obiekt talii.");
+    }
+    return deckOrId;
+}
+
+/** Rozwija [id, liczba] na płaską listę identyfikatorów definicji. */
+export function expandDeckList(deckOrId) {
+    const deck = resolveDeck(deckOrId);
     const list = [];
     for (const [cardId, count] of deck.cards) {
         for (let i = 0; i < count; i++) {
@@ -251,15 +318,18 @@ export function expandDeckList(deckId) {
  *   errors   — łamią zasady: obca frakcja, za dużo kart specjalnych, nieznana karta
  *   warnings — do czasu rozbudowy talii: mniej niż 22 jednostki
  */
-export function validateDeck(deckId) {
-    const deck = DECKS[deckId];
+export function validateDeck(deckOrId) {
     const errors = [];
     const warnings = [];
+    let deck;
 
-    if (!deck) {
-        return { ok: false, errors: ["Nieznana talia: " + deckId], warnings };
+    try {
+        deck = resolveDeck(deckOrId);
+    } catch (error) {
+        return { ok: false, errors: [error.message], warnings };
     }
 
+    const faction = deck.faction || deck.id;
     let units = 0;
     let specials = 0;
 
@@ -269,8 +339,8 @@ export function validateDeck(deckId) {
             errors.push("Nieznana karta w talii: " + cardId);
             continue;
         }
-        if (card.faction !== deck.id && card.faction !== "neutral") {
-            errors.push(card.name + " należy do frakcji " + card.faction + ", a talia to " + deck.id);
+        if (card.faction !== faction && card.faction !== "neutral") {
+            errors.push(card.name + " należy do frakcji " + card.faction + ", a talia to " + faction);
         }
         if (card.type === "special") {
             specials += count;
@@ -289,8 +359,8 @@ export function validateDeck(deckId) {
     const leader = LEADER_BY_ID[deck.leader];
     if (!leader) {
         errors.push("Nieznany lider: " + deck.leader);
-    } else if (leader.faction !== deck.id) {
-        errors.push("Lider " + leader.name + " nie należy do frakcji " + deck.id);
+    } else if (leader.faction !== faction) {
+        errors.push("Lider " + leader.name + " nie należy do frakcji " + faction);
     }
 
     return { ok: errors.length === 0, errors, warnings };

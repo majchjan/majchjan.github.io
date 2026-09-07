@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GWINT - Edytor talii</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+    <link rel="apple-touch-icon" sizes="180x180" href="/main/icon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/main/icon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/main/icon/favicon-16x16.png">
+    <link rel="manifest" href="/main/icon/site.webmanifest">
+    <script type="module" src="js/deckbuilder.js"></script>
+</head>
+<body>
+    <header class="logo">
+        <a href=".">GWINT - Talie</a>
+    </header>
+    <section>
+        <div class="stage">
+
+            <div class="buildbar">
+                <label>Zapisane talie</label>
+                <select class="deck-select grow"></select>
+                <button class="new-btn">Nowa talia</button>
+                <button class="nextbutton delete-btn">Usuń</button>
+            </div>
+
+            <div class="buildbar">
+                <label>Nazwa</label>
+                <input type="text" class="name-input grow" maxlength="60" placeholder="Nazwa talii">
+                <label>Frakcja</label>
+                <select class="faction-select"></select>
+                <label>Dowódca</label>
+                <select class="leader-select grow"></select>
+            </div>
+
+            <div class="buildbar">
+                <button class="start-btn save-btn">Zapisz talię</button>
+                <button class="export-btn">Eksportuj JSON</button>
+                <button class="import-btn">Wczytaj JSON</button>
+                <input type="file" class="import-input" accept="application/json,.json" hidden>
+                <button class="back-btn">Wróć do gry</button>
+            </div>
+
+            <div class="validation"></div>
+            <div class="leadertext"></div>
+
+            <div class="builder">
+                <div class="panel pool-panel">
+                    <div class="paneltitle">Dostępne karty</div>
+                    <div class="cardgrid pool-grid"></div>
+                </div>
+                <div class="panel deck-panel">
+                    <div class="paneltitle">W talii</div>
+                    <div class="cardgrid deck-grid"></div>
+                </div>
+            </div>
+
+            <div class="noteshower builder-note"></div>
+
+        </div>
+    </section>
+    <footer>
+        <div class="footer">
+            <a href="./index.html">Wróć do gry</a> | 
+            &copy; 2025 - <a target="_blank" style="color: white; text-decoration: none"
+                             href="https://github.com/majchjan">
+            GitHub/majchjan</a>
+        </div>
+    </footer>
+</body>
+</html>
