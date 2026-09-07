@@ -7,7 +7,8 @@
 
 import * as net from "./net.js";
 import * as engine from "./engine.js";
-import { DECKS, PASSIVES, LEADER_BY_ID, ROWS, hasAbility } from "./cards.js";
+import { DECKS, PASSIVES, LEADER_BY_ID, ROWS, hasAbility, validateDeck } from "./cards.js";
+import * as storage from "./decks-storage.js";
 
 const PASSIVE_TEXT = {
     drawOnRoundWin:  "Dobiera 1 kartę po wygranej rundzie",
@@ -24,6 +25,8 @@ let view = null;            // ostatni stan z net.onRoomChange
 let selected = null;        // { iid, needs: "row" | "target" }
 let leaderNeedsRow = false; // lider czeka na wskazanie rzędu
 let showGrave = false;
+let chosenDeckId = null;
+let deckAutoTried = false;
 let busy = false;
 let errorText = "";
 
@@ -153,51 +156,66 @@ function renderSetup() {
 
     $(".codeshower").textContent = view.code;
 
-    const list = $(".faction-list");
-    list.replaceChildren();
-    for (const factionId of Object.keys(DECKS)) {
-        const deck = DECKS[factionId];
-        const item = document.createElement("div");
-        item.className = "faction";
-        if (state.faction[seat] === factionId) item.classList.add("selected");
+    const select = $(".deck-select");
+    const decks = storage.listDecks();
+    select.replaceChildren();
 
-        const name = document.createElement("div");
-        name.className = "fname";
-        name.textContent = deck.name;
-
-        const passive = document.createElement("div");
-        passive.className = "fpassive";
-        passive.textContent = PASSIVE_TEXT[PASSIVES[factionId]] || "";
-
-        item.append(name, passive);
-        item.onclick = () => {
-            if (state.ready[seat]) {
-                note("Cofnij gotowość, żeby zmienić frakcję.", true);
-                return;
-            }
-            submit((s, side) => engine.chooseFaction(s, side, factionId));
-        };
-        list.appendChild(item);
+    if (decks.length === 0) {
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = "— nie masz zapisanych talii —";
+        select.appendChild(option);
     }
+    for (const item of decks) {
+        const option = document.createElement("option");
+        option.value = item.id;
+        const check = validateDeck(item);
+        option.textContent = item.name + (check.ok ? "" : "  (niezgodna z zasadami)");
+        option.disabled = !check.ok;
+        select.appendChild(option);
+    }
+    select.value = chosenDeckId || "";
+    select.disabled = state.ready[seat];
 
     const leaderBox = $(".leader-info");
+    leaderBox.style.whiteSpace = "pre-line";
     const leader = LEADER_BY_ID[state.leader[seat]];
-    leaderBox.textContent = leader
-        ? "Lider: " + leader.name + " — " + leader.text
-        : "Wybierz frakcję, żeby zobaczyć lidera.";
+    const pool = DECKS[state.faction[seat]];
+    leaderBox.textContent = leader && pool
+        ? pool.name + "\nDowódca: " + leader.name + " — " + leader.text
+          + "\nPasywka: " + (PASSIVE_TEXT[PASSIVES[state.faction[seat]]] || "—")
+        : "Wybierz talię, żeby zobaczyć frakcję i dowódcę.";
 
     const readyBtn = $(".ready-btn");
     readyBtn.textContent = state.ready[seat] ? "Cofnij gotowość" : "Gotowy";
-    readyBtn.disabled = !state.faction[seat];
+    readyBtn.disabled = !state.deckList[seat];
 
     const opponent = engine.opposite(seat);
-    if (!view.players[opponent]) {
+    if (decks.length === 0) {
+        note("Zbuduj najpierw talię w edytorze.", true);
+    } else if (!view.players[opponent]) {
         note("Czekam na drugiego gracza. Podaj mu kod: " + view.code);
     } else if (state.ready[opponent]) {
         note("Przeciwnik jest gotowy.");
     } else {
-        note("Przeciwnik wybiera frakcję...");
+        note("Przeciwnik wybiera talię...");
     }
+}
+
+/** Podstawia ostatnio używaną talię, żeby wybierać ją raz, a nie przed każdą partią. */
+function maybeAutoPickDeck() {
+    if (!view || view.state.status !== "lobby") return;
+    const seat = mySeat();
+    if (!seat || deckAutoTried || view.state.deckList[seat]) return;
+
+    deckAutoTried = true;
+    const remembered = storage.recallLastDeck();
+    if (!remembered) return;
+    const deck = storage.loadPlayableDeck(remembered);
+    if (!deck) return;
+
+    chosenDeckId = deck.id;
+    submit((s, side) => engine.chooseDeck(s, side, deck));
 }
 
 /* ============================================================
@@ -579,6 +597,28 @@ function bindEvents() {
         navigator.clipboard.writeText(view.code).then(() => note("Skopiowano kod: " + view.code));
     };
 
+    $(".deck-select").onchange = event => {
+        const id = event.target.value;
+        if (!id) return;
+        const deck = storage.getDeck(id);
+        if (!deck) {
+            errorText = "Nie znaleziono tej talii.";
+            render();
+            return;
+        }
+        const check = validateDeck(deck);
+        if (!check.ok) {
+            errorText = "Talia niezgodna z zasadami: " + check.errors[0];
+            render();
+            return;
+        }
+        chosenDeckId = id;
+        storage.rememberLastDeck(id);
+        submit((s, side) => engine.chooseDeck(s, side, deck));
+    };
+
+    $(".editor-btn").onclick = () => { location.href = "./deck.html"; };
+
     $(".ready-btn").onclick = () => {
         const seat = mySeat();
         const value = !view.state.ready[seat];
@@ -648,8 +688,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (!view) {
             selected = null;
             leaderNeedsRow = false;
+            deckAutoTried = false;
         }
         render();
+        maybeAutoPickDeck();
     });
 
     try {

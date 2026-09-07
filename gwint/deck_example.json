@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "name": "Moja Północ",
+  "faction": "northern",
+  "leader": "foltest_king",
+  "cards": [["blue_stripes", 3], ["siege_tower", 2], ["geralt", 1]]
+}

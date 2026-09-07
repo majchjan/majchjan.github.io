@@ -25,7 +25,7 @@
  * ============================================================
  */
 
-import { ROWS, DECKS, PASSIVES, LEADER_BY_ID, getCard, hasAbility, expandDeckList } from "./cards.js";
+import { ROWS, PASSIVES, LEADER_BY_ID, getCard, hasAbility, validateDeck } from "./cards.js";
 import { randomInt, shuffle } from "./rng.js";
 
 export const SIDES = ["A", "B"];
@@ -117,6 +117,7 @@ export function createLobby(seed) {
         lives:        { A: 2, B: 2 },
         mulliganLeft: { A: 2, B: 2 },
         mulliganDone: { A: false, B: false },
+        deckList: { A: "", B: "" },
         deck:  { A: [], B: [] },
         hand:  { A: [], B: [] },
         grave: { A: [], B: [] },
@@ -135,22 +136,44 @@ export function createLobby(seed) {
     };
 }
 
-export function chooseFaction(state, side, factionId) {
-    const s = clone(state);
-    if (s.status !== "lobby") fail("Frakcję wybiera się tylko w lobby.");
-    if (!DECKS[factionId]) fail("Nieznana frakcja: " + factionId);
+/* Talia w stanie gry żyje jako zwarty tekst "id:liczba,id:liczba" —
+   dzięki temu zapis do bazy to zwykłe pole tekstowe, bez tablic. */
 
-    s.faction[side] = factionId;
-    s.leader[side] = DECKS[factionId].leader;
+function formatDeckList(cards) {
+    return cards.map(([cardId, count]) => cardId + ":" + count).join(",");
+}
+
+function parseDeckList(text) {
+    if (!text) return [];
+    return text.split(",").map(chunk => {
+        const [cardId, count] = chunk.split(":");
+        return [cardId, Number(count) || 1];
+    });
+}
+
+export function chooseDeck(state, side, deck) {
+    const s = clone(state);
+    if (s.status !== "lobby") fail("Talię wybiera się tylko w lobby.");
+    if (!deck || !Array.isArray(deck.cards) || deck.cards.length === 0) {
+        fail("Nieprawidłowa talia.");
+    }
+    if (!LEADER_BY_ID[deck.leader]) fail("Talia nie ma poprawnego dowódcy.");
+
+    const check = validateDeck(deck);
+    if (!check.ok) fail("Talia niezgodna z zasadami: " + check.errors[0]);
+
+    s.faction[side] = deck.faction;
+    s.leader[side] = deck.leader;
+    s.deckList[side] = formatDeckList(deck.cards);
     s.ready[side] = false;
-    log(s, side + ": wybrał frakcję " + DECKS[factionId].name);
+    log(s, side + ": wybrał talię " + (deck.name || deck.faction));
     return s;
 }
 
 export function setReady(state, side, value = true) {
     const s = clone(state);
     if (s.status !== "lobby") fail("Gotowość zgłasza się tylko w lobby.");
-    if (!s.faction[side]) fail("Najpierw wybierz frakcję.");
+    if (!s.deckList[side]) fail("Najpierw wybierz talię.");
 
     s.ready[side] = value;
     if (s.ready.A && s.ready.B) {
@@ -161,7 +184,12 @@ export function setReady(state, side, value = true) {
 
 function dealStart(state) {
     for (const side of SIDES) {
-        const cardIds = expandDeckList(state.faction[side]);
+        const cardIds = [];
+        for (const [cardId, count] of parseDeckList(state.deckList[side])) {
+            for (let i = 0; i < count; i++) {
+                cardIds.push(cardId);
+            }
+        }
         const counters = {};
         const iids = cardIds.map(cardId => {
             counters[cardId] = (counters[cardId] || 0) + 1;
