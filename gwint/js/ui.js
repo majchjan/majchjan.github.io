@@ -9,6 +9,7 @@ import * as net from "./net.js";
 import * as engine from "./engine.js";
 import { DECKS, PASSIVES, LEADER_BY_ID, ROWS, hasAbility, validateDeck } from "./cards.js";
 import * as storage from "./decks-storage.js";
+import { openCardPreview, describeCard, buildCard } from "./cardview.js";
 
 const PASSIVE_TEXT = {
     drawOnRoundWin:  "Dobiera 1 kartę po wygranej rundzie",
@@ -75,6 +76,7 @@ async function submit(action) {
         console.error(error);
     } finally {
         setBusy(false);
+        maybeAutoFinishMulligan();   // druga wymiana kończy fazę bez klikania przycisku
     }
 }
 
@@ -94,56 +96,20 @@ function topSide() {
    BUDOWANIE KART
    ============================================================ */
 
-function tagsOf(card) {
-    const tags = [];
-    if (card.type === "hero") tags.push("BOHATER");
-    if (card.type === "special") tags.push("SPEC");
-    if (hasAbility(card, "tightBond")) tags.push("Więź");
-    if (hasAbility(card, "moraleBoost")) tags.push("Morale");
-    if (hasAbility(card, "muster")) tags.push("Zgrup");
-    if (hasAbility(card, "spy")) tags.push("Szpieg");
-    if (hasAbility(card, "medic")) tags.push("Medyk");
-    if (hasAbility(card, "horn")) tags.push("Róg");
-    return tags.join(" ");
+function cardElement(iid, options = {}) {
+    const element = buildCard(engine.cardOf(iid), options);
+    element.dataset.iid = iid;
+    return element;
 }
 
-/**
- * @param {string} iid
- * @param {{ strength?: number|string, clickable?: boolean, selected?: boolean, subtitle?: string }} options
- */
-function cardElement(iid, options = {}) {
-    const card = engine.cardOf(iid);
-    const element = document.createElement("div");
-    element.className = "card";
-    element.dataset.iid = iid;
-
-    if (card.type === "hero") element.classList.add("hero");
-    if (card.type === "special") element.classList.add("special");
-    if (hasAbility(card, "spy")) element.classList.add("spy");
-    if (options.clickable) element.classList.add("clickable");
-    if (options.selected) element.classList.add("selected");
-
-    const shown = options.strength !== undefined ? options.strength : card.strength;
-    if (typeof shown === "number" && card.type === "unit") {
-        if (shown > card.strength) element.classList.add("boosted");
-        if (shown < card.strength) element.classList.add("weakened");
-    }
-
-    const strength = document.createElement("div");
-    strength.className = "strength";
-    strength.textContent = card.type === "special" ? "—" : String(shown);
-
-    const name = document.createElement("div");
-    name.className = "name";
-    name.textContent = card.name;
-
-    const tags = document.createElement("div");
-    tags.className = "tags";
-    tags.textContent = options.subtitle !== undefined ? options.subtitle : tagsOf(card);
-
-    element.append(strength, name, tags);
-    element.title = card.name + (card.row ? " — " + ROW_NAME[card.row] : "") + "\n" + tagsOf(card);
-    return element;
+/** Otwiera powiększony podgląd karty. onConfirm wykonuje się po kliknięciu karty. */
+function openPreview(iid, strength, hint, onConfirm) {
+    openCardPreview({
+        card: engine.cardOf(iid),
+        strength: strength,
+        hint: hint,
+        onConfirm: onConfirm
+    });
 }
 
 /* ============================================================
@@ -218,6 +184,17 @@ function maybeAutoPickDeck() {
     submit((s, side) => engine.chooseDeck(s, side, deck));
 }
 
+/** Po zużyciu obu wymian nie ma już czego wybierać — kończymy mulligan sami. */
+function maybeAutoFinishMulligan() {
+    if (!view || view.state.status !== "mulligan") return;
+    const seat = mySeat();
+    if (!seat) return;
+    if (view.state.mulliganDone[seat]) return;
+    if (view.state.mulliganLeft[seat] > 0) return;
+
+    submit((s, side) => engine.finishMulligan(s, side));
+}
+
 /* ============================================================
    EKRAN: MULLIGAN
    ============================================================ */
@@ -235,9 +212,12 @@ function renderMulligan() {
     const canSwap = !state.mulliganDone[seat] && state.mulliganLeft[seat] > 0;
     for (const iid of state.hand[seat]) {
         const element = cardElement(iid, { clickable: canSwap });
-        if (canSwap) {
-            element.onclick = () => submit((s, side) => engine.mulligan(s, side, iid));
-        }
+        element.onclick = () => openPreview(
+            iid,
+            undefined,
+            canSwap ? "Kliknij kartę, aby ją wymienić" : null,
+            canSwap ? () => submit((s, side) => engine.mulligan(s, side, iid)) : null
+        );
         hand.appendChild(element);
     }
 
@@ -336,7 +316,9 @@ function renderBoard() {
 
         // Podświetlenie rzędu jako celu — tylko własna połowa
         const rowTargetable = pos === "bottom" && myTurn()
-            && ((selected && selected.needs === "row") || leaderNeedsRow);
+            && ((selected && selected.needs === "row"
+                    && allowedRows(engine.cardOf(selected.iid)).includes(row))
+                || leaderNeedsRow);
         rowElement.classList.toggle("targetable", rowTargetable);
 
         const container = rowElement.querySelector(".rowcards");
@@ -347,16 +329,21 @@ function renderBoard() {
                 && selected && selected.needs === "target"
                 && card.type === "unit"
                 && myTurn();
-            const element = cardElement(iid, {
-                strength: engine.cardStrength(state, side, row, iid),
-                clickable: canTarget
-            });
-            if (canTarget) {
-                element.onclick = event => {
-                    event.stopPropagation();
-                    submit((s, seat) => engine.playCard(s, seat, selected.iid, { targetIid: iid }));
-                };
-            }
+            const strength = engine.cardStrength(state, side, row, iid);
+            const element = cardElement(iid, { strength: strength, clickable: canTarget });
+            const decoyIid = selected ? selected.iid : null;
+            element.onclick = event => {
+                if (rowTargetable) {
+                    return;   // trwa wybór rzędu — kliknięcie ma dojść do rzędu, nie do karty
+                }
+                event.stopPropagation();   // inaczej kliknięcie wpadłoby w wybór rzędu
+                openPreview(
+                    iid,
+                    strength,
+                    canTarget ? "Kliknij kartę, aby zamienić ją Wabikiem" : null,
+                    canTarget ? () => submit((s, seat) => engine.playCard(s, seat, decoyIid, { targetIid: iid })) : null
+                );
+            };
             container.appendChild(element);
         }
     }
@@ -365,7 +352,13 @@ function renderBoard() {
 function needsOf(card) {
     if (card.special === "horn") return "row";
     if (card.special === "decoy") return "target";
+    if (hasAbility(card, "agile")) return "row";
     return null;
+}
+
+/** Rzędy, w których wolno zagrać kartę. Zwinność zawęża wybór do dwóch. */
+function allowedRows(card) {
+    return hasAbility(card, "agile") ? ["melee", "ranged"] : ROWS;
 }
 
 function renderHand() {
@@ -375,16 +368,17 @@ function renderHand() {
     hand.replaceChildren();
 
     for (const iid of state.hand[seat]) {
-        const card = engine.cardOf(iid);
         const clickable = myTurn();
         const element = cardElement(iid, {
             clickable: clickable,
-            selected: selected && selected.iid === iid,
-            subtitle: card.row ? ROW_NAME[card.row] : tagsOf(card)
+            selected: selected && selected.iid === iid
         });
-        if (clickable) {
-            element.onclick = () => onHandCard(iid);
-        }
+        element.onclick = () => openPreview(
+            iid,
+            undefined,
+            clickable ? "Kliknij kartę, aby zagrać" : null,
+            clickable ? () => onHandCard(iid) : null
+        );
         hand.appendChild(element);
     }
 }
@@ -436,7 +430,9 @@ function renderGraves() {
     const cards = document.createElement("div");
     cards.className = "gravecards";
     for (const iid of state.grave[side]) {
-        cards.appendChild(cardElement(iid));
+        const element = cardElement(iid, { clickable: true });
+        element.onclick = () => openPreview(iid);
+        cards.appendChild(element);
     }
     column.append(heading, cards);
 }
@@ -493,7 +489,12 @@ function renderPrompt() {
             const row = open("Medyk: wskrzesz jednostkę z cmentarza.");
             for (const iid of state.pending.options) {
                 const element = cardElement(iid, { clickable: true });
-                element.onclick = () => submit((s, side) => engine.resolvePending(s, side, iid));
+                element.onclick = () => openPreview(
+                    iid,
+                    undefined,
+                    "Kliknij kartę, aby ją wskrzesić",
+                    () => submit((s, side) => engine.resolvePending(s, side, iid))
+                );
                 row.appendChild(element);
             }
             button(row, "Pomiń", () => submit((s, side) => engine.resolvePending(s, side, "skip")));
@@ -692,6 +693,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         render();
         maybeAutoPickDeck();
+        maybeAutoFinishMulligan();
     });
 
     try {

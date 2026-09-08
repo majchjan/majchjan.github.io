@@ -336,15 +336,16 @@ function assertCanAct(state, side) {
  * triggerAbilities === false dla kart przyciąganych Zgrupowaniem — ich zdolności
  * się nie odpalają (inaczej wchodzimy w rekurencję muster→muster).
  */
-function placeUnit(state, playerSide, iid, triggerAbilities) {
+function placeUnit(state, playerSide, iid, triggerAbilities, chosenRow) {
     const card = cardOf(iid);
     const isSpy = hasAbility(card, "spy");
     const boardSide = isSpy ? opposite(playerSide) : playerSide;
+    const row = chosenRow || card.row;   // Zwinność podaje rząd, reszta bierze z definicji
 
-    state.board[boardSide][card.row].push(iid);
+    state.board[boardSide][row].push(iid);
     log(state, playerSide + ": zagrał " + card.name
         + (isSpy ? " jako szpiega na stronę " + boardSide : "")
-        + " (" + card.row + ")");
+        + " (" + row + ")");
 
     if (!triggerAbilities) {
         return;
@@ -352,12 +353,57 @@ function placeUnit(state, playerSide, iid, triggerAbilities) {
     if (isSpy) {
         draw(state, playerSide, 2);
     }
+    if (hasAbility(card, "scorchRow")) {
+        resolveScorchRow(state, playerSide, card.scorchRow, card.scorchThreshold);
+    }
     if (hasAbility(card, "muster")) {
         resolveMuster(state, playerSide, card.musterGroup);
     }
     if (hasAbility(card, "medic")) {
         openMedicChoice(state, playerSide);
     }
+}
+
+/**
+ * Pożoga ograniczona do jednego rzędu przeciwnika.
+ * Próg liczy się z sumy rzędu widocznej na planszy, czyli po wszystkich modyfikatorach.
+ */
+function resolveScorchRow(state, playerSide, row, threshold) {
+    if (!ROWS.includes(row)) return;
+
+    const enemy = opposite(playerSide);
+    const total = rowScore(state, enemy, row);
+
+    if (total < threshold) {
+        log(state, "Pożoga: rząd " + row + " przeciwnika ma " + total
+            + " przy progu " + threshold + " — bez efektu");
+        return;
+    }
+
+    let best = -1;
+    let victims = [];
+    for (const iid of state.board[enemy][row]) {
+        if (cardOf(iid).type !== "unit") continue;   // bohaterowie i Wabik odporni
+        const value = cardStrength(state, enemy, row, iid);
+        if (value > best) {
+            best = value;
+            victims = [];
+        }
+        if (value === best) {
+            victims.push(iid);
+        }
+    }
+
+    if (victims.length === 0) {
+        log(state, "Pożoga: w rzędzie " + row + " nie ma celów");
+        return;
+    }
+    for (const iid of victims) {
+        removeFrom(state.board[enemy][row], iid);
+        state.grave[enemy].push(iid);
+    }
+    log(state, "Pożoga zniszczyła w rzędzie " + row + " (" + best + "): "
+        + victims.map(iid => cardOf(iid).name).join(", "));
 }
 
 function resolveMuster(state, playerSide, group) {
@@ -395,6 +441,11 @@ export function playCard(state, side, iid, params = {}) {
 
     if (card.type === "special") {
         applySpecial(s, side, iid, params);
+    } else if (hasAbility(card, "agile")) {
+        if (params.row !== "melee" && params.row !== "ranged") {
+            fail("Zwinność: wskaż rząd.");
+        }
+        placeUnit(s, side, iid, true, params.row);
     } else {
         placeUnit(s, side, iid, true);
     }

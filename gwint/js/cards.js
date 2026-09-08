@@ -21,7 +21,11 @@
  *   "muster"      — Zgrupowanie: przyciąga z talii i ręki karty o tym samym musterGroup
  *   "spy"         — Szpieg: ląduje po stronie przeciwnika, zagrywający dobiera 2 karty
  *   "medic"       — Medyk: wskrzesza jednostkę z cmentarza po swojej stronie planszy
- *   "horn"        — jednostka działa jak Róg Dowódcy dla rzędu, w którym leży
+ *   "horn"        — jednostka działa jak Róg Dowódcy dla swojego rzędu
+ *   "agile"       — Zwinność: przy zagraniu wybierasz rząd wręcz albo dystansowy
+ *   "scorchRow"   — Pożoga: niszczy najsilniejsze jednostki przeciwnika w rzędzie
+ *                   wskazanym polem scorchRow, o ile suma sił tego rzędu osiąga
+ *                   scorchThreshold (domyślnie 10)
  *
  * Wartości special:
  *   "frost" | "fog" | "rain" — pogoda dla rzędu wręcz / dystansowego / oblężniczego
@@ -59,10 +63,10 @@ const RAW_CARDS = [
     /* ---------- Neutralne jednostki ---------- */
     { id: "geralt",         name: "Geralt z Rivii",  faction: "neutral", type: "hero", row: "melee", strength: 15 },
     { id: "dandelion",      name: "Jaskier",         faction: "neutral", type: "unit", row: "melee", strength: 2, abilities: ["horn"] },
-    { id: "mysterious_elf", name: "Tajemniczy elf",  faction: "neutral", type: "unit", row: "melee", strength: 0, abilities: ["spy"] },
+    { id: "mysterious_elf", name: "Tajemniczy elf",  faction: "neutral", type: "hero", row: "melee", strength: 0, abilities: ["spy"] },
     { id: "zoltan_chivay", name: "Zoltan Chivay",  faction: "neutral", type: "unit", row: "melee", strength: 5 },
     { id: "yennefer", name: "Yennefer z Vengerbergu",  faction: "neutral", type: "hero", row: "ranged", strength: 7, abilities: ["medic"]},
-    { id: "villentretenmerth", name: "Villentretenmerth",  faction: "neutral", type: "unit", row: "melee", strength: 7, abilities: ["scorch"]}, //Pożoga ale tylko w rzędzie melee przeciwnika, gdy suma punktów w tym rzędzie >=10
+    { id: "villentretenmerth", name: "Villentretenmerth",  faction: "neutral", type: "unit", row: "melee", strength: 7, abilities: ["scorchRow"], scorchRow: "melee" },
     { id: "vesemir", name: "Vesemir",  faction: "neutral", type: "unit", row: "melee", strength: 6},
     { id: "triss", name: "Triss Merigold",  faction: "neutral", type: "hero", row: "melee", strength: 7},
     { id: "regis", name: "Emiel Regis Rohellec Terzieff",  faction: "neutral", type: "unit", row: "melee", strength: 5},
@@ -79,31 +83,32 @@ const RAW_CARDS = [
 
     /* ---------- Królestwa Północy ---------- */
     { id: "blue_stripes",       name: "Komando Błękitnych Pasów",  faction: "northern", type: "unit", row: "melee",  strength: 4, abilities: ["tightBond"] },
-    { id: "siege_tower",        name: "Wieża oblężnicza",          faction: "northern", type: "unit", row: "siege",  strength: 6, abilities: ["moraleBoost"] },
-    { id: "dun_banner_medic",   name: "Medyk Chorągwi Dun Banner", faction: "northern", type: "unit", row: "siege",  strength: 5, abilities: ["medic"] },
+    { id: "siege_tower",        name: "Wieża oblężnicza",          faction: "northern", type: "unit", row: "siege",  strength: 6 },
+    { id: "dun_banner_medic",   name: "Medyczka Burej Chorągwi", faction: "northern", type: "unit", row: "siege",  strength: 5, abilities: ["medic"] },
     { id: "sigismund_dijkstra", name: "Sigismund Dijkstra",        faction: "northern", type: "unit", row: "melee",  strength: 4, abilities: ["spy"] },
     { id: "john_natalis",       name: "Jan Natalis",               faction: "northern", type: "hero", row: "melee",  strength: 10 },
 
     /* ---------- Cesarstwo Nilfgaardu ---------- */
     { id: "impera_brigade",        name: "Brygada Impera",           faction: "nilfgaard", type: "unit", row: "ranged", strength: 3, abilities: ["tightBond"] },
-    { id: "siege_technician",      name: "Technik oblężniczy",       faction: "nilfgaard", type: "unit", row: "siege",  strength: 0, abilities: ["medic"] },
-    { id: "black_infantry_archer", name: "Czarny łucznik piechoty",  faction: "nilfgaard", type: "unit", row: "ranged", strength: 10 },
+    { id: "siege_technician",      name: "Wsparcie oblężnicze",       faction: "nilfgaard", type: "unit", row: "siege",  strength: 0, abilities: ["medic"] },
+    { id: "black_infantry_archer", name: "Nilfgaardzki łucznik",  faction: "nilfgaard", type: "unit", row: "ranged", strength: 10 },
     { id: "stefan_skellen",        name: "Stefan Skellen",           faction: "nilfgaard", type: "unit", row: "melee",  strength: 9, abilities: ["spy"] },
     { id: "menno_coehoorn",        name: "Menno Coehoorn",           faction: "nilfgaard", type: "hero", row: "melee",  strength: 10 },
 
     /* ---------- Scoia'tael ---------- */
-    { id: "havekar_smuggler",     name: "Przemytnik Hawekar",         faction: "scoiatael", type: "unit", row: "melee",  strength: 5, abilities: ["muster"], musterGroup: "havekar" },
+    { id: "havekar_smuggler",     name: "Havekarskie wsparcie ",         faction: "scoiatael", type: "unit", row: "melee",  strength: 5, abilities: ["muster"], musterGroup: "havekar" },
     { id: "elven_skirmisher",     name: "Elfi harcownik",             faction: "scoiatael", type: "unit", row: "ranged", strength: 2, abilities: ["muster"], musterGroup: "elven_skirmisher" },
-    { id: "dol_blathanna_archer", name: "Łuczniczka z Dol Blathanna", faction: "scoiatael", type: "unit", row: "ranged", strength: 10 },
-    { id: "schirru",              name: "Schirrú",                    faction: "scoiatael", type: "unit", row: "siege",  strength: 8 },
+    { id: "dol_blathanna_archer", name: "Łucznia z Dol Blathanna", faction: "scoiatael", type: "unit", row: "ranged", strength: 10 },
+    { id: "schirru",              name: "Schirrú",                    faction: "scoiatael", type: "unit", row: "siege",  strength: 8, abilities: ["scorchRow"], scorchRow: "siege" },
     { id: "iorveth",              name: "Iorveth",                    faction: "scoiatael", type: "hero", row: "melee",  strength: 10 },
 
     /* ---------- Potwory ---------- */
-    { id: "arachas",       name: "Arachas",         faction: "monsters", type: "unit", row: "melee",  strength: 4, abilities: ["muster"], musterGroup: "arachas" },
-    { id: "kayran",        name: "Kayran",          faction: "monsters", type: "unit", row: "melee",  strength: 8, abilities: ["moraleBoost"] },
+    { id: "arachas",       name: "Krabopająk",         faction: "monsters", type: "unit", row: "melee",  strength: 4, abilities: ["muster"], musterGroup: "arachas" },
+    { id: "kayran",        name: "Kejran",          faction: "monsters", type: "unit", row: "melee",  strength: 8, abilities: ["moraleBoost"] },
     { id: "fiend",         name: "Bies",            faction: "monsters", type: "unit", row: "melee",  strength: 6 },
-    { id: "celaeno_harpy", name: "Harpia Celaeno",  faction: "monsters", type: "unit", row: "siege",  strength: 2 },
-    { id: "draug",         name: "Draug",           faction: "monsters", type: "hero", row: "melee",  strength: 14 }
+    { id: "celaeno_harpy", name: "Harpia Celaeno",  faction: "monsters", type: "unit", row: "melee",  strength: 2, abilities: ["agile"] },
+    { id: "draug",         name: "Draug",           faction: "monsters", type: "hero", row: "melee",  strength: 14 },
+    { id: "toad_prince",   name: "Królewicz Ropuch",faction: "monsters", type: "unit", row: "ranged", strength: 7, abilities: ["scorchRow"], scorchRow: "ranged" }
 ];
 
 /** Uzupełnia pola opcjonalne, żeby silnik nie musiał sprawdzać undefined. */
@@ -117,6 +122,8 @@ function normalize(card) {
         strength: card.strength ?? 0,
         abilities: card.abilities ?? [],
         musterGroup: card.musterGroup ?? null,
+        scorchRow: card.scorchRow ?? null,
+        scorchThreshold: card.scorchThreshold ?? 10,
         special: card.special ?? null
     };
 }
@@ -264,6 +271,7 @@ export const DECKS = {
             ["fiend", 2],
             ["celaeno_harpy", 2],
             ["draug", 1],                 // Bohater o sile 14
+            ["toad_prince", 1], 
             ["geralt", 1],
             ["dandelion", 1],
             ["mysterious_elf", 1],

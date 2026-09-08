@@ -10,6 +10,7 @@
 
 import { DECKS, CARD_BY_ID, LEADERS, LEADER_BY_ID, DECK_LIMITS, hasAbility, validateDeck } from "./cards.js";
 import * as storage from "./decks-storage.js";
+import { openCardPreview, describeCard, buildCard } from "./cardview.js";
 
 const ROW_NAME = { melee: "Wręcz", ranged: "Dystansowy", siege: "Oblężniczy" };
 const ROW_ORDER = { melee: 0, ranged: 1, siege: 2 };
@@ -77,43 +78,8 @@ function note(text, isError = false) {
    KARTY
    ============================================================ */
 
-function tagsOf(card) {
-    const tags = [];
-    if (card.type === "hero") tags.push("BOHATER");
-    if (card.type === "special") tags.push("SPEC");
-    if (hasAbility(card, "tightBond")) tags.push("Więź");
-    if (hasAbility(card, "moraleBoost")) tags.push("Morale");
-    if (hasAbility(card, "muster")) tags.push("Zgrup");
-    if (hasAbility(card, "spy")) tags.push("Szpieg");
-    if (hasAbility(card, "medic")) tags.push("Medyk");
-    if (hasAbility(card, "horn")) tags.push("Róg");
-    return tags.join(" ");
-}
-
 function cardElement(cardId, count, onClick) {
-    const card = CARD_BY_ID[cardId];
-    const element = document.createElement("div");
-    element.className = "card";
-    if (card.type === "hero") element.classList.add("hero");
-    if (card.type === "special") element.classList.add("special");
-    if (hasAbility(card, "spy")) element.classList.add("spy");
-
-    const strength = document.createElement("div");
-    strength.className = "strength";
-    strength.textContent = card.type === "special" ? "—" : String(card.strength);
-
-    const name = document.createElement("div");
-    name.className = "name";
-    name.textContent = card.name;
-
-    const tags = document.createElement("div");
-    tags.className = "tags";
-    tags.textContent = "×" + count + (card.row ? " · " + ROW_NAME[card.row].slice(0, 3) : "");
-
-    element.append(strength, name, tags);
-    element.title = card.name
-        + (card.row ? " — " + ROW_NAME[card.row] : "")
-        + "\n" + (tagsOf(card) || "zwykła jednostka");
+    const element = buildCard(CARD_BY_ID[cardId], { count: count });
     element.onclick = onClick;
     return element;
 }
@@ -209,22 +175,30 @@ function renderPanels() {
     const limits = storage.poolFor(deck.faction);
     const inDeck = deckCounts();
 
+    const preview = (cardId, hint, onConfirm) => openCardPreview({
+        card: CARD_BY_ID[cardId],
+        hint: hint,
+        onConfirm: onConfirm
+    });
+
     const poolGrid = $(".pool-grid");
     poolGrid.replaceChildren();
     const availableIds = Object.keys(limits).filter(cardId => (limits[cardId] - (inDeck[cardId] || 0)) > 0);
     for (const cardId of sortIds(availableIds)) {
         const left = limits[cardId] - (inDeck[cardId] || 0);
-        poolGrid.appendChild(cardElement(cardId, left, () => addCard(cardId)));
+        poolGrid.appendChild(cardElement(cardId, left,
+            () => preview(cardId, "Kliknij kartę, aby dodać do talii", () => addCard(cardId))));
     }
     if (availableIds.length === 0) {
-        poolGrid.textContent = "Wszystkie karty puli są w talii.";
+        poolGrid.textContent = "Wszystkie karty p uli są w talii.";
     }
 
     const deckGrid = $(".deck-grid");
     deckGrid.replaceChildren();
     const deckIds = Object.keys(inDeck).filter(cardId => inDeck[cardId] > 0);
     for (const cardId of sortIds(deckIds)) {
-        deckGrid.appendChild(cardElement(cardId, inDeck[cardId], () => removeCard(cardId)));
+        deckGrid.appendChild(cardElement(cardId, inDeck[cardId],
+            () => preview(cardId, "Kliknij kartę, aby usunąć z talii", () => removeCard(cardId))));
     }
     if (deckIds.length === 0) {
         deckGrid.textContent = "Talia jest pusta — klikaj karty po lewej.";
