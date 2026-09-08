@@ -12,13 +12,140 @@ import { hasAbility } from "./cards.js";
 
 const ROW_NAME = { melee: "wręcz", ranged: "dystansowy", siege: "oblężniczy" };
 
+/* ============================================================
+   GRAFIKI
+   Katalog frakcji nie zawsze równa się jej identyfikatorowi —
+   Królestwa Północy mają na dysku folder "realms".
+   ============================================================ */
+
+const FACTION_DIR = {
+    northern:  "realms",
+    nilfgaard: "nilfgaard",
+    scoiatael: "scoiatael",
+    monsters:  "monsters",
+    skellige:  "skellige",
+    neutral:   "neutral"
+};
+
+const ICON = {
+    melee:        "img/icons/melee.svg",
+    ranged:       "img/icons/ranged.svg",
+    siege:        "img/icons/siege.svg",
+    tightBond:    "img/icons/tight_bond.svg",
+    moraleBoost:  "img/icons/morale_boost.svg",
+    muster:       "img/icons/muster.svg",
+    spy:          "img/icons/spy.svg",
+    medic:        "img/icons/medic.svg",
+    horn:         "img/icons/horn.svg",
+    scorch:       "img/icons/scorch.svg",
+    decoy:        "img/icons/decoy.svg",
+    frost:        "img/icons/frost.svg",
+    fog:          "img/icons/fog.svg",
+    rain:         "img/icons/rain.svg",
+    clearWeather: "img/icons/clear_weather.svg"
+};
+
+export function cardArtUrl(card) {
+    return "img/cards/" + FACTION_DIR[card.faction] + "/" + card.id + ".webp";
+}
+
+export function leaderArtUrl(leader) {
+    return "img/cards/" + FACTION_DIR[leader.faction] + "/leaders/" + leader.id + ".webp";
+}
+
+export function backArtUrl(factionId) {
+    return "img/cards/back/" + FACTION_DIR[factionId] + ".webp";
+}
+
+/** Ikony do nałożenia na kartę: najpierw rząd, potem zdolności. */
+function rowIcons(card) {
+    if (hasAbility(card, "agile")) {
+        return [ICON.melee, ICON.ranged];   // Zwinność = oba rzędy
+    }
+    return ICON[card.row] ? [ICON[card.row]] : [];
+}
+
+function abilityIcons(card) {
+    const paths = [];
+    for (const ability of ["tightBond", "moraleBoost", "muster", "spy", "medic", "horn"]) {
+        if (hasAbility(card, ability)) paths.push(ICON[ability]);
+    }
+    if (hasAbility(card, "scorchRow")) paths.push(ICON.scorch);
+    return paths;
+}
+
+/** Kółko na karcie: albo ikona (maską, więc kolor nadaje CSS), albo liczba. */
+function pip(kind, iconPath, text) {
+    const element = document.createElement("div");
+    element.className = "pip " + kind;
+
+    if (text !== undefined) {
+        element.textContent = text;
+        return element;
+    }
+    const icon = document.createElement("span");
+    icon.className = "icon";
+    icon.style.webkitMaskImage = "url(" + iconPath + ")";
+    icon.style.maskImage = "url(" + iconPath + ")";
+    element.appendChild(icon);
+    return element;
+}
+
+/**
+ * Buduje element karty. Wspólny dla gry, edytora talii i podglądu.
+ *
+ * @param {object} card definicja karty z cards.js
+ * @param {{ strength?: number, count?: number, preview?: boolean,
+ *           clickable?: boolean, selected?: boolean }} options
+ */
+export function buildCard(card, options = {}) {
+    const element = document.createElement("div");
+    element.className = "card";
+    element.style.backgroundImage = "url(" + cardArtUrl(card) + ")";
+
+    if (card.type === "hero") element.classList.add("hero");
+    if (card.type === "special") element.classList.add("special");
+    if (hasAbility(card, "spy")) element.classList.add("spy");
+    if (options.preview) element.classList.add("preview");
+    if (options.clickable) element.classList.add("clickable");
+    if (options.selected) element.classList.add("selected");
+
+    if (card.type === "special") {
+        element.appendChild(pip("specialpip", ICON[card.special]));
+    } else {
+        const shown = options.strength !== undefined ? options.strength : card.strength;
+        const strength = pip("strength", null, String(shown));
+        if (shown > card.strength) strength.classList.add("boosted");
+        if (shown < card.strength) strength.classList.add("weakened");
+        element.appendChild(strength);
+
+        const bar = document.createElement("div");
+        bar.className = "pipbar";
+        for (const path of rowIcons(card)) {
+            bar.appendChild(pip("rowpip", path));
+        }
+        for (const path of abilityIcons(card)) {
+            bar.appendChild(pip("ability", path));
+        }
+        element.appendChild(bar);
+    }
+
+    if (options.count !== undefined) {
+        element.appendChild(pip("count", null, "×" + options.count));
+    }
+
+    element.title = card.name + "\n" + describeCard(card);
+    return element;
+}
+
 const ABILITY_TEXT = {
     tightBond:   "Więź — karty o tej samej nazwie w jednym rzędzie mnożą swoją siłę przez ich liczbę.",
     moraleBoost: "Zagrzewanie do walki — dodaje 1 do siły wszystkich pozostałych jednostek w rzędzie.",
     muster:      "Zgrupowanie — przy zagraniu przyciąga z talii i ręki wszystkie karty tej samej grupy.",
     spy:         "Szpieg — trafia na stronę przeciwnika, a ty dobierasz 2 karty.",
     medic:       "Medyk — wskrzesza jednostkę z twojego cmentarza i zagrywa ją natychmiast.",
-    horn:        "Róg dowódcy — podwaja siłę pozostałych jednostek w swoim rzędzie."
+    horn:        "Róg dowódcy — podwaja siłę pozostałych jednostek w swoim rzędzie.",
+    agile:       "Zwinność — przy zagraniu wybierasz rząd wręcz albo dystansowy."
 };
 
 const SPECIAL_TEXT = {
@@ -33,7 +160,7 @@ const SPECIAL_TEXT = {
 
 /** Pełny opis karty do okna podglądu. */
 export function describeCard(card) {
-    const lines = [card.name];
+    const lines = [];
 
     if (card.type === "special") {
         lines.push(SPECIAL_TEXT[card.special] || "Karta specjalna.");
@@ -43,6 +170,12 @@ export function describeCard(card) {
     if (card.type === "hero") {
         lines.push("Bohater — odporny na pogodę, Róg Dowódcy, Zagrzewanie i Spalenie. Jego siła jest niezmienna.");
     }
+    if (hasAbility(card, "scorchRow")) {
+        lines.push("Pożoga — przy zagraniu niszczy najsilniejsze jednostki przeciwnika w rzędzie "
+            + (ROW_NAME[card.scorchRow] || "?") + ", o ile suma sił tego rzędu wynosi co najmniej "
+            + card.scorchThreshold + ".");
+    }
+
     for (const ability of Object.keys(ABILITY_TEXT)) {
         if (hasAbility(card, ability)) {
             lines.push(ABILITY_TEXT[ability]);
@@ -77,37 +210,49 @@ export function closeCardPreview() {
 
 /**
  * @param {object} options
- * @param {HTMLElement} options.element   gotowy element karty (zostanie powiększony)
- * @param {string}  [options.description] tekst pod kartą
- * @param {string}  [options.hint]        podpowiedź, co zrobi kliknięcie karty
- * @param {Function}[options.onConfirm]   akcja po kliknięciu powiększonej karty
+ * @param {object}  options.card       definicja karty z cards.js
+ * @param {number}  [options.strength] siła po modyfikatorach (na planszy)
+ * @param {string}  [options.hint]     podpowiedź, co zrobi kliknięcie karty
+ * @param {Function}[options.onConfirm] akcja po kliknięciu powiększonej karty
  */
-export function openCardPreview({ element, description, hint, onConfirm }) {
+export function openCardPreview({ card, strength, hint, onConfirm }) {
     const box = ensureOverlay();
     box.replaceChildren();
 
-    element.classList.remove("clickable", "selected");
-    element.classList.add("preview");
+    const element = buildCard(card, { strength: strength, preview: true });
+
+    const info = document.createElement("div");
+    info.className = "cardinfo";
+
+    const name = document.createElement("div");
+    name.className = "cardinfo-name";
+    name.textContent = card.name;
+
+    const text = document.createElement("div");
+    text.className = "cardinfo-text";
+    text.textContent = describeCard(card);
+    info.append(name, text);
+
+    const frame = document.createElement("div");
+    frame.className = "previewframe";
+    if (card.type === "hero") frame.classList.add("hero");
+    if (card.type === "special") frame.classList.add("special");
+    if (hasAbility(card, "spy")) frame.classList.add("spy");
     if (onConfirm) {
-        element.classList.add("actionable");
+        frame.classList.add("actionable");
     }
-    element.onclick = event => {
+
+    frame.onclick = event => {
         event.stopPropagation();
         const confirm = pendingConfirm;
         closeCardPreview();
         if (confirm) confirm();
     };
+    frame.append(element, info);
 
     const inner = document.createElement("div");
     inner.className = "cardoverlay-inner";
-    inner.appendChild(element);
-
-    if (description) {
-        const box2 = document.createElement("div");
-        box2.className = "cardoverlay-desc";
-        box2.textContent = description;
-        inner.appendChild(box2);
-    }
+    inner.appendChild(frame);
 
     const hintBox = document.createElement("div");
     hintBox.className = "cardoverlay-hint";
