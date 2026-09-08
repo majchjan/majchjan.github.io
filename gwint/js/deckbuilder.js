@@ -10,6 +10,7 @@
 
 import { DECKS, CARD_BY_ID, LEADERS, LEADER_BY_ID, DECK_LIMITS, hasAbility, validateDeck } from "./cards.js";
 import * as storage from "./decks-storage.js";
+import { openCardPreview, describeCard } from "./cardview.js";
 
 const ROW_NAME = { melee: "Wręcz", ranged: "Dystansowy", siege: "Oblężniczy" };
 const ROW_ORDER = { melee: 0, ranged: 1, siege: 2 };
@@ -209,22 +210,31 @@ function renderPanels() {
     const limits = storage.poolFor(deck.faction);
     const inDeck = deckCounts();
 
+    const preview = (cardId, count, hint, onConfirm) => openCardPreview({
+        element: cardElement(cardId, count, null),
+        description: describeCard(CARD_BY_ID[cardId]),
+        hint: hint,
+        onConfirm: onConfirm
+    });
+
     const poolGrid = $(".pool-grid");
     poolGrid.replaceChildren();
     const availableIds = Object.keys(limits).filter(cardId => (limits[cardId] - (inDeck[cardId] || 0)) > 0);
     for (const cardId of sortIds(availableIds)) {
         const left = limits[cardId] - (inDeck[cardId] || 0);
-        poolGrid.appendChild(cardElement(cardId, left, () => addCard(cardId)));
+        poolGrid.appendChild(cardElement(cardId, left,
+            () => preview(cardId, left, "Kliknij kartę, aby dodać do talii", () => addCard(cardId))));
     }
     if (availableIds.length === 0) {
-        poolGrid.textContent = "Wszystkie karty puli są w talii.";
+        poolGrid.textContent = "Wszystkie karty p uli są w talii.";
     }
 
     const deckGrid = $(".deck-grid");
     deckGrid.replaceChildren();
     const deckIds = Object.keys(inDeck).filter(cardId => inDeck[cardId] > 0);
     for (const cardId of sortIds(deckIds)) {
-        deckGrid.appendChild(cardElement(cardId, inDeck[cardId], () => removeCard(cardId)));
+        deckGrid.appendChild(cardElement(cardId, inDeck[cardId],
+            () => preview(cardId, inDeck[cardId], "Kliknij kartę, aby usunąć z talii", () => removeCard(cardId))));
     }
     if (deckIds.length === 0) {
         deckGrid.textContent = "Talia jest pusta — klikaj karty po lewej.";

@@ -9,6 +9,7 @@ import * as net from "./net.js";
 import * as engine from "./engine.js";
 import { DECKS, PASSIVES, LEADER_BY_ID, ROWS, hasAbility, validateDeck } from "./cards.js";
 import * as storage from "./decks-storage.js";
+import { openCardPreview, describeCard } from "./cardview.js";
 
 const PASSIVE_TEXT = {
     drawOnRoundWin:  "Dobiera 1 kartę po wygranej rundzie",
@@ -144,6 +145,16 @@ function cardElement(iid, options = {}) {
     element.append(strength, name, tags);
     element.title = card.name + (card.row ? " — " + ROW_NAME[card.row] : "") + "\n" + tagsOf(card);
     return element;
+}
+
+/** Otwiera powiększony podgląd karty. onConfirm wykonuje się po kliknięciu karty. */
+function openPreview(iid, strength, hint, onConfirm) {
+    openCardPreview({
+        element: cardElement(iid, { strength: strength }),
+        description: describeCard(engine.cardOf(iid)),
+        hint: hint,
+        onConfirm: onConfirm
+    });
 }
 
 /* ============================================================
@@ -347,16 +358,21 @@ function renderBoard() {
                 && selected && selected.needs === "target"
                 && card.type === "unit"
                 && myTurn();
-            const element = cardElement(iid, {
-                strength: engine.cardStrength(state, side, row, iid),
-                clickable: canTarget
-            });
-            if (canTarget) {
-                element.onclick = event => {
-                    event.stopPropagation();
-                    submit((s, seat) => engine.playCard(s, seat, selected.iid, { targetIid: iid }));
-                };
-            }
+            const strength = engine.cardStrength(state, side, row, iid);
+            const element = cardElement(iid, { strength: strength, clickable: canTarget });
+            const decoyIid = selected ? selected.iid : null;
+            element.onclick = event => {
+                if (rowTargetable) {
+                    return;   // trwa wybór rzędu — kliknięcie ma dojść do rzędu, nie do karty
+                }
+                event.stopPropagation();   // inaczej kliknięcie wpadłoby w wybór rzędu
+                openPreview(
+                    iid,
+                    strength,
+                    canTarget ? "Kliknij kartę, aby zamienić ją Wabikiem" : null,
+                    canTarget ? () => submit((s, seat) => engine.playCard(s, seat, decoyIid, { targetIid: iid })) : null
+                );
+            };
             container.appendChild(element);
         }
     }
@@ -382,9 +398,12 @@ function renderHand() {
             selected: selected && selected.iid === iid,
             subtitle: card.row ? ROW_NAME[card.row] : tagsOf(card)
         });
-        if (clickable) {
-            element.onclick = () => onHandCard(iid);
-        }
+        element.onclick = () => openPreview(
+            iid,
+            undefined,
+            clickable ? "Kliknij kartę, aby zagrać" : null,
+            clickable ? () => onHandCard(iid) : null
+        );
         hand.appendChild(element);
     }
 }
@@ -436,7 +455,9 @@ function renderGraves() {
     const cards = document.createElement("div");
     cards.className = "gravecards";
     for (const iid of state.grave[side]) {
-        cards.appendChild(cardElement(iid));
+        const element = cardElement(iid, { clickable: true });
+        element.onclick = () => openPreview(iid);
+        cards.appendChild(element);
     }
     column.append(heading, cards);
 }
@@ -493,7 +514,12 @@ function renderPrompt() {
             const row = open("Medyk: wskrzesz jednostkę z cmentarza.");
             for (const iid of state.pending.options) {
                 const element = cardElement(iid, { clickable: true });
-                element.onclick = () => submit((s, side) => engine.resolvePending(s, side, iid));
+                element.onclick = () => openPreview(
+                    iid,
+                    undefined,
+                    "Kliknij kartę, aby ją wskrzesić",
+                    () => submit((s, side) => engine.resolvePending(s, side, iid))
+                );
                 row.appendChild(element);
             }
             button(row, "Pomiń", () => submit((s, side) => engine.resolvePending(s, side, "skip")));
