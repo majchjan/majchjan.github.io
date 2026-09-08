@@ -88,6 +88,9 @@ export function openCardPreview({ element, description, hint, onConfirm }) {
 
     element.classList.remove("clickable", "selected");
     element.classList.add("preview");
+    if (onConfirm) {
+        element.classList.add("actionable");
+    }
     element.onclick = event => {
         event.stopPropagation();
         const confirm = pendingConfirm;

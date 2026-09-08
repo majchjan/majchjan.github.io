@@ -515,9 +515,23 @@ input[type="text"] {
     height: 340px;
     padding: 10px;
     font-size: 26px;
-    cursor: pointer;
+    cursor: default;
     box-shadow: 0 12px 44px rgba(0, 0, 0, 0.85);
+    transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s;
 }
+/* Zielona obwódka pojawia się tylko tam, gdzie kliknięcie faktycznie coś zrobi */
+.card.preview.actionable {
+    cursor: pointer;
+}
+.card.preview.actionable:hover {
+    border-color: #00be20;
+    transform: translateY(-6px);
+    box-shadow: 0 0 0 3px #00be20, 0 18px 50px rgba(0, 0, 0, 0.9);
+}
+.card.preview.actionable:active {
+    transform: translateY(-2px);
+}
+
 .card.preview .strength {
     width: 2em;
     height: 2em;
