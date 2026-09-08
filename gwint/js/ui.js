@@ -76,6 +76,7 @@ async function submit(action) {
         console.error(error);
     } finally {
         setBusy(false);
+        maybeAutoFinishMulligan();   // druga wymiana kończy fazę bez klikania przycisku
     }
 }
 
@@ -227,6 +228,17 @@ function maybeAutoPickDeck() {
 
     chosenDeckId = deck.id;
     submit((s, side) => engine.chooseDeck(s, side, deck));
+}
+
+/** Po zużyciu obu wymian nie ma już czego wybierać — kończymy mulligan sami. */
+function maybeAutoFinishMulligan() {
+    if (!view || view.state.status !== "mulligan") return;
+    const seat = mySeat();
+    if (!seat) return;
+    if (view.state.mulliganDone[seat]) return;
+    if (view.state.mulliganLeft[seat] > 0) return;
+
+    submit((s, side) => engine.finishMulligan(s, side));
 }
 
 /* ============================================================
@@ -718,6 +730,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         render();
         maybeAutoPickDeck();
+        maybeAutoFinishMulligan();
     });
 
     try {
