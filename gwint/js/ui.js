@@ -258,9 +258,12 @@ function renderMulligan() {
     const canSwap = !state.mulliganDone[seat] && state.mulliganLeft[seat] > 0;
     for (const iid of state.hand[seat]) {
         const element = cardElement(iid, { clickable: canSwap });
-        if (canSwap) {
-            element.onclick = () => submit((s, side) => engine.mulligan(s, side, iid));
-        }
+        element.onclick = () => openPreview(
+            iid,
+            undefined,
+            canSwap ? "Kliknij kartę, aby ją wymienić" : null,
+            canSwap ? () => submit((s, side) => engine.mulligan(s, side, iid)) : null
+        );
         hand.appendChild(element);
     }
 
