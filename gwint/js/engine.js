@@ -56,6 +56,12 @@ export function cardOf(iid) {
     return getCard(defIdOf(iid));
 }
 
+/** Przestrzeń nazw identyfikatora — z której talii pochodzi egzemplarz. */
+export function nsOf(iid) {
+    return iid.slice(0, iid.indexOf(":"));
+}
+
+
 /* ============================================================
    NARZĘDZIA WEWNĘTRZNE
    ============================================================ */
@@ -126,10 +132,10 @@ export function createLobby(seed) {
             B: { melee: [], ranged: [], siege: [] }
         },
         horn: {
-            A: { melee: false, ranged: false, siege: false },
-            B: { melee: false, ranged: false, siege: false }
+            A: { melee: "", ranged: "", siege: "" },
+            B: { melee: "", ranged: "", siege: "" }
         },
-        weather: { frost: false, fog: false, rain: false },
+        weatherCards: [],
         pending: null,
         history: [],
         log: []
@@ -268,10 +274,30 @@ function determineStarter(state) {
    LICZENIE SIŁY
    ============================================================ */
 
-function weatherHits(state, row) {
-    return (state.weather.frost && row === "melee")
-        || (state.weather.fog && row === "ranged")
-        || (state.weather.rain && row === "siege");
+/** Czy rząd jest objęty pogodą — wynika z kart leżących na wspólnym polu pogody. */
+export function weatherAffects(state, row) {
+    return state.weatherCards.some(iid => WEATHER_ROW[cardOf(iid).special] === row);
+}
+
+/** Karty pogody wracają na cmentarze tych, którzy je zagrali. */
+function clearWeatherField(state) {
+    for (const iid of state.weatherCards) {
+        state.grave[nsOf(iid)].push(iid);
+    }
+    state.weatherCards = [];
+}
+
+/** Rogi zagrane jako karty idą na cmentarz strony, po której leżały. */
+function clearHornCards(state) {
+    for (const side of SIDES) {
+        for (const row of ROWS) {
+            const value = state.horn[side][row];
+            if (value && value !== "leader") {
+                state.grave[side].push(value);
+            }
+            state.horn[side][row] = "";
+        }
+    }
 }
 
 function hornHits(state, boardSide, row, iid) {
@@ -289,7 +315,7 @@ export function cardStrength(state, boardSide, row, iid) {
 
     let value = card.strength;
 
-    if (weatherHits(state, row)) {
+    if (weatherAffects(state, row)) {
         value = 1;
     }
 
@@ -463,13 +489,12 @@ function applySpecial(state, side, iid, params) {
         case "frost":
         case "fog":
         case "rain": {
-            state.weather[card.special] = true;
-            state.grave[side].push(iid);
+            state.weatherCards.push(iid);   // karta zostaje na polu pogody
             log(state, side + ": zagrał " + card.name);
             break;
         }
         case "clearWeather": {
-            state.weather = { frost: false, fog: false, rain: false };
+            clearWeatherField(state);
             state.grave[side].push(iid);
             log(state, side + ": zagrał Czystą Pogodę");
             break;
@@ -478,8 +503,7 @@ function applySpecial(state, side, iid, params) {
             const row = params.row;
             if (!ROWS.includes(row)) fail("Wskaż rząd dla Rogu Dowódcy.");
             if (state.horn[side][row]) fail("W tym rzędzie leży już Róg Dowódcy.");
-            state.horn[side][row] = true;
-            state.grave[side].push(iid);
+            state.horn[side][row] = iid;    // karta zostaje w slocie rzędu
             log(state, side + ": zagrał Róg Dowódcy na rząd " + row);
             break;
         }
@@ -592,14 +616,15 @@ export function useLeader(state, side, params = {}) {
     if (!leader) fail("Brak lidera dla tego gracza.");
 
     if (leader.ability === "clearWeather") {
-        s.weather = { frost: false, fog: false, rain: false };
+        clearWeatherField(s);
     } else if (leader.ability === "weather") {
-        s.weather[leader.weather] = true;
+        // Lider zagrywa pogodę spoza talii — egzemplarz oznaczamy numerem "leader"
+        s.weatherCards.push(makeIid(side, leader.weather, "leader"));
     } else if (leader.ability === "horn") {
         const row = params.row;
         if (!ROWS.includes(row)) fail("Wskaż rząd dla Rogu Dowódcy.");
         if (s.horn[side][row]) fail("W tym rzędzie leży już Róg Dowódcy.");
-        s.horn[side][row] = true;
+        s.horn[side][row] = "leader";   // zdolność lidera, bez fizycznej karty
     } else {
         fail("Nieobsługiwana zdolność lidera: " + leader.ability);
     }
@@ -623,26 +648,44 @@ export function pass(state, side) {
 
     s.passed[side] = true;
     log(s, side + ": spasował");
-
-    if (s.passed.A && s.passed.B) {
-        finishRound(s);
-    } else {
-        s.turn = opposite(side);
-    }
+    advanceTurn(s, side);
     return s;
 }
 
-function advanceTurn(state, side) {
-    if (!state.passed[side] && state.hand[side].length === 0) {
-        state.passed[side] = true;
-        log(state, side + ": brak kart, automatyczny pas");
+/** Czy gracz ma czym zagrać: karta w ręce albo niewykorzystana zdolność lidera. */
+function hasAnyMove(state, side) {
+    if (state.hand[side].length > 0) {
+        return true;
     }
+    const leader = LEADER_BY_ID[state.leader[side]];
+    return Boolean(leader) && !state.leaderUsed[side];
+}
+
+/** Pasuje za graczy, którzy nie mają już żadnego legalnego ruchu. */
+function autoPassStuckPlayers(state) {
+    for (const player of SIDES) {
+        if (!state.passed[player] && !hasAnyMove(state, player)) {
+            state.passed[player] = true;
+            log(state, player + ": brak możliwego ruchu, automatyczny pas");
+        }
+    }
+}
+
+function advanceTurn(state, side) {
+    autoPassStuckPlayers(state);
+
     if (state.passed.A && state.passed.B) {
         finishRound(state);
         return;
     }
-    const other = opposite(side);
-    state.turn = state.passed[other] ? side : other;
+    // Tura trafia do tego, kto jeszcze nie spasował
+    if (state.passed.A) {
+        state.turn = "B";
+    } else if (state.passed.B) {
+        state.turn = "A";
+    } else {
+        state.turn = opposite(side);
+    }
 }
 
 /* ============================================================
@@ -742,11 +785,9 @@ function beginNextRound(state) {
         }
     }
 
-    state.weather = { frost: false, fog: false, rain: false };
-    state.horn = {
-        A: { melee: false, ranged: false, siege: false },
-        B: { melee: false, ranged: false, siege: false }
-    };
+    clearWeatherField(state);
+    clearHornCards(state);
+
     state.passed = { A: false, B: false };
     state.pending = null;
 
@@ -762,6 +803,17 @@ function beginNextRound(state) {
     state.turn = state.startedRound;
     state.status = "playing";
     log(state, "zaczyna " + state.startedRound);
+
+    // Ręki nie uzupełnia się między rundami, więc do nowej rundy można wejść
+    // bez jednej karty — wtedy pasujemy za takiego gracza od razu.
+    autoPassStuckPlayers(state);
+    if (state.passed.A && state.passed.B) {
+        finishRound(state);
+        return;
+    }
+    if (state.passed[state.turn]) {
+        state.turn = opposite(state.turn);
+    }
 }
 
 /* ============================================================

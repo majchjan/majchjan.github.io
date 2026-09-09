@@ -46,7 +46,27 @@ const ICON = {
 };
 
 export function cardArtUrl(card) {
-    return "img/cards/" + FACTION_DIR[card.faction] + "/" + card.id + ".webp";
+    const dir = FACTION_DIR[card.faction];
+    return card.isLeader
+        ? "img/cards/" + dir + "/leaders/" + card.id + ".webp"
+        : "img/cards/" + dir + "/" + card.id + ".webp";
+}
+
+/** Lider udający kartę — dzięki temu przechodzi przez buildCard i podgląd bez wyjątków. */
+export function leaderCard(leader) {
+    return {
+        id: leader.id,
+        name: leader.name,
+        faction: leader.faction,
+        type: "leader",
+        row: null,
+        strength: 0,
+        abilities: [],
+        musterGroup: null,
+        special: null,
+        isLeader: true,
+        leaderText: leader.text
+    };
 }
 
 export function leaderArtUrl(leader) {
@@ -110,7 +130,9 @@ export function buildCard(card, options = {}) {
     if (options.clickable) element.classList.add("clickable");
     if (options.selected) element.classList.add("selected");
 
-    if (card.type === "special") {
+    if (card.type === "leader") {
+        element.classList.add("leadercard");
+    } else if (card.type === "special") {
         element.appendChild(pip("specialpip", ICON[card.special]));
     } else {
         const shown = options.strength !== undefined ? options.strength : card.strength;
@@ -160,6 +182,9 @@ const SPECIAL_TEXT = {
 
 /** Pełny opis karty do okna podglądu. */
 export function describeCard(card) {
+    if (card.isLeader) {
+        return card.leaderText;
+    }
     const lines = [];
 
     if (card.type === "special") {
@@ -215,10 +240,8 @@ export function closeCardPreview() {
  * @param {string}  [options.hint]     podpowiedź, co zrobi kliknięcie karty
  * @param {Function}[options.onConfirm] akcja po kliknięciu powiększonej karty
  */
-export function openCardPreview({ card, strength, hint, onConfirm }) {
-    const box = ensureOverlay();
-    box.replaceChildren();
-
+/** Powiększona karta razem z panelem opisu — jeden obiekt wizualny. */
+function buildPreviewFrame(card, strength) {
     const element = buildCard(card, { strength: strength, preview: true });
 
     const info = document.createElement("div");
@@ -238,17 +261,31 @@ export function openCardPreview({ card, strength, hint, onConfirm }) {
     if (card.type === "hero") frame.classList.add("hero");
     if (card.type === "special") frame.classList.add("special");
     if (hasAbility(card, "spy")) frame.classList.add("spy");
+    frame.append(element, info);
+    return frame;
+}
+
+/**
+ * @param {object} options
+ * @param {object}  options.card       definicja karty (albo lider z leaderCard)
+ * @param {number}  [options.strength] siła po modyfikatorach
+ * @param {string}  [options.hint]     podpowiedź, co zrobi kliknięcie
+ * @param {Function}[options.onConfirm] akcja po kliknięciu karty
+ */
+export function openCardPreview({ card, strength, hint, onConfirm }) {
+    const box = ensureOverlay();
+    box.replaceChildren();
+
+    const frame = buildPreviewFrame(card, strength);
     if (onConfirm) {
         frame.classList.add("actionable");
     }
-
     frame.onclick = event => {
         event.stopPropagation();
         const confirm = pendingConfirm;
         closeCardPreview();
         if (confirm) confirm();
     };
-    frame.append(element, info);
 
     const inner = document.createElement("div");
     inner.className = "cardoverlay-inner";
@@ -264,4 +301,91 @@ export function openCardPreview({ card, strength, hint, onConfirm }) {
     box.appendChild(inner);
     pendingConfirm = onConfirm || null;
     box.classList.remove("hidden");
+}
+
+/** Przegląd zawartości stosu: talii albo cmentarza. Karty w formie szczegółowej. */
+export function openPileView(title, cards) {
+    const box = ensureOverlay();
+    box.replaceChildren();
+
+    const inner = document.createElement("div");
+    inner.className = "cardoverlay-inner";
+
+    const heading = document.createElement("div");
+    heading.className = "pileview-title";
+    heading.textContent = title + " — " + cards.length + " kart";
+    inner.appendChild(heading);
+
+    const strip = document.createElement("div");
+    strip.className = "pileview";
+    strip.onclick = event => event.stopPropagation();   // klik w pasek nie zamyka
+    for (const card of cards) {
+        strip.appendChild(buildPreviewFrame(card));
+    }
+    inner.appendChild(strip);
+    enableDragScroll(strip);
+
+    const hintBox = document.createElement("div");
+    hintBox.className = "cardoverlay-hint";
+    hintBox.textContent = "Przewijaj w bok · kliknij poza kartami, aby zamknąć";
+    inner.appendChild(hintBox);
+
+    box.appendChild(inner);
+    pendingConfirm = null;
+    box.classList.remove("hidden");
+}
+
+/** Ruch większy niż tyle pikseli traktujemy jako przeciąganie, nie kliknięcie. */
+const DRAG_THRESHOLD = 5;
+
+/**
+ * Poziome przewijanie kontenera myszą: przeciąganiem i kółkiem.
+ * Dotyku nie ruszamy — przeglądarka robi to lepiej.
+ * Nasłuchy ruchu wieszamy na oknie tylko na czas przeciągania, żeby nie
+ * narastały przy każdym otwarciu przeglądarki stosu.
+ */
+export function enableDragScroll(element) {
+    let moved = 0;
+
+    element.addEventListener("pointerdown", event => {
+        if (event.pointerType !== "mouse" || event.button !== 0) return;
+
+        const startX = event.clientX;
+        const startScroll = element.scrollLeft;
+        moved = 0;
+
+        const onMove = moveEvent => {
+            const delta = moveEvent.clientX - startX;
+            moved = Math.max(moved, Math.abs(delta));
+            if (moved > DRAG_THRESHOLD) {
+                element.classList.add("dragging");
+                element.scrollLeft = startScroll - delta;
+                moveEvent.preventDefault();
+            }
+        };
+        const onUp = () => {
+            element.classList.remove("dragging");
+            window.removeEventListener("pointermove", onMove);
+            window.removeEventListener("pointerup", onUp);
+        };
+
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+    });
+
+    // Po przeciągnięciu połykamy kliknięcie, żeby nie otworzyło podglądu karty
+    element.addEventListener("click", event => {
+        if (moved > DRAG_THRESHOLD) {
+            event.stopPropagation();
+            event.preventDefault();
+            moved = 0;
+        }
+    }, true);
+
+    element.addEventListener("wheel", event => {
+        if (event.deltaY === 0) return;
+        if (element.scrollWidth <= element.clientWidth) return;
+        element.scrollLeft += event.deltaY;
+        event.preventDefault();
+    }, { passive: false });
 }
