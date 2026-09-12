@@ -268,7 +268,17 @@
 }
 .pileview > .previewframe {
     flex: 0 0 auto;
+    align-self: stretch;
 }
+
+.pileview > .previewframe > .card.preview {
+    flex: 0 0 auto;
+}
+
+.pileview > .previewframe > .cardinfo {
+    flex: 1;
+}
+
 .pileview.dragging {
     cursor: grabbing;
     user-select: none;
