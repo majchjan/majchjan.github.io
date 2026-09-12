@@ -77,10 +77,15 @@
     line-height: 1;
 }
 .playerstate {
-    font-size: 0.75em;
-    color: #ffcc33;
-    min-height: 1.1em;
+    font-size: 1.15em;
+    font-weight: bolder;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #ff4c4c;
+    min-height: 1.4em;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
 }
+
 .weatherfield {
     border: 2px dashed #4a6a86;
     border-radius: 6px;

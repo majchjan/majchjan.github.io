@@ -300,7 +300,7 @@ function renderPlayerBox(selector, side) {
         dot.className = "life" + (i < state.lives[side] ? " on" : "");
         lives.appendChild(dot);
     }
-    box.querySelector(".playerstate").textContent = state.passed[side] ? "spasował" : "";
+    box.querySelector(".playerstate").textContent = state.passed[side] ? "PAS" : "";
 }
 
 function renderTurnbar() {

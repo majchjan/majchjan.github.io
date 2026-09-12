@@ -68,8 +68,8 @@
     left: 0.3em;
 }
 .card.hero .pip.strength     { background-color: #ffcc33; }
-.card .pip.strength.boosted  { border-color: #00be20; border-width: 0.12em; }
-.card .pip.strength.weakened { border-color: #008cff; border-width: 0.12em; }
+/* Siła inna niż bazowa — pogoda, Więź, Zagrzewanie albo Róg */
+.card .pip.strength.affected { color: #ff8c1a; }
 
 /* Rząd (żółty) i zdolności (białe) — w ręce w prawym dolnym rogu,
    zdolności rosną w lewo od kółka rzędu */

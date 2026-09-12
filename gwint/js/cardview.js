@@ -137,8 +137,9 @@ export function buildCard(card, options = {}) {
     } else {
         const shown = options.strength !== undefined ? options.strength : card.strength;
         const strength = pip("strength", null, String(shown));
-        if (shown > card.strength) strength.classList.add("boosted");
-        if (shown < card.strength) strength.classList.add("weakened");
+        // Jedno oznaczenie na każdy efekt — kierunku nie rozróżniamy
+        if (shown !== card.strength) strength.classList.add("affected");
+
         element.appendChild(strength);
 
         const bar = document.createElement("div");
