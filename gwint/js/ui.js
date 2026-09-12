@@ -714,7 +714,7 @@ function bindEvents() {
         submit((s, side) => engine.chooseDeck(s, side, deck));
     };
 
-    $(".editor-btn").onclick = () => { location.href = "./deck.html"; };
+    $$(".editor-btn").forEach(button => { button.onclick = goToEditor; });
 
     $(".ready-btn").onclick = () => {
         const seat = mySeat();
@@ -750,6 +750,10 @@ function bindEvents() {
             submit((s, seat) => engine.useLeader(s, seat, { row: row }));
         }
     });
+}
+
+function goToEditor() {
+    location.href = view && view.code ? "./deck.html#" + view.code : "./deck.html";
 }
 
 /** Wspólne dla przycisku i dla kliknięcia w kartę lidera. */
