@@ -1,0 +1,673 @@
+/* ============ Skala i wypełnienie okna ============ */
+
+:root {
+    --card-h: clamp(58px, calc(14.2vh - 26px), 113px);
+    --card-w: calc(var(--card-h) / 1.4125);
+    --card-fs: calc(var(--card-w) / 4.44);
+    --leader-h: calc(var(--card-h) + 12px);
+    --leader-w: calc(var(--leader-h) / 1.4125);
+    --leader-fs: calc(var(--leader-w) / 4.44);
+    --slot-gap: 4px;
+}
+body {
+    height: 100vh;
+}
+section {
+    min-height: 0;
+    overflow-y: auto;
+}
+.stage {
+    flex: 1;
+    min-height: 0;
+    max-width: 1400px;
+}
+.game-screen.active {
+    flex: 1;
+    min-height: 0;
+}
+
+body.ingame .logo,
+body.ingame footer {
+    display: none;
+}
+
+/* ============ Stół ============ */
+.table {
+    position: relative;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template-columns: minmax(150px, 180px) minmax(0, 1fr) minmax(150px, 180px);
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 6px;
+    align-items: stretch;
+}
+
+/* ---- Lewa kolumna: liderzy, gracze, pogoda ---- */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+}
+.leaderbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.leaderbox .card {
+    width: var(--leader-w);
+    height: var(--leader-h);
+    font-size: var(--leader-fs);
+}
+
+.leaderbox .card {
+    cursor: default;
+}
+.leaderbox.used .card {
+    filter: grayscale(0.8) brightness(0.45);
+}
+
+.leaderbox.available .card {
+    cursor: pointer;
+    box-shadow: 0 0 0 2px rgba(0, 190, 32, 0.7);
+}
+.leaderbox.available .card:hover {
+    box-shadow: 0 0 0 3px #00be20, 0 0 14px 3px rgba(0, 190, 32, 0.6);
+    transform: translateY(-4px);
+}
+
+.playerbox {
+    border: 2px solid #333;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 6px 8px 4px 8px;
+    text-align: center;
+}
+
+.playerbox.active {
+    border-color: #00be20;
+}
+.playerbox.passed {
+    opacity: 0.6;
+}
+.playerfaction {
+    font-size: 0.85em;
+    font-weight: bolder;
+    color: #d8c9a3;
+}
+.playerline {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 5px 0;
+}
+.lives {
+    display: flex;
+    gap: 5px;
+}
+.life {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: #444;
+    border: 1px solid #666;
+}
+.life.on {
+    background-color: #ff4c4c;
+    border-color: #ff8a8a;
+}
+.handcount {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.85em;
+    color: #9fb0c0;
+}
+.handcount::before {
+    content: "";
+    width: 1.2em;
+    height: 1.2em;
+    background-color: #9fb0c0;
+    -webkit-mask: url(../img/icons/cards.svg) no-repeat center / contain;
+    mask: url(../img/icons/cards.svg) no-repeat center / contain;
+}
+
+.playerbox .total {
+    font-size: 2em;
+    font-weight: bolder;
+    line-height: 1;
+}
+
+.playerbox .pass-btn {
+    width: 100%;
+    margin: 4px 0 0 0;
+    padding: 4px;
+}
+
+.playergroup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.exit-btn {
+    width: 100%;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    background-color: #ff4c4c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.exit-btn:hover:not(:disabled) {
+    background-color: #f10909;
+}
+.exit-btn::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    background-color: #ffffff;
+    -webkit-mask: url(../img/icons/exit.svg) no-repeat center / contain;
+    mask: url(../img/icons/exit.svg) no-repeat center / contain;
+}
+
+.playerstate:empty {
+    min-height: 0;
+    margin: 0;
+}
+.playerstate {
+    font-size: 1.15em;
+    font-weight: bolder;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #ff4c4c;
+    min-height: 1.4em;
+    text-shadow: 0 0 6px rgba(0, 0, 0, 0.9);
+}
+
+.weatherfield {
+    border: 2px dashed #4a6a86;
+    border-radius: 6px;
+    background-color: rgba(0, 60, 110, 0.25);
+    padding: 5px;
+    height: calc(var(--card-h) + 10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Karty pogody mają pełny rozmiar i nachodzą na siebie wachlarzem —
+   trzy zmieszczą się w kolumnie, a najechana wychodzi na wierzch */
+.weathercards {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.weathercards > .card {
+    transition: transform 0.12s, box-shadow 0.12s;
+}
+.weathercards > .card + .card {
+    margin-left: calc(var(--card-w) * -0.45);
+}
+.weathercards > .card:hover {
+    z-index: 10;
+    transform: translateY(-5px);
+    box-shadow: 0 5px 16px rgba(0, 0, 0, 0.85);
+}
+
+/* ---- Prawa kolumna: cmentarze i talie ---- */
+.sidecol {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+}
+.pilegroup {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+.pile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+.pilecount {
+    font-size: 0.8em;
+    font-weight: bolder;
+    color: #d8c9a3;
+}
+
+/* Puste miejsce wielkości karty — slot rogu, cmentarz, talia */
+.pileslot,
+.hornslot {
+    width: var(--card-w);
+    height: var(--card-h);
+    flex: 0 0 auto;
+    border: 2px dashed #444;
+    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.pileslot.filled,
+.hornslot.filled {
+    border-color: transparent;
+    background-color: transparent;
+}
+.pileslot.clickable {
+    cursor: pointer;
+}
+.pileslot.clickable:hover {
+    border-color: #00be20;
+}
+/* Rewers talii — tło ustawia ui.js, bo zależy od frakcji */
+.deckback {
+    width: var(--card-w);
+    height: var(--card-h);
+    border: 2px solid #666;
+    border-radius: 10px;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+}
+.deckback:hover {
+    border-color: #00be20;
+}
+
+/* ---- Środek: plansza ---- */
+.board {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    min-height: 0;
+}
+
+.turnbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 4px 8px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.6);
+    font-size: 0.9em;
+}
+.roundnumber {
+    font-weight: bolder;
+}
+.turninfo {
+    color: #00be20;
+    font-weight: bolder;
+}
+.historyinfo {
+    color: #9fb0c0;
+    font-size: 0.85em;
+}
+.midline {
+    height: 3px;
+    background-color: #ff4c4c;
+    border-radius: 2px;
+    margin: 1px 0;
+}
+
+.row {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 1px 2px;
+    background-color: rgba(0, 0, 0, 0.55);
+}
+
+.row.melee  { border-left: 5px solid #ff4c4c; }
+.row.ranged { border-left: 5px solid #00be20; }
+.row.siege  { border-left: 5px solid #008cff; }
+.row.weathered {
+    background-color: rgba(0, 140, 255, 0.16);
+    border-color: #6fc3ff;
+}
+.row.targetable {
+    outline: 2px dashed #00be20;
+    outline-offset: -2px;
+    cursor: pointer;
+}
+.row.targetable:hover {
+    outline-style: solid;
+    outline-width: 3px;
+    border-color: #00be20;
+    background-color: rgba(0, 190, 32, 0.18);
+}
+.rowscore {
+    flex: 0 0 46px;
+    text-align: center;
+    font-size: 1.7em;
+    font-weight: bolder;
+    line-height: 1;
+}
+.rowcards {
+    flex: 1;
+    min-width: 0;
+    height: calc(var(--card-h) + 6px);
+    padding: 0 3px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    cursor: grab;
+}
+.rowcards > .card:first-child {
+    margin-left: auto;
+}
+.rowcards > .card:last-child {
+    margin-right: auto;
+}
+
+/* ---- Przeglądarka stosu (talia, cmentarz) ---- */
+.pileview {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    max-width: 90vw;
+    padding: 10px 0;
+    scrollbar-width: none;
+    cursor: grab;
+}
+.pileview > .previewframe {
+    flex: 0 0 auto;
+    align-self: stretch;
+}
+
+.pileview > .previewframe > .card.preview {
+    flex: 0 0 auto;
+}
+
+.pileview > .previewframe > .cardinfo {
+    flex: 1;
+}
+
+.pileview.dragging {
+    cursor: grabbing;
+    user-select: none;
+}
+.pileview-title {
+    font-size: 1.2em;
+    font-weight: bolder;
+    margin-bottom: 8px;
+    text-align: center;
+}
+/* Róg z lidera nie ma karty — slot świeci samą obwódką */
+.hornslot.leaderhorn {
+    border-style: solid;
+    border-color: #ffcc33;
+    background-color: rgba(255, 204, 51, 0.15);
+}
+.leadercard {
+    cursor: pointer;
+}
+
+
+/* ============ Ręka, sterowanie, komunikaty ============ */
+
+.hand {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 4px;
+    min-height: calc(var(--card-h) + 10px);
+    border: 1px solid #333;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.55);
+    scrollbar-width: none;
+    cursor: grab;
+}
+
+/* Karty zachowują własny kursor — chwyt dotyczy wolnej przestrzeni paska */
+.hand.dragging,
+.rowcards.dragging {
+    cursor: grabbing;
+    user-select: none;
+}
+.hand.dragging .card,
+.rowcards.dragging .card {
+    cursor: grabbing;
+}
+
+.hand > .card:first-child {
+    margin-left: auto;
+}
+.hand > .card:last-child {
+    margin-right: auto;
+}
+
+.prompt {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    max-width: 92%;
+    border: 2px solid #ffcc33;
+    border-radius: 6px;
+    background-color: rgba(20, 18, 10, 0.97);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85);
+    padding: 10px;
+}
+
+.prompt.hidden {
+    display: none;
+}
+.prompt .promptext {
+    font-weight: bolder;
+    margin-bottom: 6px;
+}
+.prompt .promptrow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+/* ============ Dziennik zdarzeń ============ */
+.logpanel {
+    width: 100%;
+    margin-top: 4px;
+}
+.log-toggle {
+    width: 100%;
+    margin: 0;
+    background-color: #444;
+    padding: 4px;
+    font-size: 0.85em;
+}
+.log-toggle:hover:not(:disabled) {
+    background-color: #666;
+}
+.logview {
+    max-height: 60vh;
+    max-width: 90vw;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 0.8em;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    background-color: #111;
+    border: 2px solid #444;
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: text;
+}
+.game-note:empty {
+    min-height: 0;
+    margin: 0;
+}
+/* ============ Tryb pełnoekranowy ============ */
+.fullscreen-btn {
+    position: fixed;
+    top: 6px;
+    left: 6px;
+    z-index: 200;
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    font-size: 18px;
+    line-height: 1;
+    background-color: rgba(0, 0, 0, 0.55);
+    border: 1px solid #555;
+    opacity: 0.55;
+}
+.fullscreen-btn:hover:not(:disabled) {
+    opacity: 1;
+    background-color: rgba(0, 0, 0, 0.85);
+    border-color: #00be20;
+}
+
+/* ============ Telefon ============ */
+@media (max-width: 700px) {
+    /* Wysokość liczona z dvh, nie vh — pasek adresu chowa się i wraca,
+       a plansza nie może przez to skakać */
+    :root {
+        --card-h: clamp(40px, calc(14.2dvh - 26px), 80px);
+    }
+
+    /* Dwie kolumny: pasek boczny i plansza. Stosy schodzą z siatki. */
+    /* Pasek boczny zwężony dokładnie do karty dowódcy */
+    .table {
+        grid-template-columns: calc(var(--leader-w) + 6px) minmax(0, 1fr);
+        gap: 4px;
+    }
+    .sidebar {
+        gap: 4px;
+    }
+
+    /* ---- Cmentarz i talia jako ikony wystające z prawej krawędzi ---- */
+    .sidecol {
+        position: absolute;
+        right: 0;
+        z-index: 15;
+        flex-direction: row;
+        gap: 0;
+    }
+    .sidecol-top    { top: 2px; }
+    .sidecol-bottom { bottom: 2px; }
+    .pilegroup {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .pile {
+        flex-direction: row;
+        align-items: center;
+        gap: 3px;
+        padding: 3px 5px;
+        border: 1px solid #555;
+        border-right: none;
+        border-radius: 10px 0 0 10px;
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+    .pileslot {
+        width: 17px;
+        height: 17px;
+        border: none;
+        background: none;
+    }
+    .pileslot > * {
+        display: none;   /* karta i rewers ustępują miejsca ikonie */
+    }
+    .pileslot::before {
+        content: "";
+        width: 17px;
+        height: 17px;
+        background-color: #d8c9a3;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-position: center;
+        mask-position: center;
+    }
+    .grave-top .pileslot::before,
+    .grave-bottom .pileslot::before {
+        -webkit-mask-image: url(../img/icons/scorch.svg);
+        mask-image: url(../img/icons/scorch.svg);
+    }
+    .deck-top .pileslot::before,
+    .deck-bottom .pileslot::before {
+        -webkit-mask-image: url(../img/icons/cards.svg);
+        mask-image: url(../img/icons/cards.svg);
+    }
+    .pilecount {
+        font-size: 0.85em;
+    }
+
+    /* ---- Róg zostaje kartą, tylko mniejszą — pełny rozmiar zjadałby ćwierć rzędu ---- */
+    .hornslot {
+        width: calc(var(--card-w) * 0.62);
+        height: calc(var(--card-h) * 0.62);
+    }
+    .hornslot > .card {
+        width: calc(var(--card-w) * 0.62);
+        height: calc(var(--card-h) * 0.62);
+        font-size: calc(var(--card-fs) * 0.62);
+    }
+
+    /* ---- Zacieśnienie reszty ---- */
+    .row {
+        gap: 2px;
+    }
+    .rowscore {
+        flex: 0 0 26px;
+        font-size: 1.1em;
+    }
+    .turnbar {
+        font-size: 0.7em;
+        padding: 2px 4px;
+        gap: 4px;
+    }
+    .historyinfo {
+        display: none;
+    }
+
+    .playerfaction {
+        display: none;
+    }
+
+    .playerbox {
+        padding: 4px 5px 3px 5px;
+    }
+    .playerbox .total {
+        font-size: 1.5em;
+    }
+    .playerstate {
+        font-size: 0.9em;
+    }
+    .playerbox .pass-btn {
+        font-size: 0.8em;
+    }
+    .handcount {
+        font-size: 0.7em;
+    }
+    
+    .weathercards > .card + .card {
+        margin-left: calc(var(--card-w) * -0.86);
+    }
+    .log-toggle {
+        font-size: 0.72em;
+    }
+    .fullscreen-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 14px;
+    }
+}

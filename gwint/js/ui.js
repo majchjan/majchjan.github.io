@@ -9,7 +9,8 @@ import * as net from "./net.js";
 import * as engine from "./engine.js";
 import { DECKS, PASSIVES, LEADER_BY_ID, ROWS, hasAbility, validateDeck } from "./cards.js";
 import * as storage from "./decks-storage.js";
-import { openCardPreview, describeCard, buildCard } from "./cardview.js";
+import { openCardPreview, openPileView, openTextView, closeCardPreview, describeCard,
+         buildCard, leaderCard, backArtUrl, enableDragScroll } from "./cardview.js";
 
 const PASSIVE_TEXT = {
     drawOnRoundWin:  "Dobiera 1 kartę po wygranej rundzie",
@@ -25,8 +26,8 @@ const WEATHER_NAME = { frost: "Trzaskający Mróz", fog: "Nieprzenikliwa Mgła",
 let view = null;            // ostatni stan z net.onRoomChange
 let selected = null;        // { iid, needs: "row" | "target" }
 let leaderNeedsRow = false; // lider czeka na wskazanie rzędu
-let showGrave = false;
 let chosenDeckId = null;
+let medicShown = null;   // sygnatura otwartego wyboru Medyka
 let deckAutoTried = false;
 let busy = false;
 let errorText = "";
@@ -99,6 +100,11 @@ function topSide() {
 function cardElement(iid, options = {}) {
     const element = buildCard(engine.cardOf(iid), options);
     element.dataset.iid = iid;
+
+    const move = view && view.state.lastMove;
+    if (move && move.iids.includes(iid)) {
+        element.classList.add("justplayed");
+    }
     return element;
 }
 
@@ -210,7 +216,7 @@ function renderMulligan() {
     const hand = $(".mulligan-hand");
     hand.replaceChildren();
     const canSwap = !state.mulliganDone[seat] && state.mulliganLeft[seat] > 0;
-    for (const iid of state.hand[seat]) {
+    for (const iid of sortedHand(state.hand[seat])) {
         const element = cardElement(iid, { clickable: canSwap });
         element.onclick = () => openPreview(
             iid,
@@ -238,45 +244,89 @@ function myTurn() {
         && !state.passed[seat];
 }
 
-function renderScoreboard() {
+function renderSidebar() {
     const state = view.state;
-    const top = topSide();
-    const bottom = bottomSide();
 
-    const fill = (selector, side) => {
-        const box = $(selector);
-        const deck = DECKS[state.faction[side]];
-        box.querySelector(".playerfaction").textContent = deck ? deck.name : "—";
-        box.querySelector(".total").textContent = String(engine.sideScore(state, side));
-        box.classList.toggle("active", state.turn === side && state.status === "playing");
-        box.classList.toggle("passed", state.passed[side]);
+    renderLeaderBox(".leader-top", topSide());
+    renderLeaderBox(".leader-bottom", bottomSide());
+    renderPlayerBox(".player-top", topSide());
+    renderPlayerBox(".player-bottom", bottomSide());
 
-        const lives = box.querySelector(".lives");
-        lives.replaceChildren();
-        for (let i = 0; i < 2; i++) {
-            const dot = document.createElement("span");
-            dot.className = "life" + (i < state.lives[side] ? " on" : "");
-            lives.appendChild(dot);
-        }
+    const field = $(".weathercards");
+    field.replaceChildren();
+    for (const iid of state.weatherCards) {
+        const element = cardElement(iid, { clickable: true });
+        element.onclick = () => openPreview(iid);
+        field.appendChild(element);
+    }
+}
 
-        const parts = [];
-        if (state.passed[side]) parts.push("spasował");
-        if (state.leaderUsed[side]) parts.push("lider zużyty");
-        parts.push("ręka: " + state.hand[side].length);
-        parts.push("talia: " + state.deck[side].length);
-        parts.push("cmentarz: " + state.grave[side].length);
-        box.querySelector(".playerstate").textContent = parts.join(" · ");
-    };
+function renderLeaderBox(selector, side) {
+    const state = view.state;
+    const box = $(selector);
+    box.replaceChildren();
 
-    fill(".player-top", top);
-    fill(".player-bottom", bottom);
+    const leader = LEADER_BY_ID[state.leader[side]];
+    if (!leader) return;
 
+    const used = state.leaderUsed[side];
+    const canUse = side === bottomSide() && !used && myTurn();
+    box.classList.toggle("used", used);
+    box.classList.toggle("available", canUse);
+
+    const pseudo = leaderCard(leader);
+    const element = buildCard(pseudo, {});
+    element.onclick = () => openCardPreview({
+        card: pseudo,
+        hint: canUse ? "Kliknij kartę, aby użyć zdolności" : null,
+        onConfirm: canUse ? useLeaderAbility : null
+    });
+    box.appendChild(element);
+}
+
+function renderPlayerBox(selector, side) {
+    const state = view.state;
+    const box = $(selector);
+    const deck = DECKS[state.faction[side]];
+
+    box.querySelector(".playerfaction").textContent = deck ? deck.name : "—";
+    box.querySelector(".handcount").textContent = String(state.hand[side].length);
+    box.querySelector(".total").textContent = String(engine.sideScore(state, side));
+    box.classList.toggle("active", state.status === "playing" && state.turn === side);
+    box.classList.toggle("passed", state.passed[side]);
+
+    const lives = box.querySelector(".lives");
+    lives.replaceChildren();
+    for (let i = 0; i < 2; i++) {
+        const dot = document.createElement("span");
+        dot.className = "life" + (i < state.lives[side] ? " on" : "");
+        lives.appendChild(dot);
+    }
+    box.querySelector(".playerstate").textContent = state.passed[side] ? "PAS" : "";
+
+    const passBtn = box.querySelector(".pass-btn");
+    if (passBtn) {
+        passBtn.hidden = state.passed[side];
+    }
+}
+
+function renderTurnbar() {
+    const state = view.state;
     $(".roundnumber").textContent = "Runda " + state.round;
 
     let turnText = "—";
     if (state.status === "playing") {
-        turnText = state.pending ? "Oczekiwanie na wybór"
-            : (state.turn === bottom ? "Twój ruch" : "Ruch przeciwnika");
+        if (state.pending) {
+            turnText = "Oczekiwanie na wybór";
+        } else if (leaderNeedsRow) {
+            turnText = "Wskaż rząd dla zdolności lidera";
+        } else if (selected && selected.needs === "row") {
+            turnText = "Wskaż rząd: " + engine.cardOf(selected.iid).name;
+        } else if (selected && selected.needs === "target") {
+            turnText = "Wskaż jednostkę do zamiany Wabikiem";
+        } else {
+            turnText = state.turn === bottomSide() ? "Twój ruch" : "Ruch przeciwnika";
+        }
     } else if (state.status === "roundEnd") {
         turnText = "Koniec rundy";
     } else if (state.status === "finished") {
@@ -284,14 +334,82 @@ function renderScoreboard() {
     }
     $(".turninfo").textContent = turnText;
 
-    const weather = Object.keys(WEATHER_NAME).filter(key => state.weather[key]);
-    $(".weatherbar").textContent = weather.length
-        ? "Pogoda: " + weather.map(key => WEATHER_NAME[key]).join(", ")
+    const move = state.lastMove;
+    $(".lastmove").textContent = move
+        ? (move.side === bottomSide() ? "Ty: " : "Przeciwnik: ") + move.text
         : "";
 
     $(".historyinfo").textContent = state.history
         .map(entry => "R" + entry.round + " " + entry.A + ":" + entry.B)
-        .join("  ");
+        .join("   ");
+}
+
+/* ---- Cmentarze i talie ---- */
+
+function renderPiles() {
+    renderGravePile(".grave-top", topSide(), false);
+    renderDeckPile(".deck-top", topSide(), false);
+    renderGravePile(".grave-bottom", bottomSide(), true);
+    renderDeckPile(".deck-bottom", bottomSide(), true);
+}
+
+function renderGravePile(selector, side, viewable) {
+    const state = view.state;
+    const box = $(selector);
+    const slot = box.querySelector(".pileslot");
+    const list = state.grave[side];
+
+    box.querySelector(".pilecount").textContent = String(list.length);
+    slot.replaceChildren();
+    slot.onclick = null;
+    slot.classList.toggle("filled", list.length > 0);
+    slot.classList.toggle("clickable", viewable && list.length > 0);
+    if (list.length === 0) return;
+
+    if (viewable) {
+        slot.onclick = () => openPileView("Twój cmentarz",
+            list.map(iid => engine.cardOf(iid)));
+    }
+    slot.appendChild(cardElement(list[list.length - 1], { clickable: viewable }));
+}
+
+function renderDeckPile(selector, side, viewable) {
+    const state = view.state;
+    const box = $(selector);
+    const slot = box.querySelector(".pileslot");
+    const list = state.deck[side];
+
+    box.querySelector(".pilecount").textContent = String(list.length);
+    slot.replaceChildren();
+    slot.onclick = null;
+    slot.classList.toggle("filled", list.length > 0);
+    slot.classList.toggle("clickable", viewable && list.length > 0);
+    if (list.length === 0) return;
+
+    const back = document.createElement("div");
+    back.className = "deckback";
+    back.style.backgroundImage = "url(" + backArtUrl(state.faction[side]) + ")";
+    if (viewable) {
+        slot.onclick = () => openPileView("Karty pozostałe w talii", sortedDeckCards(list));
+    } else {
+        back.style.cursor = "default";
+    }
+    slot.appendChild(back);
+}
+
+/**
+ * Talia jest przechowywana w kolejności dobierania, więc pokazanie jej wprost
+ * zdradzałoby, co przyjdzie następne. Sortujemy jak w edytorze talii.
+ */
+function sortedDeckCards(list) {
+    const order = { melee: 0, ranged: 1, siege: 2 };
+    return list.map(iid => engine.cardOf(iid)).sort((a, b) => {
+        const groupA = a.type === "special" ? 3 : order[a.row];
+        const groupB = b.type === "special" ? 3 : order[b.row];
+        if (groupA !== groupB) return groupA - groupB;
+        if (b.strength !== a.strength) return b.strength - a.strength;
+        return a.name.localeCompare(b.name, "pl");
+    });
 }
 
 function renderBoard() {
@@ -303,16 +421,24 @@ function renderBoard() {
         const row = rowElement.dataset.row;
         const side = sideFor(pos);
 
-        rowElement.classList.toggle("weathered",
-            (state.weather.frost && row === "melee")
-            || (state.weather.fog && row === "ranged")
-            || (state.weather.rain && row === "siege"));
+        rowElement.classList.toggle("weathered", engine.weatherAffects(state, row));
 
-        const hornActive = state.horn[side][row]
-            || state.board[side][row].some(iid => hasAbility(engine.cardOf(iid), "horn"));
-        rowElement.querySelector(".rowhorn").textContent = hornActive ? "♪ Róg" : "";
         rowElement.querySelector(".rowscore").textContent =
             String(engine.rowScore(state, side, row));
+
+        const hornValue = state.horn[side][row];
+        const slot = rowElement.querySelector(".hornslot");
+        slot.replaceChildren();
+        slot.classList.toggle("filled", Boolean(hornValue) && hornValue !== "leader");
+        slot.classList.toggle("leaderhorn", hornValue === "leader");
+        if (hornValue && hornValue !== "leader") {
+            const hornEl = cardElement(hornValue, { clickable: true });
+            hornEl.onclick = event => {
+                event.stopPropagation();
+                openPreview(hornValue);
+            };
+            slot.appendChild(hornEl);
+        }
 
         // Podświetlenie rzędu jako celu — tylko własna połowa
         const rowTargetable = pos === "bottom" && myTurn()
@@ -349,6 +475,18 @@ function renderBoard() {
     }
 }
 
+function hasDecoyTarget() {
+    const side = bottomSide();
+    return ROWS.some(row => view.state.board[side][row]
+        .some(iid => engine.cardOf(iid).type === "unit"));
+}
+
+function canPlay(iid) {
+    const card = engine.cardOf(iid);
+    if (card.special === "decoy") return hasDecoyTarget();
+    return true;
+}
+
 function needsOf(card) {
     if (card.special === "horn") return "row";
     if (card.special === "decoy") return "target";
@@ -361,14 +499,30 @@ function allowedRows(card) {
     return hasAbility(card, "agile") ? ["melee", "ranged"] : ROWS;
 }
 
+/**
+ * Ręka pokazywana według siły: najpierw karty specjalne,
+ * potem jednostki od najsilniejszej. Sam stan zostaje w kolejności dobierania.
+ */
+function sortedHand(iids) {
+    return iids.slice().sort((a, b) => {
+        const cardA = engine.cardOf(a);
+        const cardB = engine.cardOf(b);
+        const specialA = cardA.type === "special" ? 1 : 0;
+        const specialB = cardB.type === "special" ? 1 : 0;
+        if (specialA !== specialB) return specialB - specialA;
+        if (cardB.strength !== cardA.strength) return cardB.strength - cardA.strength;
+        return cardA.name.localeCompare(cardB.name, "pl");
+    });
+}
+
 function renderHand() {
     const state = view.state;
     const seat = mySeat();
     const hand = $(".game-hand");
     hand.replaceChildren();
 
-    for (const iid of state.hand[seat]) {
-        const clickable = myTurn();
+    for (const iid of sortedHand(state.hand[seat])) {
+        const clickable = myTurn() && canPlay(iid);
         const element = cardElement(iid, {
             clickable: clickable,
             selected: selected && selected.iid === iid
@@ -402,39 +556,27 @@ function onHandCard(iid) {
 }
 
 function renderControls() {
-    const state = view.state;
-    const seat = mySeat();
-    const leader = LEADER_BY_ID[state.leader[seat]];
-
-    const leaderBtn = $(".leader-btn");
-    leaderBtn.disabled = !myTurn() || state.leaderUsed[seat] || !leader;
-    leaderBtn.textContent = leader ? "Lider: " + leader.text : "Zdolność lidera";
-
     $(".pass-btn").disabled = !myTurn();
-    $(".grave-btn").textContent = showGrave ? "Ukryj cmentarz" : "Cmentarz";
 }
 
-function renderGraves() {
-    const state = view.state;
-    $(".gravepanel").classList.toggle("hidden", !showGrave);
-    if (!showGrave) return;
+function syncMedicChoice() {
+    const pending = view.state.pending;
+    const mine = pending && pending.kind === "medic" && pending.side === mySeat();
+    const signature = mine ? pending.options.join(",") : null;
 
-    const side = bottomSide();
-    const column = $(".grave-mine");
-    column.replaceChildren();
+    if (signature === medicShown) return;
+    medicShown = signature;
 
-    const heading = document.createElement("div");
-    heading.className = "gravetitle";
-    heading.textContent = "Twój cmentarz — " + state.grave[side].length + " kart";
-
-    const cards = document.createElement("div");
-    cards.className = "gravecards";
-    for (const iid of state.grave[side]) {
-        const element = cardElement(iid, { clickable: true });
-        element.onclick = () => openPreview(iid);
-        cards.appendChild(element);
+    if (!signature) {
+        closeCardPreview();
+        return;
     }
-    column.append(heading, cards);
+    const options = pending.options;
+    openPileView(
+        "Medyk: wskrzesz jednostkę z cmentarza",
+        options.map(iid => engine.cardOf(iid)),
+        index => submit((s, side) => engine.resolvePending(s, side, options[index]))
+    );
 }
 
 function renderPrompt() {
@@ -467,9 +609,19 @@ function renderPrompt() {
     if (state.status === "finished") {
         const result = state.winner === "draw" ? "Remis!"
             : (state.winner === seat ? "Wygrywasz całą grę!" : "Przegrywasz grę.");
-        const row = open(result + "  Wynik rund: "
+        const row = open(result + "   Wynik rund: "
             + state.history.map(h => h.A + ":" + h.B).join(", "));
-        button(row, "Wróć do lobby", () => { net.leaveRoom(); view = null; render(); });
+
+        const again = button(row, "Zagraj ponownie",
+            () => submit((s, side) => engine.requestNewGame(s, side)));
+        if (state.ready[seat]) {
+            again.disabled = true;
+            again.textContent = "Czekam na przeciwnika...";
+        } else if (state.ready[engine.opposite(seat)]) {
+            again.textContent = "Przeciwnik chce rewanżu — zagraj!";
+        }
+
+        button(row, "Opuść stół", () => { net.leaveRoom(); view = null; render(); });
         return;
     }
 
@@ -486,18 +638,6 @@ function renderPrompt() {
             return;
         }
         if (state.pending.kind === "medic") {
-            const row = open("Medyk: wskrzesz jednostkę z cmentarza.");
-            for (const iid of state.pending.options) {
-                const element = cardElement(iid, { clickable: true });
-                element.onclick = () => openPreview(
-                    iid,
-                    undefined,
-                    "Kliknij kartę, aby ją wskrzesić",
-                    () => submit((s, side) => engine.resolvePending(s, side, iid))
-                );
-                row.appendChild(element);
-            }
-            button(row, "Pomiń", () => submit((s, side) => engine.resolvePending(s, side, "skip")));
             return;
         }
     }
@@ -514,21 +654,6 @@ function renderPrompt() {
         }
         return;
     }
-
-    if (leaderNeedsRow) {
-        const row = open("Wskaż rząd po swojej stronie dla zdolności lidera.");
-        button(row, "Anuluj", () => { leaderNeedsRow = false; render(); });
-        return;
-    }
-
-    if (selected) {
-        const card = engine.cardOf(selected.iid);
-        const text = selected.needs === "row"
-            ? card.name + ": wskaż rząd po swojej stronie."
-            : card.name + ": wskaż swoją jednostkę do zamiany (bohaterów nie można).";
-        const row = open(text);
-        button(row, "Anuluj", () => { selected = null; render(); });
-    }
 }
 
 /* ============================================================
@@ -536,8 +661,12 @@ function renderPrompt() {
    ============================================================ */
 
 function render() {
-    // Reset — renderery poniżej ustawiają stany przycisków od nowa
+    // Reset stanów przycisków — poniższe renderery ustawiają je od nowa
     $$("button").forEach(button => { button.disabled = false; });
+
+    // Podczas rozgrywki chowamy nagłówek i stopkę — cała wysokość idzie na planszę
+    const status = view ? view.state.status : "lobby";
+    document.body.classList.toggle("ingame", status !== "lobby" && status !== "mulligan");
 
     if (!view) {
         showScreen("lobby");
@@ -551,14 +680,15 @@ function render() {
             renderMulligan();
         } else {
             showScreen("game");
-            renderScoreboard();
+            renderSidebar();
+            renderTurnbar();
             renderBoard();
             renderHand();
             renderControls();
-            renderGraves();
-            renderPrompt();
+        renderPiles();
+        renderPrompt();
+        syncMedicChoice();
         }
-        $(".logtext").textContent = view.state.log.join("\n");
     }
 
     if (busy) {
@@ -618,7 +748,7 @@ function bindEvents() {
         submit((s, side) => engine.chooseDeck(s, side, deck));
     };
 
-    $(".editor-btn").onclick = () => { location.href = "./deck.html"; };
+    $$(".editor-btn").forEach(button => { button.onclick = goToEditor; });
 
     $(".ready-btn").onclick = () => {
         const seat = mySeat();
@@ -630,25 +760,24 @@ function bindEvents() {
 
     $(".pass-btn").onclick = () => submit((s, side) => engine.pass(s, side));
 
-    $(".leader-btn").onclick = () => {
-        const leader = LEADER_BY_ID[view.state.leader[mySeat()]];
-        if (!leader) return;
-        if (leader.ability === "horn") {
-            leaderNeedsRow = true;
-            selected = null;
-            render();
-            return;
-        }
-        submit((s, side) => engine.useLeader(s, side));
-    };
-
-    $(".grave-btn").onclick = () => { showGrave = !showGrave; render(); };
-
     $$(".leave-btn").forEach(button => {
         button.onclick = () => { net.leaveRoom(); view = null; selected = null; render(); };
     });
 
-    $(".log-toggle").onclick = () => $(".logpanel").classList.toggle("collapsed");
+    $(".fullscreen-btn").onclick = toggleFullscreen;
+    document.addEventListener("fullscreenchange", () => {
+        const button = $(".fullscreen-btn");
+        const on = Boolean(document.fullscreenElement);
+        button.textContent = on ? "🗗" : "⛶";
+        button.title = on ? "Wyjdź z pełnego ekranu" : "Tryb pełnoekranowy";
+    });
+
+    $(".log-toggle").onclick = () => openTextView("Dziennik zdarzeń",
+        view ? view.state.log.join("\n") : "");
+
+    // Poziome przewijanie ręki i rzędów: przeciąganie myszą oraz kółko
+    $$(".hand").forEach(enableDragScroll);
+    $$(".rowcards").forEach(enableDragScroll);
 
     // Kliknięcie w rząd — cel dla Rogu Dowódcy albo zdolności lidera
     $(".board").addEventListener("click", event => {
@@ -661,6 +790,33 @@ function bindEvents() {
         } else if (leaderNeedsRow) {
             submit((s, seat) => engine.useLeader(s, seat, { row: row }));
         }
+    });
+}
+
+function goToEditor() {
+    location.href = view && view.code ? "./deck.html#" + view.code : "./deck.html";
+}
+
+/** Wspólne dla przycisku i dla kliknięcia w kartę lidera. */
+function useLeaderAbility() {
+    const leader = LEADER_BY_ID[view.state.leader[mySeat()]];
+    if (!leader) return;
+    if (leader.ability === "horn") {
+        leaderNeedsRow = true;
+        selected = null;
+        render();
+        return;
+    }
+    submit((s, side) => engine.useLeader(s, side));
+}
+
+function toggleFullscreen() {
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+        return;
+    }
+    document.documentElement.requestFullscreen().catch(error => {
+        console.error("Nie udało się włączyć pełnego ekranu:", error);
     });
 }
 
@@ -690,6 +846,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             selected = null;
             leaderNeedsRow = false;
             deckAutoTried = false;
+            medicShown = null;
         }
         render();
         maybeAutoPickDeck();

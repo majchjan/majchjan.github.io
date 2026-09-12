@@ -98,7 +98,7 @@ const RAW_CARDS = [
     /* ---------- Scoia'tael ---------- */
     { id: "havekar_smuggler",     name: "Havekarskie wsparcie ",         faction: "scoiatael", type: "unit", row: "melee",  strength: 5, abilities: ["muster"], musterGroup: "havekar" },
     { id: "elven_skirmisher",     name: "Elfi harcownik",             faction: "scoiatael", type: "unit", row: "ranged", strength: 2, abilities: ["muster"], musterGroup: "elven_skirmisher" },
-    { id: "dol_blathanna_archer", name: "Łucznia z Dol Blathanna", faction: "scoiatael", type: "unit", row: "ranged", strength: 10 },
+    { id: "dol_blathanna_archer", name: "Łucznik z Dol Blathanna", faction: "scoiatael", type: "unit", row: "ranged", strength: 10 },
     { id: "schirru",              name: "Schirrú",                    faction: "scoiatael", type: "unit", row: "siege",  strength: 8, abilities: ["scorchRow"], scorchRow: "siege" },
     { id: "iorveth",              name: "Iorveth",                    faction: "scoiatael", type: "hero", row: "melee",  strength: 10 },
 
@@ -239,7 +239,7 @@ export const DECKS = {
             ["havekar_smuggler", 3],      // Zgrupowanie w rzędzie wręcz
             ["elven_skirmisher", 3],      // Zgrupowanie w rzędzie dystansowym
             ["dol_blathanna_archer", 2],
-            ["schirru", 2],
+            ["schirru", 1],
             ["iorveth", 1],               // Bohater
             ["geralt", 1],
             ["dandelion", 1],

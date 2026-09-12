@@ -73,7 +73,11 @@ function rowsFromDb(rows) {
 
 function hornFromDb(horn) {
     const object = horn || {};
-    return { melee: !!object.melee, ranged: !!object.ranged, siege: !!object.siege };
+    return {
+        melee: object.melee || "",
+        ranged: object.ranged || "",
+        siege: object.siege || ""
+    };
 }
 
 function historyToDb(history) {
@@ -109,7 +113,7 @@ function toDb(state) {
         grave: { A: toCsv(state.grave.A), B: toCsv(state.grave.B) },
         board: { A: rowsToDb(state.board.A), B: rowsToDb(state.board.B) },
         horn: state.horn,
-        weather: state.weather,
+        weatherCards: toCsv(state.weatherCards),
         history: historyToDb(state.history),
         log: state.log.join("\n")
     };
@@ -129,6 +133,13 @@ function toDb(state) {
             options: toCsv(state.pending.options)
         };
     }
+    if (state.lastMove) {
+        dbState.lastMove = {
+            side: state.lastMove.side,
+            text: state.lastMove.text,
+            iids: toCsv(state.lastMove.iids)
+        };
+    }
 
     return {
         state: dbState,
@@ -144,7 +155,6 @@ function fromDb(room) {
     const decks = room.decks || {};
     const board = raw.board || {};
     const horn = raw.horn || {};
-    const weather = raw.weather || {};
     const grave = raw.grave || {};
 
     return {
@@ -169,9 +179,12 @@ function fromDb(room) {
         grave: { A: fromCsv(grave.A), B: fromCsv(grave.B) },
         board: { A: rowsFromDb(board.A), B: rowsFromDb(board.B) },
         horn:  { A: hornFromDb(horn.A), B: hornFromDb(horn.B) },
-        weather: { frost: !!weather.frost, fog: !!weather.fog, rain: !!weather.rain },
+        weatherCards: fromCsv(raw.weatherCards),
         pending: raw.pending
             ? { kind: raw.pending.kind, side: raw.pending.side, options: fromCsv(raw.pending.options) }
+            : null,
+        lastMove: raw.lastMove
+            ? { side: raw.lastMove.side, text: raw.lastMove.text, iids: fromCsv(raw.lastMove.iids) }
             : null,
         history: historyFromDb(raw.history),
         log: raw.log ? String(raw.log).split("\n") : []

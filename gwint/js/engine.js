@@ -56,6 +56,12 @@ export function cardOf(iid) {
     return getCard(defIdOf(iid));
 }
 
+/** Przestrzeń nazw identyfikatora — z której talii pochodzi egzemplarz. */
+export function nsOf(iid) {
+    return iid.slice(0, iid.indexOf(":"));
+}
+
+
 /* ============================================================
    NARZĘDZIA WEWNĘTRZNE
    ============================================================ */
@@ -73,6 +79,10 @@ function log(state, text) {
     if (state.log.length > MAX_LOG) {
         state.log = state.log.slice(-MAX_LOG);
     }
+}
+
+function setLastMove(state, side, text, iids) {
+    state.lastMove = { side: side, text: text, iids: iids || [] };
 }
 
 function removeFrom(list, value) {
@@ -126,11 +136,12 @@ export function createLobby(seed) {
             B: { melee: [], ranged: [], siege: [] }
         },
         horn: {
-            A: { melee: false, ranged: false, siege: false },
-            B: { melee: false, ranged: false, siege: false }
+            A: { melee: "", ranged: "", siege: "" },
+            B: { melee: "", ranged: "", siege: "" }
         },
-        weather: { frost: false, fog: false, rain: false },
+        weatherCards: [],
         pending: null,
+        lastMove: null,
         history: [],
         log: []
     };
@@ -268,10 +279,30 @@ function determineStarter(state) {
    LICZENIE SIŁY
    ============================================================ */
 
-function weatherHits(state, row) {
-    return (state.weather.frost && row === "melee")
-        || (state.weather.fog && row === "ranged")
-        || (state.weather.rain && row === "siege");
+/** Czy rząd jest objęty pogodą — wynika z kart leżących na wspólnym polu pogody. */
+export function weatherAffects(state, row) {
+    return state.weatherCards.some(iid => WEATHER_ROW[cardOf(iid).special] === row);
+}
+
+/** Karty pogody wracają na cmentarze tych, którzy je zagrali. */
+function clearWeatherField(state) {
+    for (const iid of state.weatherCards) {
+        state.grave[nsOf(iid)].push(iid);
+    }
+    state.weatherCards = [];
+}
+
+/** Rogi zagrane jako karty idą na cmentarz strony, po której leżały. */
+function clearHornCards(state) {
+    for (const side of SIDES) {
+        for (const row of ROWS) {
+            const value = state.horn[side][row];
+            if (value && value !== "leader") {
+                state.grave[side].push(value);
+            }
+            state.horn[side][row] = "";
+        }
+    }
 }
 
 function hornHits(state, boardSide, row, iid) {
@@ -289,7 +320,7 @@ export function cardStrength(state, boardSide, row, iid) {
 
     let value = card.strength;
 
-    if (weatherHits(state, row)) {
+    if (weatherAffects(state, row)) {
         value = 1;
     }
 
@@ -450,6 +481,8 @@ export function playCard(state, side, iid, params = {}) {
         placeUnit(s, side, iid, true);
     }
 
+    setLastMove(s, side, "zagrał " + card.name, [iid]);
+
     if (!s.pending) {
         advanceTurn(s, side);
     }
@@ -463,13 +496,19 @@ function applySpecial(state, side, iid, params) {
         case "frost":
         case "fog":
         case "rain": {
-            state.weather[card.special] = true;
-            state.grave[side].push(iid);
-            log(state, side + ": zagrał " + card.name);
+            const active = state.weatherCards
+                .some(other => cardOf(other).special === card.special);
+            if (active) {
+                state.grave[side].push(iid);
+                log(state, side + ": zagrał " + card.name + " — efekt już działał");
+            } else {
+                state.weatherCards.push(iid);
+                log(state, side + ": zagrał " + card.name);
+            }
             break;
         }
         case "clearWeather": {
-            state.weather = { frost: false, fog: false, rain: false };
+            clearWeatherField(state);
             state.grave[side].push(iid);
             log(state, side + ": zagrał Czystą Pogodę");
             break;
@@ -477,12 +516,15 @@ function applySpecial(state, side, iid, params) {
         case "horn": {
             const row = params.row;
             if (!ROWS.includes(row)) fail("Wskaż rząd dla Rogu Dowódcy.");
-            if (state.horn[side][row]) fail("W tym rzędzie leży już Róg Dowódcy.");
-            state.horn[side][row] = true;
-            state.grave[side].push(iid);
+            const previous = state.horn[side][row];
+            if (previous && previous !== "leader") {
+                state.grave[side].push(previous);
+            }
+            state.horn[side][row] = iid;
             log(state, side + ": zagrał Róg Dowódcy na rząd " + row);
             break;
         }
+
         case "scorch": {
             state.grave[side].push(iid);
             resolveScorch(state);
@@ -561,15 +603,14 @@ export function resolvePending(state, side, choice) {
 
     if (kind === "medic") {
         const options = s.pending.options;
+        if (!options.includes(choice)) fail("Wskrzeszenie jest obowiązkowe — wybierz kartę z listy.");
         s.pending = null;
-        if (choice === "skip") {
-            log(s, side + ": Medyk — rezygnacja ze wskrzeszenia");
-        } else {
-            if (!options.includes(choice)) fail("Tej karty nie ma na liście wyboru.");
-            removeFrom(s.grave[side], choice);
-            log(s, side + ": Medyk wskrzesił " + cardOf(choice).name);
-            placeUnit(s, side, choice, true);
-        }
+
+        removeFrom(s.grave[side], choice);
+        log(s, side + ": Medyk wskrzesił " + cardOf(choice).name);
+        placeUnit(s, side, choice, true);
+        setLastMove(s, side, "wskrzesił " + cardOf(choice).name, [choice]);
+
         if (!s.pending) {
             advanceTurn(s, side);
         }
@@ -592,20 +633,25 @@ export function useLeader(state, side, params = {}) {
     if (!leader) fail("Brak lidera dla tego gracza.");
 
     if (leader.ability === "clearWeather") {
-        s.weather = { frost: false, fog: false, rain: false };
+        clearWeatherField(s);
     } else if (leader.ability === "weather") {
-        s.weather[leader.weather] = true;
+        // Lider zagrywa pogodę spoza talii — egzemplarz oznaczamy numerem "leader"
+        s.weatherCards.push(makeIid(side, leader.weather, "leader"));
     } else if (leader.ability === "horn") {
         const row = params.row;
         if (!ROWS.includes(row)) fail("Wskaż rząd dla Rogu Dowódcy.");
-        if (s.horn[side][row]) fail("W tym rzędzie leży już Róg Dowódcy.");
-        s.horn[side][row] = true;
+        const previous = s.horn[side][row];
+        if (previous && previous !== "leader") {
+            s.grave[side].push(previous);
+        }
+        s.horn[side][row] = "leader";
     } else {
         fail("Nieobsługiwana zdolność lidera: " + leader.ability);
     }
 
     s.leaderUsed[side] = true;
     log(s, side + ": użył zdolności lidera (" + leader.name + ")");
+    setLastMove(s, side, "użył zdolności lidera: " + leader.name, []);
     advanceTurn(s, side);
     return s;
 }
@@ -623,26 +669,45 @@ export function pass(state, side) {
 
     s.passed[side] = true;
     log(s, side + ": spasował");
-
-    if (s.passed.A && s.passed.B) {
-        finishRound(s);
-    } else {
-        s.turn = opposite(side);
-    }
+    setLastMove(s, side, "spasował", []);
+    advanceTurn(s, side);
     return s;
 }
 
-function advanceTurn(state, side) {
-    if (!state.passed[side] && state.hand[side].length === 0) {
-        state.passed[side] = true;
-        log(state, side + ": brak kart, automatyczny pas");
+/** Czy gracz ma czym zagrać: karta w ręce albo niewykorzystana zdolność lidera. */
+function hasAnyMove(state, side) {
+    if (state.hand[side].length > 0) {
+        return true;
     }
+    const leader = LEADER_BY_ID[state.leader[side]];
+    return Boolean(leader) && !state.leaderUsed[side];
+}
+
+/** Pasuje za graczy, którzy nie mają już żadnego legalnego ruchu. */
+function autoPassStuckPlayers(state) {
+    for (const player of SIDES) {
+        if (!state.passed[player] && !hasAnyMove(state, player)) {
+            state.passed[player] = true;
+            log(state, player + ": brak możliwego ruchu, automatyczny pas");
+        }
+    }
+}
+
+function advanceTurn(state, side) {
+    autoPassStuckPlayers(state);
+
     if (state.passed.A && state.passed.B) {
         finishRound(state);
         return;
     }
-    const other = opposite(side);
-    state.turn = state.passed[other] ? side : other;
+    // Tura trafia do tego, kto jeszcze nie spasował
+    if (state.passed.A) {
+        state.turn = "B";
+    } else if (state.passed.B) {
+        state.turn = "A";
+    } else {
+        state.turn = opposite(side);
+    }
 }
 
 /* ============================================================
@@ -683,6 +748,7 @@ function finishRound(state) {
 
     if (state.lives.A <= 0 || state.lives.B <= 0) {
         state.status = "finished";
+        state.ready = { A: false, B: false };   // w tym stanie oznacza zgodę na rewanż
         if (state.lives.A <= 0 && state.lives.B <= 0) {
             state.winner = "draw";
         } else {
@@ -705,6 +771,49 @@ export function acknowledgeRound(state, side) {
         beginNextRound(s);
     }
     return s;
+}
+
+export function requestNewGame(state, side) {
+    const s = clone(state);
+    if (s.status !== "finished") fail("Gra jeszcze się nie skończyła.");
+    if (s.ready[side]) fail("Już zgłosiłeś chęć rewanżu.");
+
+    s.ready[side] = true;
+    log(s, side + ": chce zagrać ponownie");
+
+    if (s.ready.A && s.ready.B) {
+        resetForNewGame(s);
+    }
+    return s;
+}
+
+function resetForNewGame(state) {
+    state.status = "lobby";
+    state.round = 1;
+    state.winner = null;
+    state.ready = { A: false, B: false };
+    state.leaderUsed = { A: false, B: false };
+    state.passed = { A: false, B: false };
+    state.lives = { A: 2, B: 2 };
+    state.mulliganLeft = { A: 2, B: 2 };
+    state.mulliganDone = { A: false, B: false };
+    state.deck = { A: [], B: [] };
+    state.hand = { A: [], B: [] };
+    state.grave = { A: [], B: [] };
+    state.board = {
+        A: { melee: [], ranged: [], siege: [] },
+        B: { melee: [], ranged: [], siege: [] }
+    };
+    state.horn = {
+        A: { melee: "", ranged: "", siege: "" },
+        B: { melee: "", ranged: "", siege: "" }
+    };
+    state.weatherCards = [];
+    state.pending = null;
+    state.lastMove = null;
+    state.history = [];
+    state.log = [];
+    log(state, "nowa gra przy tym samym stole — potwierdźcie talie");
 }
 
 function beginNextRound(state) {
@@ -742,13 +851,12 @@ function beginNextRound(state) {
         }
     }
 
-    state.weather = { frost: false, fog: false, rain: false };
-    state.horn = {
-        A: { melee: false, ranged: false, siege: false },
-        B: { melee: false, ranged: false, siege: false }
-    };
+    clearWeatherField(state);
+    clearHornCards(state);
+
     state.passed = { A: false, B: false };
     state.pending = null;
+    state.lastMove = null;
 
     // Pasywka Królestw Północy — zwycięzca rundy dobiera kartę
     const last = state.history[state.history.length - 1];
@@ -762,6 +870,17 @@ function beginNextRound(state) {
     state.turn = state.startedRound;
     state.status = "playing";
     log(state, "zaczyna " + state.startedRound);
+
+    // Ręki nie uzupełnia się między rundami, więc do nowej rundy można wejść
+    // bez jednej karty — wtedy pasujemy za takiego gracza od razu.
+    autoPassStuckPlayers(state);
+    if (state.passed.A && state.passed.B) {
+        finishRound(state);
+        return;
+    }
+    if (state.passed[state.turn]) {
+        state.turn = opposite(state.turn);
+    }
 }
 
 /* ============================================================

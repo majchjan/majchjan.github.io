@@ -314,7 +314,12 @@ function bindEvents() {
         render();
     };
 
-    $(".back-btn").onclick = () => { location.href = "./index.html"; };
+    $(".back-btn").onclick = () => { location.href = "./index.html" + location.hash; };
+
+    const footerLink = document.querySelector("footer a[href='./index.html']");
+    if (footerLink) {
+        footerLink.href = "./index.html" + location.hash;
+    }
 }
 
 /* ============================================================
