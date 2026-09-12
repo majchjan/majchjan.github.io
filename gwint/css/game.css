@@ -30,6 +30,13 @@ body.ingame .logo,
 body.ingame footer {
     display: none;
 }
+/* W grze zdejmujemy ograniczenie szerokości — rzędy i ręka biorą cały ekran */
+body.ingame .stage {
+    max-width: none;
+}
+body.ingame section {
+    padding: 6px;
+}
 
 /* ============ Stół ============ */
 .table {
@@ -542,26 +549,41 @@ body.ingame footer {
         --card-h: clamp(40px, calc(14.2dvh - 26px), 80px);
     }
 
-    /* Dwie kolumny: pasek boczny i plansza. Stosy schodzą z siatki. */
-    /* Pasek boczny zwężony dokładnie do karty dowódcy */
+    /* Pasek boczny zwężony dokładnie do karty dowódcy.
+       Stół nie rozpycha się na całą wysokość — inaczej nadmiar lądował
+       pod ręką i odpychał przycisk dziennika. */
     .table {
+        flex: 0 0 auto;
+        align-content: start;
         grid-template-columns: calc(var(--leader-w) + 6px) minmax(0, 1fr);
         gap: 4px;
     }
     .sidebar {
         gap: 4px;
     }
+    /* Jawne rozmieszczenie, bo stosy dzielą komórki z planszą i ręką */
+    .sidebar       { grid-column: 1; grid-row: 1; }
+    .board         { grid-column: 2; grid-row: 1; }
+    .leader-bottom { grid-column: 1; grid-row: 2; }
+    .hand          { grid-column: 2; grid-row: 2; }
 
-    /* ---- Cmentarz i talia jako ikony wystające z prawej krawędzi ---- */
+    /* ---- Cmentarz i talia jako ikony przy prawej krawędzi planszy ----
+       Leżą w tych samych komórkach siatki co plansza i ręka, tylko dosunięte
+       do prawej — dzięki temu trzymają się ich wysokości, a nie krawędzi stołu. */
     .sidecol {
-        position: absolute;
-        right: 0;
         z-index: 15;
-        flex-direction: row;
+        grid-column: 2;
+        justify-self: end;
         gap: 0;
     }
-    .sidecol-top    { top: 2px; }
-    .sidecol-bottom { bottom: 2px; }
+    .sidecol-top {
+        grid-row: 1;
+        align-self: start;
+    }
+    .sidecol-bottom {
+        grid-row: 2;
+        align-self: center;
+    }
     .pilegroup {
         flex-direction: column;
         gap: 4px;
