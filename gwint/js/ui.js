@@ -215,7 +215,7 @@ function renderMulligan() {
     const hand = $(".mulligan-hand");
     hand.replaceChildren();
     const canSwap = !state.mulliganDone[seat] && state.mulliganLeft[seat] > 0;
-    for (const iid of state.hand[seat]) {
+    for (const iid of sortedHand(state.hand[seat])) {
         const element = cardElement(iid, { clickable: canSwap });
         element.onclick = () => openPreview(
             iid,
@@ -471,13 +471,29 @@ function allowedRows(card) {
     return hasAbility(card, "agile") ? ["melee", "ranged"] : ROWS;
 }
 
+/**
+ * Ręka pokazywana według siły: najpierw karty specjalne,
+ * potem jednostki od najsilniejszej. Sam stan zostaje w kolejności dobierania.
+ */
+function sortedHand(iids) {
+    return iids.slice().sort((a, b) => {
+        const cardA = engine.cardOf(a);
+        const cardB = engine.cardOf(b);
+        const specialA = cardA.type === "special" ? 1 : 0;
+        const specialB = cardB.type === "special" ? 1 : 0;
+        if (specialA !== specialB) return specialB - specialA;
+        if (cardB.strength !== cardA.strength) return cardB.strength - cardA.strength;
+        return cardA.name.localeCompare(cardB.name, "pl");
+    });
+}
+
 function renderHand() {
     const state = view.state;
     const seat = mySeat();
     const hand = $(".game-hand");
     hand.replaceChildren();
 
-    for (const iid of state.hand[seat]) {
+    for (const iid of sortedHand(state.hand[seat])) {
         const clickable = myTurn();
         const element = cardElement(iid, {
             clickable: clickable,
