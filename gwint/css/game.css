@@ -39,7 +39,8 @@ body.ingame footer {
     min-height: 0;
     display: grid;
     grid-template-columns: minmax(150px, 180px) minmax(0, 1fr) minmax(150px, 180px);
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-rows: auto auto;
+    align-content: center;
     gap: 6px;
     align-items: stretch;
 }
@@ -284,7 +285,6 @@ body.ingame footer {
 .board {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     gap: 2px;
     min-height: 0;
 }
@@ -420,6 +420,7 @@ body.ingame footer {
 /* ============ Ręka, sterowanie, komunikaty ============ */
 
 .hand {
+    align-self: start;
     width: 100%;
     display: flex;
     align-items: center;
@@ -658,7 +659,7 @@ body.ingame footer {
     .handcount {
         font-size: 0.7em;
     }
-    
+
     .weathercards > .card + .card {
         margin-left: calc(var(--card-w) * -0.86);
     }
