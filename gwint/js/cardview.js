@@ -336,6 +336,35 @@ export function openPileView(title, cards) {
     box.classList.remove("hidden");
 }
 
+/** Nakładka z tekstem — dziennik zdarzeń. Ten sam mechanizm co podgląd stosu. */
+export function openTextView(title, text) {
+    const box = ensureOverlay();
+    box.replaceChildren();
+
+    const inner = document.createElement("div");
+    inner.className = "cardoverlay-inner";
+
+    const heading = document.createElement("div");
+    heading.className = "pileview-title";
+    heading.textContent = title;
+    inner.appendChild(heading);
+
+    const body = document.createElement("pre");
+    body.className = "logview";
+    body.textContent = text || "(pusto)";
+    body.onclick = event => event.stopPropagation();
+    inner.appendChild(body);
+
+    const hintBox = document.createElement("div");
+    hintBox.className = "cardoverlay-hint";
+    hintBox.textContent = "Kliknij poza oknem, aby zamknąć";
+    inner.appendChild(hintBox);
+
+    box.appendChild(inner);
+    pendingConfirm = null;
+    box.classList.remove("hidden");
+}
+
 /** Ruch większy niż tyle pikseli traktujemy jako przeciąganie, nie kliknięcie. */
 const DRAG_THRESHOLD = 5;
 

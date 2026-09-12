@@ -2,9 +2,9 @@
 .card {
     position: relative;
     flex: 0 0 auto;
-    width: 80px;
-    height: 113px;
-    font-size: 18px;
+    width: var(--card-w, 80px);
+    height: var(--card-h, 113px);
+    font-size: var(--card-fs, 18px);
     border: 2px solid #666;
     background-color: #16181d;
     border-radius: 10px;

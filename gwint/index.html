@@ -83,17 +83,19 @@
                             <div class="weathercards"></div>
                         </div>
 
-                        <div class="playerbox player-bottom">
-                            <div class="playerfaction">—</div>
-                            <div class="playerline">
-                                <div class="lives"></div>
-                                <div class="handcount">0</div>
+                        <div class="playergroup">
+                            <div class="playerbox player-bottom">
+                                <div class="playerfaction">—</div>
+                                <div class="playerline">
+                                    <div class="lives"></div>
+                                    <div class="handcount">0</div>
+                                </div>
+                                <div class="total">0</div>
+                                <button class="nextbutton pass-btn">Pas</button>
+                                <div class="playerstate"></div>
                             </div>
-                            <div class="total">0</div>
-                            <div class="playerstate"></div>
+                            <button class="exit-btn leave-btn" title="Opuść stół"></button>
                         </div>
-
-                        <div class="leaderbox leader-bottom"></div>
                     </div>
 
                     <div class="board">
@@ -139,8 +141,8 @@
                         </div>
                     </div>
 
-                    <div class="sidecol">
-                        <div class="pilegroup pilegroup-top">
+                    <div class="sidecol sidecol-top">
+                        <div class="pilegroup">
                             <div class="pile grave-top">
                                 <div class="pileslot"></div>
                                 <div class="pilecount">0</div>
@@ -150,7 +152,14 @@
                                 <div class="pilecount">0</div>
                             </div>
                         </div>
-                        <div class="pilegroup pilegroup-bottom">
+                    </div>
+
+                    <div class="leaderbox leader-bottom"></div>
+
+                    <div class="hand game-hand"></div>
+
+                    <div class="sidecol sidecol-bottom">
+                        <div class="pilegroup">
                             <div class="pile grave-bottom">
                                 <div class="pileslot"></div>
                                 <div class="pilecount">0</div>
@@ -161,25 +170,17 @@
                             </div>
                         </div>
                     </div>
+
                 </div>
 
                 <div class="prompt hidden"></div>
-
-                <div class="controls">
-                    <button class="leader-btn">Zdolność lidera</button>
-                    <button class="nextbutton pass-btn">Pas</button>
-                    <button class="nextbutton leave-btn">Opuść stół</button>
-                </div>
-
-                <div class="hand game-hand"></div>
                 <div class="noteshower game-note"></div>
 
             </div>
 
             <!-- ============ PANEL DEBUGOWY ============ -->
-            <div class="logpanel collapsed">
+            <div class="logpanel">
                 <button class="log-toggle">Dziennik zdarzeń</button>
-                <pre class="logtext"></pre>
             </div>
 
         </div>

@@ -1,9 +1,43 @@
+/* ============ Skala i wypełnienie okna ============ */
+
+:root {
+    --card-h: clamp(58px, 9.4vh, 113px);
+    --card-w: calc(var(--card-h) / 1.4125);
+    --card-fs: calc(var(--card-w) / 4.44);
+    --slot-gap: 4px;
+}
+body {
+    height: 100vh;
+}
+section {
+    min-height: 0;
+    overflow-y: auto;
+}
+.stage {
+    flex: 1;
+    min-height: 0;
+    max-width: 1400px;
+}
+.game-screen.active {
+    flex: 1;
+    min-height: 0;
+}
+
+body.ingame .logo,
+body.ingame footer {
+    display: none;
+}
+
 /* ============ Stół ============ */
 .table {
+    position: relative;
     width: 100%;
+    flex: 1;
+    min-height: 0;
     display: grid;
-    grid-template-columns: 180px minmax(0, 1fr) 180px;
-    gap: 8px;
+    grid-template-columns: minmax(150px, 180px) minmax(0, 1fr) minmax(150px, 180px);
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 6px;
     align-items: stretch;
 }
 
@@ -19,19 +53,29 @@
     justify-content: center;
 }
 .leaderbox .card {
-    cursor: pointer;
+    cursor: default;
 }
 .leaderbox.used .card {
     filter: grayscale(0.8) brightness(0.45);
-    cursor: default;
 }
+
+.leaderbox.available .card {
+    cursor: pointer;
+    box-shadow: 0 0 0 2px rgba(0, 190, 32, 0.7);
+}
+.leaderbox.available .card:hover {
+    box-shadow: 0 0 0 3px #00be20, 0 0 14px 3px rgba(0, 190, 32, 0.6);
+    transform: translateY(-4px);
+}
+
 .playerbox {
     border: 2px solid #333;
     border-radius: 6px;
     background-color: rgba(0, 0, 0, 0.6);
-    padding: 6px 8px;
+    padding: 6px 8px 4px 8px;
     text-align: center;
 }
+
 .playerbox.active {
     border-color: #00be20;
 }
@@ -76,6 +120,45 @@
     font-weight: bolder;
     line-height: 1;
 }
+
+.playerbox .pass-btn {
+    width: 100%;
+    margin: 4px 0 0 0;
+    padding: 4px;
+}
+
+.playergroup {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.exit-btn {
+    width: 100%;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    background-color: #ff4c4c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.exit-btn:hover:not(:disabled) {
+    background-color: #f10909;
+}
+.exit-btn::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    background-color: #ffffff;
+    -webkit-mask: url(../img/icons/exit.svg) no-repeat center / contain;
+    mask: url(../img/icons/exit.svg) no-repeat center / contain;
+}
+
+.playerstate:empty {
+    min-height: 0;
+    margin: 0;
+}
 .playerstate {
     font-size: 1.15em;
     font-weight: bolder;
@@ -103,9 +186,9 @@
 }
 /* Pogoda mieści się po trzy karty w wąskiej kolumnie */
 .weatherfield .card {
-    width: 50px;
-    height: 71px;
-    font-size: 11px;
+    width: calc(var(--card-w) * 0.62);
+    height: calc(var(--card-h) * 0.62);
+    font-size: calc(var(--card-fs) * 0.62);
 }
 
 /* ---- Prawa kolumna: cmentarze i talie ---- */
@@ -135,8 +218,8 @@
 /* Puste miejsce wielkości karty — slot rogu, cmentarz, talia */
 .pileslot,
 .hornslot {
-    width: 80px;
-    height: 113px;
+    width: var(--card-w);
+    height: var(--card-h);
     flex: 0 0 auto;
     border: 2px dashed #444;
     border-radius: 10px;
@@ -158,8 +241,8 @@
 }
 /* Rewers talii — tło ustawia ui.js, bo zależy od frakcji */
 .deckback {
-    width: 80px;
-    height: 113px;
+    width: var(--card-w);
+    height: var(--card-h);
     border: 2px solid #666;
     border-radius: 10px;
     background-size: cover;
@@ -174,8 +257,10 @@
 .board {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 4px;
+    min-height: 0;
 }
+
 .turnbar {
     display: flex;
     align-items: center;
@@ -205,14 +290,17 @@
     margin: 3px 0;
 }
 .row {
+    flex: 1;
+    min-height: 0;
     display: flex;
     align-items: center;
     gap: 6px;
     border: 1px solid #333;
     border-radius: 6px;
-    padding: 4px;
+    padding: 3px;
     background-color: rgba(0, 0, 0, 0.55);
 }
+
 .row.melee  { border-left: 5px solid #ff4c4c; }
 .row.ranged { border-left: 5px solid #00be20; }
 .row.siege  { border-left: 5px solid #008cff; }
@@ -241,7 +329,8 @@
 .rowcards {
     flex: 1;
     min-width: 0;
-    min-height: 120px;
+    min-height: 0;
+    height: 100%;
     display: flex;
     align-items: center;
     gap: 4px;
@@ -301,17 +390,22 @@
 
 
 /* ============ Ręka, sterowanie, komunikaty ============ */
+
 .hand {
     width: 100%;
     display: flex;
-    gap: 5px;
+    align-items: center;
+    gap: 4px;
     overflow-x: auto;
-    padding: 8px 0;
-    min-height: 130px;
-    border-top: 1px solid #333;
+    padding: 4px;
+    min-height: calc(var(--card-h) + 10px);
+    border: 1px solid #333;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.55);
     scrollbar-width: none;
     cursor: grab;
 }
+
 /* Karty zachowują własny kursor — chwyt dotyczy wolnej przestrzeni paska */
 .hand.dragging,
 .rowcards.dragging {
@@ -330,24 +424,20 @@
     margin-right: auto;
 }
 
-.controls {
-    width: 100%;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    margin-top: 8px;
-}
-.controls button {
-    flex: 1 1 130px;
-}
 .prompt {
-    width: 100%;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    max-width: 92%;
     border: 2px solid #ffcc33;
     border-radius: 6px;
-    background-color: rgba(255, 204, 51, 0.1);
-    padding: 8px;
-    margin: 8px 0;
+    background-color: rgba(20, 18, 10, 0.97);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.85);
+    padding: 10px;
 }
+
 .prompt.hidden {
     display: none;
 }
@@ -360,31 +450,38 @@
     flex-wrap: wrap;
     gap: 4px;
 }
-
-/* ============ Panel debugowy ============ */
+/* ============ Dziennik zdarzeń ============ */
 .logpanel {
     width: 100%;
-    margin-top: 12px;
+    margin-top: 4px;
 }
 .log-toggle {
-    background-color: #555;
     width: 100%;
+    margin: 0;
+    background-color: #444;
+    padding: 4px;
+    font-size: 0.85em;
 }
-.logtext {
-    max-height: 180px;
+.log-toggle:hover:not(:disabled) {
+    background-color: #666;
+}
+.logview {
+    max-height: 60vh;
+    max-width: 90vw;
     overflow-y: auto;
-    font-size: 0.7em;
-    line-height: 1.4;
+    font-family: monospace;
+    font-size: 0.8em;
+    line-height: 1.5;
     white-space: pre-wrap;
     background-color: #111;
-    border: 1px solid #333;
-    border-radius: 4px;
-    padding: 6px;
-    margin-top: 4px;
-    font-family: monospace;
+    border: 2px solid #444;
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: text;
 }
-.logpanel.collapsed .logtext {
-    display: none;
+.game-note:empty {
+    min-height: 0;
+    margin: 0;
 }
 
 /* ============ Telefon ============ */

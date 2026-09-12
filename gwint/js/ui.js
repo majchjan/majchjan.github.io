@@ -9,7 +9,7 @@ import * as net from "./net.js";
 import * as engine from "./engine.js";
 import { DECKS, PASSIVES, LEADER_BY_ID, ROWS, hasAbility, validateDeck } from "./cards.js";
 import * as storage from "./decks-storage.js";
-import { openCardPreview, openPileView, describeCard, buildCard, leaderCard,
+import { openCardPreview, openPileView, openTextView, describeCard, buildCard, leaderCard,
          backArtUrl, enableDragScroll } from "./cardview.js";
 
 const PASSIVE_TEXT = {
@@ -269,10 +269,11 @@ function renderLeaderBox(selector, side) {
     if (!leader) return;
 
     const used = state.leaderUsed[side];
+    const canUse = side === bottomSide() && !used && myTurn();
     box.classList.toggle("used", used);
+    box.classList.toggle("available", canUse);
 
     const pseudo = leaderCard(leader);
-    const canUse = side === bottomSide() && !used && myTurn();
     const element = buildCard(pseudo, {});
     element.onclick = () => openCardPreview({
         card: pseudo,
@@ -301,6 +302,11 @@ function renderPlayerBox(selector, side) {
         lives.appendChild(dot);
     }
     box.querySelector(".playerstate").textContent = state.passed[side] ? "PAS" : "";
+
+    const passBtn = box.querySelector(".pass-btn");
+    if (passBtn) {
+        passBtn.hidden = state.passed[side];
+    }
 }
 
 function renderTurnbar() {
@@ -528,14 +534,6 @@ function onHandCard(iid) {
 }
 
 function renderControls() {
-    const state = view.state;
-    const seat = mySeat();
-    const leader = LEADER_BY_ID[state.leader[seat]];
-
-    const leaderBtn = $(".leader-btn");
-    leaderBtn.disabled = !myTurn() || state.leaderUsed[seat] || !leader;
-    leaderBtn.textContent = leader ? "Lider: " + leader.text : "Zdolność lidera";
-
     $(".pass-btn").disabled = !myTurn();
 }
 
@@ -647,8 +645,12 @@ function renderPrompt() {
    ============================================================ */
 
 function render() {
-    // Reset — renderery poniżej ustawiają stany przycisków od nowa
+    // Reset stanów przycisków — poniższe renderery ustawiają je od nowa
     $$("button").forEach(button => { button.disabled = false; });
+
+    // Podczas rozgrywki chowamy nagłówek i stopkę — cała wysokość idzie na planszę
+    const status = view ? view.state.status : "lobby";
+    document.body.classList.toggle("ingame", status !== "lobby" && status !== "mulligan");
 
     if (!view) {
         showScreen("lobby");
@@ -670,7 +672,6 @@ function render() {
             renderPiles();
             renderPrompt();
         }
-        $(".logtext").textContent = view.state.log.join("\n");
     }
 
     if (busy) {
@@ -742,13 +743,12 @@ function bindEvents() {
 
     $(".pass-btn").onclick = () => submit((s, side) => engine.pass(s, side));
 
-    $(".leader-btn").onclick = useLeaderAbility;
-
     $$(".leave-btn").forEach(button => {
         button.onclick = () => { net.leaveRoom(); view = null; selected = null; render(); };
     });
 
-    $(".log-toggle").onclick = () => $(".logpanel").classList.toggle("collapsed");
+    $(".log-toggle").onclick = () => openTextView("Dziennik zdarzeń",
+        view ? view.state.log.join("\n") : "");
 
     // Poziome przewijanie ręki i rzędów: przeciąganie myszą oraz kółko
     $$(".hand").forEach(enableDragScroll);
