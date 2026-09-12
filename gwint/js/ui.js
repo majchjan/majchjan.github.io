@@ -543,9 +543,19 @@ function renderPrompt() {
     if (state.status === "finished") {
         const result = state.winner === "draw" ? "Remis!"
             : (state.winner === seat ? "Wygrywasz całą grę!" : "Przegrywasz grę.");
-        const row = open(result + "  Wynik rund: "
+        const row = open(result + "   Wynik rund: "
             + state.history.map(h => h.A + ":" + h.B).join(", "));
-        button(row, "Wróć do lobby", () => { net.leaveRoom(); view = null; render(); });
+
+        const again = button(row, "Zagraj ponownie",
+            () => submit((s, side) => engine.requestNewGame(s, side)));
+        if (state.ready[seat]) {
+            again.disabled = true;
+            again.textContent = "Czekam na przeciwnika...";
+        } else if (state.ready[engine.opposite(seat)]) {
+            again.textContent = "Przeciwnik chce rewanżu — zagraj!";
+        }
+
+        button(row, "Opuść stół", () => { net.leaveRoom(); view = null; render(); });
         return;
     }
 

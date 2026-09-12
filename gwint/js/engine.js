@@ -726,6 +726,7 @@ function finishRound(state) {
 
     if (state.lives.A <= 0 || state.lives.B <= 0) {
         state.status = "finished";
+        state.ready = { A: false, B: false };   // w tym stanie oznacza zgodę na rewanż
         if (state.lives.A <= 0 && state.lives.B <= 0) {
             state.winner = "draw";
         } else {
@@ -748,6 +749,48 @@ export function acknowledgeRound(state, side) {
         beginNextRound(s);
     }
     return s;
+}
+
+export function requestNewGame(state, side) {
+    const s = clone(state);
+    if (s.status !== "finished") fail("Gra jeszcze się nie skończyła.");
+    if (s.ready[side]) fail("Już zgłosiłeś chęć rewanżu.");
+
+    s.ready[side] = true;
+    log(s, side + ": chce zagrać ponownie");
+
+    if (s.ready.A && s.ready.B) {
+        resetForNewGame(s);
+    }
+    return s;
+}
+
+function resetForNewGame(state) {
+    state.status = "lobby";
+    state.round = 1;
+    state.winner = null;
+    state.ready = { A: false, B: false };
+    state.leaderUsed = { A: false, B: false };
+    state.passed = { A: false, B: false };
+    state.lives = { A: 2, B: 2 };
+    state.mulliganLeft = { A: 2, B: 2 };
+    state.mulliganDone = { A: false, B: false };
+    state.deck = { A: [], B: [] };
+    state.hand = { A: [], B: [] };
+    state.grave = { A: [], B: [] };
+    state.board = {
+        A: { melee: [], ranged: [], siege: [] },
+        B: { melee: [], ranged: [], siege: [] }
+    };
+    state.horn = {
+        A: { melee: "", ranged: "", siege: "" },
+        B: { melee: "", ranged: "", siege: "" }
+    };
+    state.weatherCards = [];
+    state.pending = null;
+    state.history = [];
+    state.log = [];
+    log(state, "nowa gra przy tym samym stole — potwierdźcie talie");
 }
 
 function beginNextRound(state) {
