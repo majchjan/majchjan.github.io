@@ -509,11 +509,15 @@ function applySpecial(state, side, iid, params) {
         case "horn": {
             const row = params.row;
             if (!ROWS.includes(row)) fail("Wskaż rząd dla Rogu Dowódcy.");
-            if (state.horn[side][row]) fail("W tym rzędzie leży już Róg Dowódcy.");
-            state.horn[side][row] = iid;    // karta zostaje w slocie rzędu
+            const previous = state.horn[side][row];
+            if (previous && previous !== "leader") {
+                state.grave[side].push(previous);
+            }
+            state.horn[side][row] = iid;
             log(state, side + ": zagrał Róg Dowódcy na rząd " + row);
             break;
         }
+
         case "scorch": {
             state.grave[side].push(iid);
             resolveScorch(state);
@@ -629,8 +633,11 @@ export function useLeader(state, side, params = {}) {
     } else if (leader.ability === "horn") {
         const row = params.row;
         if (!ROWS.includes(row)) fail("Wskaż rząd dla Rogu Dowódcy.");
-        if (s.horn[side][row]) fail("W tym rzędzie leży już Róg Dowódcy.");
-        s.horn[side][row] = "leader";   // zdolność lidera, bez fizycznej karty
+        const previous = s.horn[side][row];
+        if (previous && previous !== "leader") {
+            s.grave[side].push(previous);
+        }
+        s.horn[side][row] = "leader";
     } else {
         fail("Nieobsługiwana zdolność lidera: " + leader.ability);
     }

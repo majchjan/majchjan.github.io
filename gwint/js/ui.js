@@ -316,9 +316,17 @@ function renderTurnbar() {
 
     let turnText = "—";
     if (state.status === "playing") {
-        turnText = state.pending
-            ? "Oczekiwanie na wybór"
-            : (state.turn === bottomSide() ? "Twój ruch" : "Ruch przeciwnika");
+        if (state.pending) {
+            turnText = "Oczekiwanie na wybór";
+        } else if (leaderNeedsRow) {
+            turnText = "Wskaż rząd dla zdolności lidera";
+        } else if (selected && selected.needs === "row") {
+            turnText = "Wskaż rząd: " + engine.cardOf(selected.iid).name;
+        } else if (selected && selected.needs === "target") {
+            turnText = "Wskaż jednostkę do zamiany Wabikiem";
+        } else {
+            turnText = state.turn === bottomSide() ? "Twój ruch" : "Ruch przeciwnika";
+        }
     } else if (state.status === "roundEnd") {
         turnText = "Koniec rundy";
     } else if (state.status === "finished") {
@@ -466,6 +474,18 @@ function renderBoard() {
     }
 }
 
+function hasDecoyTarget() {
+    const side = bottomSide();
+    return ROWS.some(row => view.state.board[side][row]
+        .some(iid => engine.cardOf(iid).type === "unit"));
+}
+
+function canPlay(iid) {
+    const card = engine.cardOf(iid);
+    if (card.special === "decoy") return hasDecoyTarget();
+    return true;
+}
+
 function needsOf(card) {
     if (card.special === "horn") return "row";
     if (card.special === "decoy") return "target";
@@ -501,7 +521,7 @@ function renderHand() {
     hand.replaceChildren();
 
     for (const iid of sortedHand(state.hand[seat])) {
-        const clickable = myTurn();
+        const clickable = myTurn() && canPlay(iid);
         const element = cardElement(iid, {
             clickable: clickable,
             selected: selected && selected.iid === iid
@@ -633,21 +653,6 @@ function renderPrompt() {
         }
         return;
     }
-
-    if (leaderNeedsRow) {
-        const row = open("Wskaż rząd po swojej stronie dla zdolności lidera.");
-        button(row, "Anuluj", () => { leaderNeedsRow = false; render(); });
-        return;
-    }
-
-    if (selected) {
-        const card = engine.cardOf(selected.iid);
-        const text = selected.needs === "row"
-            ? card.name + ": wskaż rząd po swojej stronie."
-            : card.name + ": wskaż swoją jednostkę do zamiany (bohaterów nie można).";
-        const row = open(text);
-        button(row, "Anuluj", () => { selected = null; render(); });
-    }
 }
 
 /* ============================================================
@@ -758,6 +763,14 @@ function bindEvents() {
         button.onclick = () => { net.leaveRoom(); view = null; selected = null; render(); };
     });
 
+    $(".fullscreen-btn").onclick = toggleFullscreen;
+    document.addEventListener("fullscreenchange", () => {
+        const button = $(".fullscreen-btn");
+        const on = Boolean(document.fullscreenElement);
+        button.textContent = on ? "🗗" : "⛶";
+        button.title = on ? "Wyjdź z pełnego ekranu" : "Tryb pełnoekranowy";
+    });
+
     $(".log-toggle").onclick = () => openTextView("Dziennik zdarzeń",
         view ? view.state.log.join("\n") : "");
 
@@ -794,6 +807,16 @@ function useLeaderAbility() {
         return;
     }
     submit((s, side) => engine.useLeader(s, side));
+}
+
+function toggleFullscreen() {
+    if (document.fullscreenElement) {
+        document.exitFullscreen();
+        return;
+    }
+    document.documentElement.requestFullscreen().catch(error => {
+        console.error("Nie udało się włączyć pełnego ekranu:", error);
+    });
 }
 
 async function joinFromInput() {
