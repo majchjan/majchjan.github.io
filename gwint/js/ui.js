@@ -99,6 +99,11 @@ function topSide() {
 function cardElement(iid, options = {}) {
     const element = buildCard(engine.cardOf(iid), options);
     element.dataset.iid = iid;
+
+    const move = view && view.state.lastMove;
+    if (move && move.iids.includes(iid)) {
+        element.classList.add("justplayed");
+    }
     return element;
 }
 
@@ -313,6 +318,11 @@ function renderTurnbar() {
         turnText = "Koniec gry";
     }
     $(".turninfo").textContent = turnText;
+
+    const move = state.lastMove;
+    $(".lastmove").textContent = move
+        ? (move.side === bottomSide() ? "Ty: " : "Przeciwnik: ") + move.text
+        : "";
 
     $(".historyinfo").textContent = state.history
         .map(entry => "R" + entry.round + " " + entry.A + ":" + entry.B)

@@ -99,6 +99,11 @@
     color: #ffffff;
 }
 
+/* Karta z ostatniego ruchu — oznaczenie trwa do kolejnego posunięcia */
+.card.justplayed {
+    box-shadow: 0 0 0 3px #ffcc33, 0 0 12px 2px rgba(255, 204, 51, 0.55);
+}
+
 
 /* ============ Podgląd karty ============ */
 .cardoverlay {

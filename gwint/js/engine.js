@@ -81,6 +81,10 @@ function log(state, text) {
     }
 }
 
+function setLastMove(state, side, text, iids) {
+    state.lastMove = { side: side, text: text, iids: iids || [] };
+}
+
 function removeFrom(list, value) {
     const index = list.indexOf(value);
     if (index === -1) {
@@ -137,6 +141,7 @@ export function createLobby(seed) {
         },
         weatherCards: [],
         pending: null,
+        lastMove: null,
         history: [],
         log: []
     };
@@ -476,6 +481,8 @@ export function playCard(state, side, iid, params = {}) {
         placeUnit(s, side, iid, true);
     }
 
+    setLastMove(s, side, "zagrał " + card.name, [iid]);
+
     if (!s.pending) {
         advanceTurn(s, side);
     }
@@ -593,6 +600,7 @@ export function resolvePending(state, side, choice) {
             removeFrom(s.grave[side], choice);
             log(s, side + ": Medyk wskrzesił " + cardOf(choice).name);
             placeUnit(s, side, choice, true);
+            setLastMove(s, side, "wskrzesił " + cardOf(choice).name, [choice]);
         }
         if (!s.pending) {
             advanceTurn(s, side);
@@ -631,6 +639,7 @@ export function useLeader(state, side, params = {}) {
 
     s.leaderUsed[side] = true;
     log(s, side + ": użył zdolności lidera (" + leader.name + ")");
+    setLastMove(s, side, "użył zdolności lidera: " + leader.name, []);
     advanceTurn(s, side);
     return s;
 }
@@ -648,6 +657,7 @@ export function pass(state, side) {
 
     s.passed[side] = true;
     log(s, side + ": spasował");
+    setLastMove(s, side, "spasował", []);
     advanceTurn(s, side);
     return s;
 }
@@ -788,6 +798,7 @@ function resetForNewGame(state) {
     };
     state.weatherCards = [];
     state.pending = null;
+    state.lastMove = null;
     state.history = [];
     state.log = [];
     log(state, "nowa gra przy tym samym stole — potwierdźcie talie");
@@ -833,6 +844,7 @@ function beginNextRound(state) {
 
     state.passed = { A: false, B: false };
     state.pending = null;
+    state.lastMove = null;
 
     // Pasywka Królestw Północy — zwycięzca rundy dobiera kartę
     const last = state.history[state.history.length - 1];

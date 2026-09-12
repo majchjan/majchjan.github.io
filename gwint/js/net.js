@@ -133,6 +133,13 @@ function toDb(state) {
             options: toCsv(state.pending.options)
         };
     }
+    if (state.lastMove) {
+        dbState.lastMove = {
+            side: state.lastMove.side,
+            text: state.lastMove.text,
+            iids: toCsv(state.lastMove.iids)
+        };
+    }
 
     return {
         state: dbState,
@@ -175,6 +182,9 @@ function fromDb(room) {
         weatherCards: fromCsv(raw.weatherCards),
         pending: raw.pending
             ? { kind: raw.pending.kind, side: raw.pending.side, options: fromCsv(raw.pending.options) }
+            : null,
+        lastMove: raw.lastMove
+            ? { side: raw.lastMove.side, text: raw.lastMove.text, iids: fromCsv(raw.lastMove.iids) }
             : null,
         history: historyFromDb(raw.history),
         log: raw.log ? String(raw.log).split("\n") : []
