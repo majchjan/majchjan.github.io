@@ -212,17 +212,18 @@ export function describeCard(card) {
 
 let overlay = null;
 let pendingConfirm = null;
+let dismissible = true;
 
 function ensureOverlay() {
     if (overlay) return overlay;
 
     overlay = document.createElement("div");
     overlay.className = "cardoverlay hidden";
-    overlay.onclick = () => closeCardPreview();
+    overlay.onclick = () => { if (dismissible) closeCardPreview(); };
     document.body.appendChild(overlay);
 
     document.addEventListener("keydown", event => {
-        if (event.key === "Escape") closeCardPreview();
+        if (event.key === "Escape" && dismissible) closeCardPreview();
     });
     return overlay;
 }
@@ -232,6 +233,7 @@ export function closeCardPreview() {
     overlay.classList.add("hidden");
     overlay.replaceChildren();
     pendingConfirm = null;
+    dismissible = true;
 }
 
 /**
@@ -304,10 +306,19 @@ export function openCardPreview({ card, strength, hint, onConfirm }) {
     box.classList.remove("hidden");
 }
 
-/** Przegląd zawartości stosu: talii albo cmentarza. Karty w formie szczegółowej. */
-export function openPileView(title, cards) {
+/**
+ * Przegląd zawartości stosu: talii, cmentarza albo listy do wyboru.
+ * Karty w formie szczegółowej, przewijane w poziomie.
+ *
+ * @param {string} title
+ * @param {object[]} cards definicje kart
+ * @param {(index: number) => void} [onPick] gdy podany, karty są klikalne,
+ *        a okna nie da się zamknąć bez dokonania wyboru
+ */
+export function openPileView(title, cards, onPick) {
     const box = ensureOverlay();
     box.replaceChildren();
+    dismissible = !onPick;
 
     const inner = document.createElement("div");
     inner.className = "cardoverlay-inner";
@@ -319,16 +330,27 @@ export function openPileView(title, cards) {
 
     const strip = document.createElement("div");
     strip.className = "pileview";
-    strip.onclick = event => event.stopPropagation();   // klik w pasek nie zamyka
-    for (const card of cards) {
-        strip.appendChild(buildPreviewFrame(card));
-    }
+    strip.onclick = event => event.stopPropagation();
+    cards.forEach((card, index) => {
+        const frame = buildPreviewFrame(card);
+        if (onPick) {
+            frame.classList.add("actionable");
+            frame.onclick = event => {
+                event.stopPropagation();
+                closeCardPreview();
+                onPick(index);
+            };
+        }
+        strip.appendChild(frame);
+    });
     inner.appendChild(strip);
     enableDragScroll(strip);
 
     const hintBox = document.createElement("div");
     hintBox.className = "cardoverlay-hint";
-    hintBox.textContent = "Przewijaj w bok · kliknij poza kartami, aby zamknąć";
+    hintBox.textContent = onPick
+        ? "Wybór jest obowiązkowy — kliknij kartę"
+        : "Przewijaj w bok · kliknij poza kartami, aby zamknąć";
     inner.appendChild(hintBox);
 
     box.appendChild(inner);

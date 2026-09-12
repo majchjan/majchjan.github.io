@@ -9,8 +9,8 @@ import * as net from "./net.js";
 import * as engine from "./engine.js";
 import { DECKS, PASSIVES, LEADER_BY_ID, ROWS, hasAbility, validateDeck } from "./cards.js";
 import * as storage from "./decks-storage.js";
-import { openCardPreview, openPileView, openTextView, describeCard, buildCard, leaderCard,
-         backArtUrl, enableDragScroll } from "./cardview.js";
+import { openCardPreview, openPileView, openTextView, closeCardPreview, describeCard,
+         buildCard, leaderCard, backArtUrl, enableDragScroll } from "./cardview.js";
 
 const PASSIVE_TEXT = {
     drawOnRoundWin:  "Dobiera 1 kartę po wygranej rundzie",
@@ -27,6 +27,7 @@ let view = null;            // ostatni stan z net.onRoomChange
 let selected = null;        // { iid, needs: "row" | "target" }
 let leaderNeedsRow = false; // lider czeka na wskazanie rzędu
 let chosenDeckId = null;
+let medicShown = null;   // sygnatura otwartego wyboru Medyka
 let deckAutoTried = false;
 let busy = false;
 let errorText = "";
@@ -537,6 +538,26 @@ function renderControls() {
     $(".pass-btn").disabled = !myTurn();
 }
 
+function syncMedicChoice() {
+    const pending = view.state.pending;
+    const mine = pending && pending.kind === "medic" && pending.side === mySeat();
+    const signature = mine ? pending.options.join(",") : null;
+
+    if (signature === medicShown) return;
+    medicShown = signature;
+
+    if (!signature) {
+        closeCardPreview();
+        return;
+    }
+    const options = pending.options;
+    openPileView(
+        "Medyk: wskrzesz jednostkę z cmentarza",
+        options.map(iid => engine.cardOf(iid)),
+        index => submit((s, side) => engine.resolvePending(s, side, options[index]))
+    );
+}
+
 function renderPrompt() {
     const state = view.state;
     const seat = mySeat();
@@ -596,17 +617,6 @@ function renderPrompt() {
             return;
         }
         if (state.pending.kind === "medic") {
-            const row = open("Medyk: wskrzesz jednostkę z cmentarza.");
-            for (const iid of state.pending.options) {
-                const element = cardElement(iid, { clickable: true });
-                element.onclick = () => openPreview(
-                    iid,
-                    undefined,
-                    "Kliknij kartę, aby ją wskrzesić",
-                    () => submit((s, side) => engine.resolvePending(s, side, iid))
-                );
-                row.appendChild(element);
-            }
             return;
         }
     }
@@ -669,8 +679,9 @@ function render() {
             renderBoard();
             renderHand();
             renderControls();
-            renderPiles();
-            renderPrompt();
+        renderPiles();
+        renderPrompt();
+        syncMedicChoice();
         }
     }
 
@@ -811,6 +822,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             selected = null;
             leaderNeedsRow = false;
             deckAutoTried = false;
+            medicShown = null;
         }
         render();
         maybeAutoPickDeck();
