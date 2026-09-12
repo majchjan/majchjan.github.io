@@ -496,8 +496,15 @@ function applySpecial(state, side, iid, params) {
         case "frost":
         case "fog":
         case "rain": {
-            state.weatherCards.push(iid);   // karta zostaje na polu pogody
-            log(state, side + ": zagrał " + card.name);
+            const active = state.weatherCards
+                .some(other => cardOf(other).special === card.special);
+            if (active) {
+                state.grave[side].push(iid);
+                log(state, side + ": zagrał " + card.name + " — efekt już działał");
+            } else {
+                state.weatherCards.push(iid);
+                log(state, side + ": zagrał " + card.name);
+            }
             break;
         }
         case "clearWeather": {

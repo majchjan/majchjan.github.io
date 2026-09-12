@@ -119,12 +119,21 @@ body.ingame footer {
     border-color: #ff8a8a;
 }
 .handcount {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
     font-size: 0.85em;
     color: #9fb0c0;
 }
 .handcount::before {
-    content: "ręka: ";
+    content: "";
+    width: 1.2em;
+    height: 1.2em;
+    background-color: #9fb0c0;
+    -webkit-mask: url(../img/icons/cards.svg) no-repeat center / contain;
+    mask: url(../img/icons/cards.svg) no-repeat center / contain;
 }
+
 .playerbox .total {
     font-size: 2em;
     font-weight: bolder;
@@ -526,39 +535,139 @@ body.ingame footer {
 
 /* ============ Telefon ============ */
 @media (max-width: 700px) {
+    /* Wysokość liczona z dvh, nie vh — pasek adresu chowa się i wraca,
+       a plansza nie może przez to skakać */
+    :root {
+        --card-h: clamp(40px, calc(14.2dvh - 26px), 80px);
+    }
+
+    /* Dwie kolumny: pasek boczny i plansza. Stosy schodzą z siatki. */
+    /* Pasek boczny zwężony dokładnie do karty dowódcy */
     .table {
-        grid-template-columns: minmax(0, 1fr);
+        grid-template-columns: calc(var(--leader-w) + 6px) minmax(0, 1fr);
+        gap: 4px;
     }
     .sidebar {
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: stretch;
+        gap: 4px;
     }
-    .sidebar .playerbox {
-        flex: 1 1 140px;
-    }
-    .sidebar .weatherfield {
-        flex: 1 1 100%;
-        min-height: 60px;
-    }
+
+    /* ---- Cmentarz i talia jako ikony wystające z prawej krawędzi ---- */
     .sidecol {
+        position: absolute;
+        right: 0;
+        z-index: 15;
         flex-direction: row;
-        justify-content: space-around;
+        gap: 0;
     }
-    .pileslot,
-    .hornslot,
-    .deckback {
-        width: 60px;
-        height: 85px;
+    .sidecol-top    { top: 2px; }
+    .sidecol-bottom { bottom: 2px; }
+    .pilegroup {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .pile {
+        flex-direction: row;
+        align-items: center;
+        gap: 3px;
+        padding: 3px 5px;
+        border: 1px solid #555;
+        border-right: none;
+        border-radius: 10px 0 0 10px;
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+    .pileslot {
+        width: 17px;
+        height: 17px;
+        border: none;
+        background: none;
+    }
+    .pileslot > * {
+        display: none;   /* karta i rewers ustępują miejsca ikonie */
+    }
+    .pileslot::before {
+        content: "";
+        width: 17px;
+        height: 17px;
+        background-color: #d8c9a3;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-position: center;
+        mask-position: center;
+    }
+    .grave-top .pileslot::before,
+    .grave-bottom .pileslot::before {
+        -webkit-mask-image: url(../img/icons/scorch.svg);
+        mask-image: url(../img/icons/scorch.svg);
+    }
+    .deck-top .pileslot::before,
+    .deck-bottom .pileslot::before {
+        -webkit-mask-image: url(../img/icons/cards.svg);
+        mask-image: url(../img/icons/cards.svg);
+    }
+    .pilecount {
+        font-size: 0.85em;
+    }
+
+    /* ---- Róg zostaje kartą, tylko mniejszą — pełny rozmiar zjadałby ćwierć rzędu ---- */
+    .hornslot {
+        width: calc(var(--card-w) * 0.62);
+        height: calc(var(--card-h) * 0.62);
+    }
+    .hornslot > .card {
+        width: calc(var(--card-w) * 0.62);
+        height: calc(var(--card-h) * 0.62);
+        font-size: calc(var(--card-fs) * 0.62);
+    }
+
+    /* ---- Zacieśnienie reszty ---- */
+    .row {
+        gap: 2px;
     }
     .rowscore {
-        flex-basis: 34px;
-        font-size: 1.2em;
+        flex: 0 0 26px;
+        font-size: 1.1em;
     }
-    .rowcards {
-        min-height: 92px;
+    .turnbar {
+        font-size: 0.7em;
+        padding: 2px 4px;
+        gap: 4px;
     }
-    .hand {
-        min-height: 100px;
+    .historyinfo {
+        display: none;
+    }
+
+    .playerfaction {
+        display: none;
+    }
+
+    .playerbox {
+        padding: 4px 5px 3px 5px;
+    }
+    .playerbox .total {
+        font-size: 1.5em;
+    }
+    .playerstate {
+        font-size: 0.9em;
+    }
+    .playerbox .pass-btn {
+        font-size: 0.8em;
+    }
+    .handcount {
+        font-size: 0.7em;
+    }
+    
+    .weathercards > .card + .card {
+        margin-left: calc(var(--card-w) * -0.86);
+    }
+    .log-toggle {
+        font-size: 0.72em;
+    }
+    .fullscreen-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 14px;
     }
 }

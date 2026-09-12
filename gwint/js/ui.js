@@ -361,17 +361,16 @@ function renderGravePile(selector, side, viewable) {
 
     box.querySelector(".pilecount").textContent = String(list.length);
     slot.replaceChildren();
+    slot.onclick = null;
     slot.classList.toggle("filled", list.length > 0);
     slot.classList.toggle("clickable", viewable && list.length > 0);
     if (list.length === 0) return;
 
-    const topCard = list[list.length - 1];
-    const element = cardElement(topCard, { clickable: viewable });
     if (viewable) {
-        element.onclick = () => openPileView("Twój cmentarz",
+        slot.onclick = () => openPileView("Twój cmentarz",
             list.map(iid => engine.cardOf(iid)));
     }
-    slot.appendChild(element);
+    slot.appendChild(cardElement(list[list.length - 1], { clickable: viewable }));
 }
 
 function renderDeckPile(selector, side, viewable) {
@@ -382,14 +381,16 @@ function renderDeckPile(selector, side, viewable) {
 
     box.querySelector(".pilecount").textContent = String(list.length);
     slot.replaceChildren();
+    slot.onclick = null;
     slot.classList.toggle("filled", list.length > 0);
+    slot.classList.toggle("clickable", viewable && list.length > 0);
     if (list.length === 0) return;
 
     const back = document.createElement("div");
     back.className = "deckback";
     back.style.backgroundImage = "url(" + backArtUrl(state.faction[side]) + ")";
     if (viewable) {
-        back.onclick = () => openPileView("Karty pozostałe w talii", sortedDeckCards(list));
+        slot.onclick = () => openPileView("Karty pozostałe w talii", sortedDeckCards(list));
     } else {
         back.style.cursor = "default";
     }
