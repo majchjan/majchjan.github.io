@@ -1,7 +1,7 @@
 /* ============ Skala i wypełnienie okna ============ */
 
 :root {
-    --card-h: clamp(58px, 9.4vh, 113px);
+    --card-h: clamp(58px, calc(14.2vh - 26px), 113px);
     --card-w: calc(var(--card-h) / 1.4125);
     --card-fs: calc(var(--card-w) / 4.44);
     --slot-gap: 4px;
@@ -257,7 +257,8 @@ body.ingame footer {
 .board {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    justify-content: center;
+    gap: 2px;
     min-height: 0;
 }
 
@@ -287,17 +288,17 @@ body.ingame footer {
     height: 3px;
     background-color: #ff4c4c;
     border-radius: 2px;
-    margin: 3px 0;
+    margin: 1px 0;
 }
+
 .row {
-    flex: 1;
-    min-height: 0;
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 3px;
     border: 1px solid #333;
     border-radius: 6px;
-    padding: 3px;
+    padding: 1px 2px;
     background-color: rgba(0, 0, 0, 0.55);
 }
 
@@ -329,11 +330,11 @@ body.ingame footer {
 .rowcards {
     flex: 1;
     min-width: 0;
-    min-height: 0;
-    height: 100%;
+    height: calc(var(--card-h) + 6px);
+    padding: 0 3px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 3px;
     overflow-x: auto;
     scrollbar-width: none;
     cursor: grab;
