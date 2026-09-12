@@ -592,16 +592,14 @@ export function resolvePending(state, side, choice) {
 
     if (kind === "medic") {
         const options = s.pending.options;
+        if (!options.includes(choice)) fail("Wskrzeszenie jest obowiązkowe — wybierz kartę z listy.");
         s.pending = null;
-        if (choice === "skip") {
-            log(s, side + ": Medyk — rezygnacja ze wskrzeszenia");
-        } else {
-            if (!options.includes(choice)) fail("Tej karty nie ma na liście wyboru.");
-            removeFrom(s.grave[side], choice);
-            log(s, side + ": Medyk wskrzesił " + cardOf(choice).name);
-            placeUnit(s, side, choice, true);
-            setLastMove(s, side, "wskrzesił " + cardOf(choice).name, [choice]);
-        }
+
+        removeFrom(s.grave[side], choice);
+        log(s, side + ": Medyk wskrzesił " + cardOf(choice).name);
+        placeUnit(s, side, choice, true);
+        setLastMove(s, side, "wskrzesił " + cardOf(choice).name, [choice]);
+
         if (!s.pending) {
             advanceTurn(s, side);
         }

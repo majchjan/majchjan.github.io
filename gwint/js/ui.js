@@ -593,7 +593,6 @@ function renderPrompt() {
                 );
                 row.appendChild(element);
             }
-            button(row, "Pomiń", () => submit((s, side) => engine.resolvePending(s, side, "skip")));
             return;
         }
     }
