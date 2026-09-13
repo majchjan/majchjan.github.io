@@ -130,7 +130,8 @@ function toDb(state) {
         dbState.pending = {
             kind: state.pending.kind,
             side: state.pending.side,
-            options: toCsv(state.pending.options)
+            options: toCsv(state.pending.options),
+            count: state.pending.count || 0
         };
     }
     if (state.lastMove) {
@@ -139,6 +140,9 @@ function toDb(state) {
             text: state.lastMove.text,
             iids: toCsv(state.lastMove.iids)
         };
+    }
+    if (state.reveal) {
+        dbState.reveal = { side: state.reveal.side, iids: toCsv(state.reveal.iids) };
     }
 
     return {
@@ -181,10 +185,13 @@ function fromDb(room) {
         horn:  { A: hornFromDb(horn.A), B: hornFromDb(horn.B) },
         weatherCards: fromCsv(raw.weatherCards),
         pending: raw.pending
-            ? { kind: raw.pending.kind, side: raw.pending.side, options: fromCsv(raw.pending.options) }
+            ? { kind: raw.pending.kind, side: raw.pending.side, options: fromCsv(raw.pending.options), count: raw.pending.count || 0 }
             : null,
         lastMove: raw.lastMove
             ? { side: raw.lastMove.side, text: raw.lastMove.text, iids: fromCsv(raw.lastMove.iids) }
+            : null,
+        reveal: raw.reveal
+            ? { side: raw.reveal.side, iids: fromCsv(raw.reveal.iids) }
             : null,
         history: historyFromDb(raw.history),
         log: raw.log ? String(raw.log).split("\n") : []

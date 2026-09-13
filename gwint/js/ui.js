@@ -27,7 +27,8 @@ let view = null;            // ostatni stan z net.onRoomChange
 let selected = null;        // { iid, needs: "row" | "target" }
 let leaderNeedsRow = false; // lider czeka na wskazanie rzędu
 let chosenDeckId = null;
-let medicShown = null;   // sygnatura otwartego wyboru Medyka
+let medicShown = null;   // sygnatura otwartego wyboru z cmentarza
+let revealShown = null;  // sygnatura pokazanych kart z ręki przeciwnika
 let deckAutoTried = false;
 let busy = false;
 let errorText = "";
@@ -270,8 +271,8 @@ function renderLeaderBox(selector, side) {
     if (!leader) return;
 
     const used = state.leaderUsed[side];
-    const canUse = side === bottomSide() && !used && myTurn();
-    box.classList.toggle("used", used);
+    const canUse = side === bottomSide() && myTurn() && engine.canUseLeader(state, side);
+    box.classList.toggle("used", used || engine.isLeaderBlocked(state, side));
     box.classList.toggle("available", canUse);
 
     const pseudo = leaderCard(leader);
@@ -564,10 +565,19 @@ function renderControls() {
     $(".pass-btn").disabled = !myTurn();
 }
 
+const CHOICE_TITLE = {
+    medic: "Medyk: wskrzesz jednostkę z cmentarza",
+    takeGrave: "Weź kartę z cmentarza przeciwnika",
+    takeOwnGrave: "Weź kartę ze swojego cmentarza",
+    deckWeather: "Zagraj kartę pogody ze swojej talii",
+    discard: "Odrzuć kartę z ręki",
+    pickDeck: "Wybierz kartę ze swojej talii"
+};
+
 function syncMedicChoice() {
     const pending = view.state.pending;
-    const mine = pending && pending.kind === "medic" && pending.side === mySeat();
-    const signature = mine ? pending.options.join(",") : null;
+    const mine = pending && CHOICE_TITLE[pending.kind] && pending.side === mySeat();
+    const signature = mine ? pending.kind + ":" + pending.count + ":" + pending.options.join(",") : null;
 
     if (signature === medicShown) return;
     medicShown = signature;
@@ -577,11 +587,25 @@ function syncMedicChoice() {
         return;
     }
     const options = pending.options;
+    const title = pending.kind === "discard"
+        ? CHOICE_TITLE.discard + " (zostało: " + pending.count + ")"
+        : CHOICE_TITLE[pending.kind];
     openPileView(
-        "Medyk: wskrzesz jednostkę z cmentarza",
+        title,
         options.map(iid => engine.cardOf(iid)),
         index => submit((s, side) => engine.resolvePending(s, side, options[index]))
     );
+}
+
+function syncReveal() {
+    const reveal = view.state.reveal;
+    if (!reveal || reveal.side !== mySeat()) return;
+
+    const signature = reveal.iids.join(",");
+    if (signature === revealShown) return;
+    revealShown = signature;
+
+    openPileView("Karty z ręki przeciwnika", reveal.iids.map(iid => engine.cardOf(iid)));
 }
 
 function renderPrompt() {
@@ -642,7 +666,7 @@ function renderPrompt() {
                 submit((s, side) => engine.resolvePending(s, side, engine.opposite(seat))));
             return;
         }
-        if (state.pending.kind === "medic") {
+        if (CHOICE_TITLE[state.pending.kind]) {
             return;
         }
     }
@@ -693,6 +717,7 @@ function render() {
         renderPiles();
         renderPrompt();
         syncMedicChoice();
+        syncReveal();
         }
     }
 
@@ -806,7 +831,7 @@ function goToEditor() {
 function useLeaderAbility() {
     const leader = LEADER_BY_ID[view.state.leader[mySeat()]];
     if (!leader) return;
-    if (leader.ability === "horn") {
+    if (leader.ability === "horn" && !leader.hornRow) {
         leaderNeedsRow = true;
         selected = null;
         render();
@@ -852,6 +877,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             leaderNeedsRow = false;
             deckAutoTried = false;
             medicShown = null;
+            revealShown = null;
         }
         render();
         maybeAutoPickDeck();
