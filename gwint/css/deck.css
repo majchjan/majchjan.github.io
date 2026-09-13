@@ -214,6 +214,19 @@ section {
     transform: translateY(-3px);
 }
 
+/* ---- Opakowania dla wersji na telefon ---- */
+.deckstrip,
+.factionblock {
+    display: contents;
+}
+.leaderblock,
+.statsblock {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
 /* ---- Środek: dowódca i statystyki ---- */
 .deckcenter {
     min-height: 0;
@@ -269,15 +282,140 @@ section {
 
 /* ============ Telefon ============ */
 @media (max-width: 700px) {
+    /* Mniejsze karty, żeby w połowie ekranu mieściły się trzy w rzędzie.
+       .card czyta te zmienne z wartościami domyślnymi dla komputera. */
+    :root {
+        --card-w: 56px;
+        --card-h: 79px;
+        --card-fs: 12.6px;
+    }
+    body {
+        height: 100dvh;
+    }
+
+    /* ---- Nagłówek ciaśniej ---- */
+    .deckheader {
+        gap: 4px;
+    }
+    .deckheader label {
+        font-size: 0.75em;
+    }
+    .deckheader button {
+        padding: 6px;
+        font-size: 0.8em;
+    }
+
+    /* ---- Siatka: pasek u góry, pod nim dwie kolumny ---- */
     .deckgrid {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: none;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-rows: auto auto auto auto minmax(0, 1fr);
         grid-template-areas:
-            "faction" "passive" "io" "center"
-            "poolhead" "poolfname" "poolfilter" "poolcards"
-            "deckhead" "deckfname" "deckfilter" "deckcards";
+            "strip      strip"
+            "poolhead   deckhead"
+            "poolfname  deckfname"
+            "poolfilter deckfilter"
+            "poolcards  deckcards";
+        column-gap: 6px;
+        row-gap: 4px;
+    }
+
+    /* ---- Poziomy pasek: frakcja → dowódca → statystyki ---- */
+    .deckstrip {
+        grid-area: strip;
+        display: flex;
+        align-items: stretch;
+        gap: 12px;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding: 2px 0 4px 0;
+    }
+    .factionblock {
+        display: flex;
+        flex: 0 0 130px;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+    }
+    /* [<][>] w jednym wierszu, nazwa frakcji zawija się pod spód.
+       Zmiana samego porządku w CSS — HTML zostaje wspólny z komputerem. */
+    .factionswitch {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 4px;
+    }
+    .faction-prev {
+        order: 1;
+    }
+    .faction-next {
+        order: 2;
+    }
+    .factionname {
+        order: 3;
+        flex: 1 1 100%;
+        font-size: 1em;
+    }
+    .factionpassive {
+        font-size: 0.7em;
+    }
+    .iorow {
+        flex-direction: column;
+        gap: 4px;
+    }
+    .iorow button {
+        padding: 5px;
+        font-size: 0.75em;
+    }
+
+    .deckcenter {
+        flex: 1 1 auto;
+        min-width: 0;
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+        overflow: visible;
+    }
+    .statsblock {
+        flex: 0 1 120px;
+        min-width: 0;
+        align-items: flex-start;
+    }
+    .statlabel {
+        margin-top: 2px;
+        font-size: 0.62em;
+        letter-spacing: 0;
+        line-height: 1.15;
+    }
+    .statvalue {
+        font-size: 1.05em;
+    }
+    .leaderslot .card.preview {
+        width: 90px;
+        height: 127px;
+        font-size: 19.5px;
+    }
+    .leaderslot .cardinfo {
+        width: 90px;
+    }
+
+    /* ---- Kolumny kart ---- */
+    .colheading {
+        font-size: 0.95em;
+    }
+    .filtername {
+        font-size: 0.72em;
+    }
+    .filterbtn {
+        width: 28px;
+        height: 28px;
+    }
+    .filterbtn::before {
+        width: 16px;
+        height: 16px;
     }
     .cardpanel {
-        min-height: 240px;
+        padding: 4px;
+    }
+    .cardgrid {
+        gap: 4px;
     }
 }

@@ -38,42 +38,50 @@
 
             <div class="deckgrid">
                 <div class="colheading pool-head">Kolekcja kart</div>
-                <div class="factionswitch">
-                    <button class="faction-prev" title="Poprzednia frakcja">&lt;</button>
-                    <div class="factionname">—</div>
-                    <button class="faction-next" title="Następna frakcja">&gt;</button>
-                </div>
                 <div class="colheading deck-head">Karty w talii</div>
 
                 <div class="filtername pool-filtername">Wszystkie karty</div>
-                <div class="factionpassive"></div>
                 <div class="filtername deck-filtername">Wszystkie karty</div>
 
                 <div class="filterbar pool-filters"></div>
-                <div class="iorow">
-                    <button class="export-btn">Eksportuj talię</button>
-                    <button class="import-btn">Wczytaj talię</button>
-                    <input type="file" class="import-input" accept="application/json,.json" hidden>
-                </div>
                 <div class="filterbar deck-filters"></div>
+
+                <div class="deckstrip">
+                    <div class="factionblock">
+                        <div class="factionswitch">
+                            <button class="faction-prev" title="Poprzednia frakcja">&lt;</button>
+                            <div class="factionname">—</div>
+                            <button class="faction-next" title="Następna frakcja">&gt;</button>
+                        </div>
+                        <div class="factionpassive"></div>
+                        <div class="iorow">
+                            <button class="export-btn">Eksportuj talię</button>
+                            <button class="import-btn">Wczytaj talię</button>
+                            <input type="file" class="import-input" accept="application/json,.json" hidden>
+                        </div>
+                    </div>
+
+                    <div class="deckcenter">
+                        <div class="leaderblock">
+                            <div class="statlabel">Dowódca</div>
+                            <div class="leaderslot"></div>
+                        </div>
+                        <div class="statsblock">
+                            <div class="statlabel">Wszystkie karty w talii</div>
+                            <div class="statvalue stat-total">0</div>
+                            <div class="statlabel">Karty specjalne</div>
+                            <div class="statvalue stat-specials">0 / 10</div>
+                            <div class="statlabel">Całkowita siła jednostek</div>
+                            <div class="statvalue stat-strength">0</div>
+                            <div class="statlabel">Karty bohaterów</div>
+                            <div class="statvalue stat-heroes">0</div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="cardpanel pool-panel">
                     <div class="cardgrid pool-grid"></div>
                 </div>
-
-                <div class="deckcenter">
-                    <div class="statlabel">Dowódca</div>
-                    <div class="leaderslot"></div>
-                    <div class="statlabel">Wszystkie karty w talii</div>
-                    <div class="statvalue stat-total">0</div>
-                    <div class="statlabel">Karty specjalne</div>
-                    <div class="statvalue stat-specials">0 / 10</div>
-                    <div class="statlabel">Całkowita siła jednostek</div>
-                    <div class="statvalue stat-strength">0</div>
-                    <div class="statlabel">Karty bohaterów</div>
-                    <div class="statvalue stat-heroes">0</div>
-                </div>
-
                 <div class="cardpanel deck-panel">
                     <div class="cardgrid deck-grid"></div>
                 </div>
