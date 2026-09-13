@@ -12,6 +12,15 @@ import { hasAbility } from "./cards.js";
 
 const ROW_NAME = { melee: "wręcz", ranged: "dystansowy", siege: "oblężniczy" };
 
+/** Opisy pasywek frakcji — wspólne dla gry i edytora talii. */
+export const PASSIVE_TEXT = {
+    drawOnRoundWin:  "Za każdym razem, kiedy wygrasz bitwę, weź o jednaą kartę więcej.",
+    winsDraws:       "Jeśli rozgrywka zakończy się remisem, to ty odnosisz zwycięstwo.",
+    choosesStarter:  "Zdecyduj, kto rozpoczyna rozgrywkę",
+    keepsRandomUnit: "Zatrzymaj losowo wybraną jednostkę na polu bitwy po każdej rundzie.",
+    resurrectRound3: "W trzeciej rundzie dwie przypadkowe karty ze stosu kart odrzuconych wracają na stół."
+};
+
 /* ============================================================
    GRAFIKI
    Katalog frakcji nie zawsze równa się jej identyfikatorowi —
@@ -244,7 +253,7 @@ export function closeCardPreview() {
  * @param {Function}[options.onConfirm] akcja po kliknięciu powiększonej karty
  */
 /** Powiększona karta razem z panelem opisu — jeden obiekt wizualny. */
-function buildPreviewFrame(card, strength) {
+export function buildPreviewFrame(card, strength) {
     const element = buildCard(card, { strength: strength, preview: true });
 
     const info = document.createElement("div");
@@ -315,17 +324,20 @@ export function openCardPreview({ card, strength, hint, onConfirm }) {
  * @param {(index: number) => void} [onPick] gdy podany, karty są klikalne,
  *        a okna nie da się zamknąć bez dokonania wyboru
  */
-export function openPileView(title, cards, onPick) {
+export function openPileView(title, cards, onPick, options = {}) {
     const box = ensureOverlay();
     box.replaceChildren();
-    dismissible = !onPick;
+    // Domyślnie wybór z listy jest obowiązkowy (Medyk); wybór dowódcy da się zamknąć
+    dismissible = options.dismissible ?? !onPick;
 
     const inner = document.createElement("div");
     inner.className = "cardoverlay-inner";
 
     const heading = document.createElement("div");
     heading.className = "pileview-title";
-    heading.textContent = title + " — " + cards.length + " kart";
+    heading.textContent = options.showCount === false
+        ? title
+        : title + " — " + cards.length + " kart";
     inner.appendChild(heading);
 
     const strip = document.createElement("div");
@@ -348,9 +360,13 @@ export function openPileView(title, cards, onPick) {
 
     const hintBox = document.createElement("div");
     hintBox.className = "cardoverlay-hint";
-    hintBox.textContent = onPick
-        ? "Wybór jest obowiązkowy — kliknij kartę"
-        : "Przewijaj w bok · kliknij poza kartami, aby zamknąć";
+    if (onPick && !dismissible) {
+        hintBox.textContent = "Wybór jest obowiązkowy — kliknij kartę";
+    } else if (onPick) {
+        hintBox.textContent = "Kliknij kartę, aby wybrać · kliknij poza kartami, aby anulować";
+    } else {
+        hintBox.textContent = "Przewijaj w bok · kliknij poza kartami, aby zamknąć";
+    }
     inner.appendChild(hintBox);
 
     box.appendChild(inner);
@@ -383,6 +399,34 @@ export function openTextView(title, text) {
     inner.appendChild(hintBox);
 
     box.appendChild(inner);
+    pendingConfirm = null;
+    box.classList.remove("hidden");
+}
+
+/** Okno z komunikatem i przyciskiem OK */
+export function openMessage(title, text) {
+    const box = ensureOverlay();
+    box.replaceChildren();
+    dismissible = true;
+
+    const panel = document.createElement("div");
+    panel.className = "messageview";
+    panel.onclick = event => event.stopPropagation();
+
+    const heading = document.createElement("div");
+    heading.className = "messageview-title";
+    heading.textContent = title;
+
+    const body = document.createElement("div");
+    body.className = "messageview-text";
+    body.textContent = text;
+
+    const ok = document.createElement("button");
+    ok.textContent = "OK";
+    ok.onclick = () => closeCardPreview();
+
+    panel.append(heading, body, ok);
+    box.appendChild(panel);
     pendingConfirm = null;
     box.classList.remove("hidden");
 }

@@ -204,6 +204,68 @@
     text-align: center;
 }
 
+/* Okno z komunikatem */
+.messageview {
+    max-width: 380px;
+    background-color: #f2ede0;
+    border: 2px solid #ff4c4c;
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-align: center;
+    box-shadow: 0 12px 44px rgba(0, 0, 0, 0.85);
+}
+.messageview-title {
+    margin-bottom: 8px;
+    font-size: 1.15em;
+    font-weight: bolder;
+    color: #b3261e;
+}
+.messageview-text {
+    margin-bottom: 12px;
+    font-size: 0.9em;
+    line-height: 1.45;
+    white-space: pre-line;
+    color: #2a2a2a;
+}
+.messageview button {
+    margin: 0;
+    min-width: 90px;
+}
+
+/* ---- Przeglądarka stosu (talia, cmentarz) ---- */
+.pileview {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    max-width: 90vw;
+    padding: 10px 0;
+    scrollbar-width: none;
+    cursor: grab;
+}
+.pileview > .previewframe {
+    flex: 0 0 auto;
+    align-self: stretch;
+}
+
+.pileview > .previewframe > .card.preview {
+    flex: 0 0 auto;
+}
+
+.pileview > .previewframe > .cardinfo {
+    flex: 1;
+}
+
+.pileview.dragging {
+    cursor: grabbing;
+    user-select: none;
+}
+.pileview-title {
+    font-size: 1.2em;
+    font-weight: bolder;
+    margin-bottom: 8px;
+    text-align: center;
+}
+
 /* ============ Telefon ============ */
 @media (max-width: 700px) {
     .card {

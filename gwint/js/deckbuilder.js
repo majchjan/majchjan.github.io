@@ -1,21 +1,34 @@
 /**
  * gwint/js/deckbuilder.js — edytor talii.
  *
- * Lewy panel: karty dostępne w puli frakcji (pomniejszone o to, co już jest w talii).
- * Prawy panel: aktualna talia. Kliknięcie przerzuca jeden egzemplarz na drugą stronę.
- *
- * Importuje wyłącznie cards.js i decks-storage.js — żadnego Firebase,
+ * Importuje wyłącznie cards.js, decks-storage.js i cardview.js — żadnego Firebase,
  * więc otwarcie edytora nie loguje nikogo do bazy.
  */
 
-import { DECKS, CARD_BY_ID, LEADERS, LEADER_BY_ID, DECK_LIMITS, hasAbility, validateDeck } from "./cards.js";
+import { DECKS, CARD_BY_ID, LEADERS, LEADER_BY_ID, DECK_LIMITS, PASSIVES, hasAbility, validateDeck }
+    from "./cards.js";
 import * as storage from "./decks-storage.js";
-import { openCardPreview, describeCard, buildCard } from "./cardview.js";
+import { openCardPreview, openPileView, openMessage, buildCard, buildPreviewFrame, leaderCard,
+         PASSIVE_TEXT } from "./cardview.js";
 
-const ROW_NAME = { melee: "Wręcz", ranged: "Dystansowy", siege: "Oblężniczy" };
+const FACTION_ORDER = Object.keys(DECKS);
+const WEATHER = ["frost", "fog", "rain", "clearWeather"];
 const ROW_ORDER = { melee: 0, ranged: 1, siege: 2 };
 
-let deck = null;        // edytowana talia
+const FILTERS = [
+    { id: "all",     name: "Wszystkie karty",             icon: "img/icons/cards.svg" },
+    { id: "melee",   name: "Jednostki bliskiego starcia", icon: "img/icons/melee.svg" },
+    { id: "ranged",  name: "Jednostki dystansowe",        icon: "img/icons/ranged.svg" },
+    { id: "siege",   name: "Jednostki oblężnicze",        icon: "img/icons/siege.svg" },
+    { id: "hero",    name: "Bohaterowie",                 icon: "img/icons/hero.svg" },
+    { id: "weather", name: "Karty pogody",                icon: "img/icons/clear_weather.svg" },
+    { id: "special", name: "Karty specjalne",             icon: "img/icons/scorch.svg" }
+];
+
+let deck = null;
+let drafts = {};
+let poolFilter = "all";
+let deckFilter = "all";
 let noteText = "";
 let noteError = false;
 
@@ -43,18 +56,37 @@ function addCard(cardId) {
     const current = deckCounts()[cardId] || 0;
     if (current >= limit) {
         note("Limit egzemplarzy tej karty: " + limit, true);
-        return;
+    } else {
+        setCount(cardId, current + 1);
+        note("");
     }
-    setCount(cardId, current + 1);
-    note("");
     render();
 }
 
 function removeCard(cardId) {
-    const current = deckCounts()[cardId] || 0;
-    setCount(cardId, current - 1);
+    setCount(cardId, (deckCounts()[cardId] || 0) - 1);
     note("");
     render();
+}
+
+function note(text, isError = false) {
+    noteText = text;
+    noteError = isError;
+}
+
+/** Zwinność pasuje do obu filtrów rzędów, pogoda należy także do specjalnych. */
+function matchesFilter(card, filter) {
+    const unit = card.type !== "special";
+    const agile = hasAbility(card, "agile");
+    switch (filter) {
+        case "melee":   return unit && (card.row === "melee" || agile);
+        case "ranged":  return unit && (card.row === "ranged" || agile);
+        case "siege":   return unit && card.row === "siege";
+        case "hero":    return card.type === "hero";
+        case "weather": return WEATHER.includes(card.special);
+        case "special": return card.type === "special";
+        default:        return true;
+    }
 }
 
 function sortIds(ids) {
@@ -69,26 +101,11 @@ function sortIds(ids) {
     });
 }
 
-function note(text, isError = false) {
-    noteText = text;
-    noteError = isError;
-}
-
-/* ============================================================
-   KARTY
-   ============================================================ */
-
-function cardElement(cardId, count, onClick) {
-    const element = buildCard(CARD_BY_ID[cardId], { count: count });
-    element.onclick = onClick;
-    return element;
-}
-
 /* ============================================================
    RENDEROWANIE
    ============================================================ */
 
-function renderDeckSelect() {
+function renderHeader() {
     const select = $(".deck-select");
     const saved = storage.listDecks();
     select.replaceChildren();
@@ -105,110 +122,133 @@ function renderDeckSelect() {
         option.textContent = item.name;
         select.appendChild(option);
     }
-    select.value = deck && deck.id ? deck.id : "";
-    $(".delete-btn").disabled = !(deck && deck.id);
+    select.value = deck.id || "";
+
+    $(".name-input").value = deck.name;
+    $(".delete-btn").disabled = !deck.id;
 }
 
-function renderHeader() {
-    $(".name-input").value = deck.name;
+function renderFaction() {
+    $(".factionname").textContent = DECKS[deck.faction].name;
+    $(".factionpassive").textContent = PASSIVE_TEXT[PASSIVES[deck.faction]] || "";
+}
 
-    const factionSelect = $(".faction-select");
-    factionSelect.replaceChildren();
-    for (const factionId of Object.keys(DECKS)) {
-        const option = document.createElement("option");
-        option.value = factionId;
-        option.textContent = DECKS[factionId].name;
-        factionSelect.appendChild(option);
+function renderFilters(barSelector, nameSelector, current, onChange) {
+    const bar = $(barSelector);
+    bar.replaceChildren();
+    for (const filter of FILTERS) {
+        const button = document.createElement("button");
+        button.className = "filterbtn" + (filter.id === current ? " active" : "");
+        button.title = filter.name;
+        const iconUrl = new URL(filter.icon, document.baseURI).href;
+        button.style.setProperty("--icon", "url(\"" + iconUrl + "\")");
+        button.onclick = () => onChange(filter.id);
+        bar.appendChild(button);
     }
-    factionSelect.value = deck.faction;
+    $(nameSelector).textContent = FILTERS.find(filter => filter.id === current).name;
+}
 
-    const leaderSelect = $(".leader-select");
-    leaderSelect.replaceChildren();
-    const available = LEADERS.filter(leader => leader.faction === deck.faction);
-    for (const leader of available) {
-        const option = document.createElement("option");
-        option.value = leader.id;
-        option.textContent = leader.name;
-        leaderSelect.appendChild(option);
-    }
-    if (!available.some(leader => leader.id === deck.leader) && available.length > 0) {
-        deck.leader = available[0].id;
-    }
-    leaderSelect.value = deck.leader || "";
+function renderLeader() {
+    const slot = $(".leaderslot");
+    slot.replaceChildren();
 
     const leader = LEADER_BY_ID[deck.leader];
-    $(".leadertext").textContent = leader ? "Zdolność: " + leader.text : "";
+    if (!leader) return;
+
+    const frame = buildPreviewFrame(leaderCard(leader));
+    frame.title = "Kliknij, aby zmienić dowódcę";
+    frame.onclick = chooseLeader;
+    slot.appendChild(frame);
 }
 
-function renderValidation() {
-    const box = $(".validation");
-    const result = validateDeck(deck);
+function chooseLeader() {
+    const options = LEADERS.filter(leader => leader.faction === deck.faction);
+    openPileView(
+        "Wybierz dowódcę",
+        options.map(leaderCard),
+        index => {
+            deck.leader = options[index].id;
+            render();
+        },
+        { dismissible: true, showCount: false }
+    );
+}
 
+function renderStats() {
+    let total = 0;
     let units = 0;
     let specials = 0;
+    let strength = 0;
+    let heroes = 0;
+
     for (const [cardId, count] of deck.cards) {
-        if (CARD_BY_ID[cardId].type === "special") {
+        const card = CARD_BY_ID[cardId];
+        total += count;
+        if (card.type === "special") {
             specials += count;
         } else {
             units += count;
+            strength += card.strength * count;
+            if (card.type === "hero") heroes += count;
         }
     }
 
-    const lines = [
-        "Jednostki: " + units + " / min. " + DECK_LIMITS.minUnits
-            + "   ·   Karty specjalne: " + specials + " / maks. " + DECK_LIMITS.maxSpecials
-            + "   ·   Razem: " + (units + specials)
-    ];
-    lines.push(...result.errors.map(text => "BŁĄD: " + text));
-    lines.push(...result.warnings.map(text => "Uwaga: " + text));
-    if (result.ok && result.warnings.length === 0) {
-        lines.push("Talia gotowa do gry.");
-    }
+    $(".stat-total").textContent = String(total);
 
-    box.textContent = lines.join("\n");
-    box.style.whiteSpace = "pre-line";
-    box.classList.toggle("ok", result.ok);
-    box.classList.toggle("bad", !result.ok);
+    const specialsBox = $(".stat-specials");
+    specialsBox.textContent = specials + " / " + DECK_LIMITS.maxSpecials;
+    specialsBox.classList.toggle("bad", specials > DECK_LIMITS.maxSpecials);
+
+    $(".stat-strength").textContent = String(strength);
+    $(".stat-heroes").textContent = String(heroes);
+}
+
+function tile(cardId, count, hint, onConfirm) {
+    const card = CARD_BY_ID[cardId];
+    const element = buildCard(card, { count: count, clickable: true });
+    element.onclick = () => openCardPreview({ card: card, hint: hint, onConfirm: onConfirm });
+    return element;
 }
 
 function renderPanels() {
     const limits = storage.poolFor(deck.faction);
     const inDeck = deckCounts();
 
-    const preview = (cardId, hint, onConfirm) => openCardPreview({
-        card: CARD_BY_ID[cardId],
-        hint: hint,
-        onConfirm: onConfirm
-    });
-
-    const poolGrid = $(".pool-grid");
-    poolGrid.replaceChildren();
-    const availableIds = Object.keys(limits).filter(cardId => (limits[cardId] - (inDeck[cardId] || 0)) > 0);
-    for (const cardId of sortIds(availableIds)) {
+    const pool = $(".pool-grid");
+    pool.replaceChildren();
+    const poolIds = Object.keys(limits)
+        .filter(cardId => limits[cardId] - (inDeck[cardId] || 0) > 0)
+        .filter(cardId => matchesFilter(CARD_BY_ID[cardId], poolFilter));
+    for (const cardId of sortIds(poolIds)) {
         const left = limits[cardId] - (inDeck[cardId] || 0);
-        poolGrid.appendChild(cardElement(cardId, left,
-            () => preview(cardId, "Kliknij kartę, aby dodać do talii", () => addCard(cardId))));
+        pool.appendChild(tile(cardId, left, "Kliknij kartę, aby dodać do talii", () => addCard(cardId)));
     }
-    if (availableIds.length === 0) {
-        poolGrid.textContent = "Wszystkie karty p uli są w talii.";
+    if (poolIds.length === 0) {
+        pool.textContent = "Brak kart dla tego filtra.";
     }
 
     const deckGrid = $(".deck-grid");
     deckGrid.replaceChildren();
-    const deckIds = Object.keys(inDeck).filter(cardId => inDeck[cardId] > 0);
+    const deckIds = Object.keys(inDeck)
+        .filter(cardId => inDeck[cardId] > 0)
+        .filter(cardId => matchesFilter(CARD_BY_ID[cardId], deckFilter));
     for (const cardId of sortIds(deckIds)) {
-        deckGrid.appendChild(cardElement(cardId, inDeck[cardId],
-            () => preview(cardId, "Kliknij kartę, aby usunąć z talii", () => removeCard(cardId))));
+        deckGrid.appendChild(tile(cardId, inDeck[cardId], "Kliknij kartę, aby usunąć z talii", () => removeCard(cardId)));
     }
     if (deckIds.length === 0) {
-        deckGrid.textContent = "Talia jest pusta — klikaj karty po lewej.";
+        deckGrid.textContent = deck.cards.length === 0
+            ? "Talia jest pusta — klikaj karty z kolekcji."
+            : "Brak kart dla tego filtra.";
     }
 }
 
 function render() {
-    renderDeckSelect();
     renderHeader();
-    renderValidation();
+    renderFaction();
+    renderFilters(".pool-filters", ".pool-filtername", poolFilter, id => { poolFilter = id; render(); });
+    renderFilters(".deck-filters", ".deck-filtername", deckFilter, id => { deckFilter = id; render(); });
+    renderLeader();
+    renderStats();
     renderPanels();
 
     const noteBox = $(".builder-note");
@@ -224,13 +264,35 @@ function loadDeck(id) {
     const loaded = storage.getDeck(id);
     if (!loaded) return;
     deck = loaded;
+    drafts = {};
+    poolFilter = "all";
+    deckFilter = "all";
     note("");
     render();
 }
 
 function startNewDeck(factionId) {
-    deck = storage.newDeck(factionId || Object.keys(DECKS)[0]);
-    note("Nowa talia — wybierz karty po lewej.");
+    deck = storage.newDeck(factionId || FACTION_ORDER[0]);
+    drafts = {};
+    poolFilter = "all";
+    deckFilter = "all";
+    note("Nowa talia — wybierz karty z kolekcji.");
+    render();
+}
+
+function switchFaction(step) {
+    drafts[deck.faction] = { cards: deck.cards, leader: deck.leader };
+
+    const index = FACTION_ORDER.indexOf(deck.faction);
+    const next = FACTION_ORDER[(index + step + FACTION_ORDER.length) % FACTION_ORDER.length];
+    const draft = drafts[next];
+
+    deck.faction = next;
+    deck.cards = draft ? draft.cards : [];
+    deck.leader = draft ? draft.leader : DECKS[next].leader;
+    poolFilter = "all";
+    deckFilter = "all";
+    note("");
     render();
 }
 
@@ -245,37 +307,24 @@ function bindEvents() {
         if (!deck.id) return;
         if (!confirm("Usunąć talię „" + deck.name + "”?")) return;
         try {
+            const faction = deck.faction;
             storage.deleteDeck(deck.id);
-            startNewDeck(deck.faction);
+            startNewDeck(faction);
             note("Talia usunięta.");
-            render();
         } catch (error) {
             note(error.message, true);
-            render();
         }
+        render();
     };
 
     $(".name-input").oninput = event => { deck.name = event.target.value; };
 
-    $(".faction-select").onchange = event => {
-        const factionId = event.target.value;
-        if (deck.cards.length > 0 && !confirm("Zmiana frakcji wyczyści zawartość talii. Kontynuować?")) {
-            event.target.value = deck.faction;
+    $(".save-btn").onclick = () => {
+        const errors = validateDeck(deck).errors;
+        if (errors.length > 0) {
+            openMessage("Nie można zapisać talii", errors.join("\n"));
             return;
         }
-        deck.faction = factionId;
-        deck.cards = [];
-        deck.leader = DECKS[factionId].leader;
-        note("Zmieniono frakcję — talia wyczyszczona.");
-        render();
-    };
-
-    $(".leader-select").onchange = event => {
-        deck.leader = event.target.value;
-        render();
-    };
-
-    $(".save-btn").onclick = () => {
         try {
             deck = storage.saveDeck(deck);
             note("Zapisano talię „" + deck.name + "”.");
@@ -284,6 +333,9 @@ function bindEvents() {
         }
         render();
     };
+
+    $(".faction-prev").onclick = () => switchFaction(-1);
+    $(".faction-next").onclick = () => switchFaction(1);
 
     $(".export-btn").onclick = () => {
         try {
@@ -304,6 +356,9 @@ function bindEvents() {
         try {
             const result = await storage.importDeckFromFile(file);
             deck = result.deck;
+            drafts = {};
+            poolFilter = "all";
+            deckFilter = "all";
             note(result.warnings.length
                 ? "Wczytano z zastrzeżeniami: " + result.warnings.join(" ")
                 : "Wczytano talię „" + deck.name + "”. Kliknij Zapisz, żeby ją zachować.",
@@ -314,8 +369,8 @@ function bindEvents() {
         render();
     };
 
+    // Hash z kodem stołu oddajemy z powrotem, żeby wrócić na swoje miejsce
     $(".back-btn").onclick = () => { location.href = "./index.html" + location.hash; };
-
     const footerLink = document.querySelector("footer a[href='./index.html']");
     if (footerLink) {
         footerLink.href = "./index.html" + location.hash;
@@ -332,7 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (saved.length > 0) {
         deck = saved[0];
     } else {
-        deck = storage.newDeck(Object.keys(DECKS)[0]);
+        deck = storage.newDeck(FACTION_ORDER[0]);
         note("Nie masz jeszcze talii — zbuduj pierwszą.");
     }
     render();
