@@ -249,6 +249,9 @@ body.ingame section {
     font-weight: bolder;
     color: #d8c9a3;
 }
+.pile.clickable {
+    cursor: pointer;
+}
 
 /* Puste miejsce wielkości karty — slot rogu, cmentarz, talia */
 .pileslot,
@@ -632,6 +635,10 @@ body.ingame section {
     }
     .pilecount {
         font-size: 0.85em;
+    }
+    .pile.clickable:active {
+        background-color: rgba(0, 190, 32, 0.4);
+        border-color: #00be20;
     }
 
     /* ---- Róg zostaje kartą, tylko mniejszą — pełny rozmiar zjadałby ćwierć rzędu ---- */

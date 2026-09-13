@@ -361,13 +361,15 @@ function renderGravePile(selector, side, viewable) {
 
     box.querySelector(".pilecount").textContent = String(list.length);
     slot.replaceChildren();
-    slot.onclick = null;
+    box.onclick = null;
+    const active = viewable && list.length > 0;
     slot.classList.toggle("filled", list.length > 0);
-    slot.classList.toggle("clickable", viewable && list.length > 0);
+    slot.classList.toggle("clickable", active);
+    box.classList.toggle("clickable", active);
     if (list.length === 0) return;
 
     if (viewable) {
-        slot.onclick = () => openPileView("Twój cmentarz",
+        box.onclick = () => openPileView("Twój cmentarz",
             list.map(iid => engine.cardOf(iid)));
     }
     slot.appendChild(cardElement(list[list.length - 1], { clickable: viewable }));
@@ -381,16 +383,18 @@ function renderDeckPile(selector, side, viewable) {
 
     box.querySelector(".pilecount").textContent = String(list.length);
     slot.replaceChildren();
-    slot.onclick = null;
+    box.onclick = null;
+    const active = viewable && list.length > 0;
     slot.classList.toggle("filled", list.length > 0);
-    slot.classList.toggle("clickable", viewable && list.length > 0);
+    slot.classList.toggle("clickable", active);
+    box.classList.toggle("clickable", active);
     if (list.length === 0) return;
 
     const back = document.createElement("div");
     back.className = "deckback";
     back.style.backgroundImage = "url(" + backArtUrl(state.faction[side]) + ")";
     if (viewable) {
-        slot.onclick = () => openPileView("Karty pozostałe w talii", sortedDeckCards(list));
+        box.onclick = () => openPileView("Karty pozostałe w talii", sortedDeckCards(list));
     } else {
         back.style.cursor = "default";
     }
