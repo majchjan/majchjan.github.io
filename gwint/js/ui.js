@@ -347,7 +347,7 @@ function renderTurnbar() {
 /* ---- Cmentarze i talie ---- */
 
 function renderPiles() {
-    renderGravePile(".grave-top", topSide(), false);
+    renderGravePile(".grave-top", topSide(), true);
     renderDeckPile(".deck-top", topSide(), false);
     renderGravePile(".grave-bottom", bottomSide(), true);
     renderDeckPile(".deck-bottom", bottomSide(), true);
@@ -369,9 +369,10 @@ function renderGravePile(selector, side, viewable) {
     if (list.length === 0) return;
 
     if (viewable) {
-        box.onclick = () => openPileView("Twój cmentarz",
-            list.map(iid => engine.cardOf(iid)));
+        const title = side === bottomSide() ? "Twój cmentarz" : "Cmentarz przeciwnika";
+        box.onclick = () => openPileView(title, list.map(iid => engine.cardOf(iid)));
     }
+
     slot.appendChild(cardElement(list[list.length - 1], { clickable: viewable }));
 }
 
