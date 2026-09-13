@@ -388,7 +388,7 @@ function placeUnit(state, playerSide, iid, triggerAbilities, chosenRow) {
         resolveScorchRow(state, playerSide, card.scorchRow, card.scorchThreshold);
     }
     if (hasAbility(card, "muster")) {
-        resolveMuster(state, playerSide, card.musterGroup);
+        resolveMuster(state, playerSide, card.musterSummons || card.musterGroup);
     }
     if (hasAbility(card, "medic")) {
         openMedicChoice(state, playerSide);
@@ -430,8 +430,7 @@ function resolveScorchRow(state, playerSide, row, threshold) {
         return;
     }
     for (const iid of victims) {
-        removeFrom(state.board[enemy][row], iid);
-        state.grave[enemy].push(iid);
+        destroyOnBoard(state, enemy, row, iid);
     }
     log(state, "Pożoga zniszczyła w rzędzie " + row + " (" + best + "): "
         + victims.map(iid => cardOf(iid).name).join(", "));
@@ -549,6 +548,43 @@ function applySpecial(state, side, iid, params) {
     }
 }
 
+/** Wszystkie identyfikatory kart w grze — do nadawania unikalnych numerów przywołaniom. */
+function allIids(state) {
+    const list = [...state.weatherCards];
+    for (const side of SIDES) {
+        list.push(...state.deck[side], ...state.hand[side], ...state.grave[side]);
+        for (const row of ROWS) {
+            list.push(...state.board[side][row]);
+            if (state.horn[side][row]) list.push(state.horn[side][row]);
+        }
+    }
+    return list;
+}
+
+/**
+ * Wezwanie: jeśli karta, która zeszła z planszy, ma zdolność "avenger",
+ * po tej samej stronie pojawia się wskazany mściciel. Nie pochodzi z talii,
+ * więc dostaje numer "summonN" — kolejny dla tej karty po tej stronie.
+ */
+function summonAvenger(state, side, iid) {
+    const card = cardOf(iid);
+    if (!hasAbility(card, "avenger") || !card.avengerCard) return;
+
+    const summoned = getCard(card.avengerCard);
+    const prefix = side + ":" + summoned.id + "#summon";
+    const number = allIids(state).filter(other => other.startsWith(prefix)).length + 1;
+
+    state.board[side][summoned.row].push(prefix + number);
+    log(state, side + ": " + card.name + " przywołuje " + summoned.name);
+}
+
+/** Zniszczenie karty w trakcie rundy — na cmentarz, a mściciel wchodzi od razu. */
+function destroyOnBoard(state, boardSide, row, iid) {
+    removeFrom(state.board[boardSide][row], iid);
+    state.grave[boardSide].push(iid);
+    summonAvenger(state, boardSide, iid);
+}
+
 function resolveScorch(state) {
     let best = -1;
     let victims = [];
@@ -574,8 +610,7 @@ function resolveScorch(state) {
         return;
     }
     for (const victim of victims) {
-        removeFrom(state.board[victim.boardSide][victim.row], victim.iid);
-        state.grave[victim.boardSide].push(victim.iid);
+        destroyOnBoard(state, victim.boardSide, victim.row, victim.iid);
     }
     log(state, "Spalenie zniszczyło (" + best + "): "
         + victims.map(v => cardOf(v.iid).name).join(", "));
@@ -837,6 +872,7 @@ function beginNextRound(state) {
     }
 
     // Reszta planszy na cmentarz strony, po której leżała
+    const departed = [];
     for (const side of SIDES) {
         for (const row of ROWS) {
             const staying = [];
@@ -845,10 +881,16 @@ function beginNextRound(state) {
                     staying.push(iid);
                 } else {
                     state.grave[side].push(iid);
+                    departed.push({ side, iid });
                 }
             }
             state.board[side][row] = staying;
         }
+    }
+
+    // Wezwanie dopiero po wyczyszczeniu planszy — mściciel wchodzi na nową rundę
+    for (const { side, iid } of departed) {
+        summonAvenger(state, side, iid);
     }
 
     clearWeatherField(state);

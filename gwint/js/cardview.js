@@ -8,23 +8,17 @@
  * nie musi mieć jej w swoim HTML-u.
  */
 
-import { hasAbility } from "./cards.js";
+import { hasAbility, CARD_BY_ID } from "./cards.js";
 
 const ROW_NAME = { melee: "wręcz", ranged: "dystansowy", siege: "oblężniczy" };
 
-/* ============================================================
-   GRAFIKI
-   Katalog frakcji nie zawsze równa się jej identyfikatorowi —
-   Królestwa Północy mają na dysku folder "realms".
-   ============================================================ */
-
-const FACTION_DIR = {
-    northern:  "realms",
-    nilfgaard: "nilfgaard",
-    scoiatael: "scoiatael",
-    monsters:  "monsters",
-    skellige:  "skellige",
-    neutral:   "neutral"
+/** Opisy pasywek frakcji — wspólne dla gry i edytora talii. */
+export const PASSIVE_TEXT = {
+    drawOnRoundWin:  "Za każdym razem, kiedy wygrasz bitwę, weź o jednaą kartę więcej.",
+    winsDraws:       "Jeśli rozgrywka zakończy się remisem, to ty odnosisz zwycięstwo.",
+    choosesStarter:  "Zdecyduj, kto rozpoczyna rozgrywkę",
+    keepsRandomUnit: "Zatrzymaj losowo wybraną jednostkę na polu bitwy po każdej rundzie.",
+    resurrectRound3: "W trzeciej rundzie dwie przypadkowe karty ze stosu kart odrzuconych wracają na stół."
 };
 
 const ICON = {
@@ -46,10 +40,9 @@ const ICON = {
 };
 
 export function cardArtUrl(card) {
-    const dir = FACTION_DIR[card.faction];
     return card.isLeader
-        ? "img/cards/" + dir + "/leaders/" + card.id + ".webp"
-        : "img/cards/" + dir + "/" + card.id + ".webp";
+        ? "img/cards/" + card.faction + "/leaders/" + card.id + ".webp"
+        : "img/cards/" + card.faction + "/" + card.id + ".webp";
 }
 
 /** Lider udający kartę — dzięki temu przechodzi przez buildCard i podgląd bez wyjątków. */
@@ -70,11 +63,11 @@ export function leaderCard(leader) {
 }
 
 export function leaderArtUrl(leader) {
-    return "img/cards/" + FACTION_DIR[leader.faction] + "/leaders/" + leader.id + ".webp";
+    return "img/cards/" + leader.faction + "/leaders/" + leader.id + ".webp";
 }
 
 export function backArtUrl(factionId) {
-    return "img/cards/back/" + FACTION_DIR[factionId] + ".webp";
+    return "img/cards/back/" + factionId + ".webp";
 }
 
 /** Ikony do nałożenia na kartę: najpierw rząd, potem zdolności. */
@@ -164,7 +157,7 @@ export function buildCard(card, options = {}) {
 const ABILITY_TEXT = {
     tightBond:   "Więź — karty o tej samej nazwie w jednym rzędzie mnożą swoją siłę przez ich liczbę.",
     moraleBoost: "Zagrzewanie do walki — dodaje 1 do siły wszystkich pozostałych jednostek w rzędzie.",
-    muster:      "Zgrupowanie — przy zagraniu przyciąga z talii i ręki wszystkie karty tej samej grupy.",
+    muster:      "Zgrupowanie — przy zagraniu przyciąga z talii i ręki powiązane karty.",
     spy:         "Szpieg — trafia na stronę przeciwnika, a ty dobierasz 2 karty.",
     medic:       "Medyk — wskrzesza jednostkę z twojego cmentarza i zagrywa ją natychmiast.",
     horn:        "Róg dowódcy — podwaja siłę pozostałych jednostek w swoim rzędzie.",
@@ -195,6 +188,13 @@ export function describeCard(card) {
     }
     if (card.type === "hero") {
         lines.push("Bohater — odporny na pogodę, Róg Dowódcy, Zagrzewanie i Spalenie. Jego siła jest niezmienna.");
+    }
+    if (hasAbility(card, "avenger") && CARD_BY_ID[card.avengerCard]) {
+        lines.push("Wezwanie — gdy zostanie zniszczona albo zejdzie z planszy na koniec rundy, przywołuje "
+            + CARD_BY_ID[card.avengerCard].name + ".");
+    }
+    if (card.summonOnly) {
+        lines.push("Nie można jej umieścić w talii — pojawia się wyłącznie przez przywołanie.");
     }
     if (hasAbility(card, "scorchRow")) {
         lines.push("Pożoga — przy zagraniu niszczy najsilniejsze jednostki przeciwnika w rzędzie "
@@ -244,7 +244,7 @@ export function closeCardPreview() {
  * @param {Function}[options.onConfirm] akcja po kliknięciu powiększonej karty
  */
 /** Powiększona karta razem z panelem opisu — jeden obiekt wizualny. */
-function buildPreviewFrame(card, strength) {
+export function buildPreviewFrame(card, strength) {
     const element = buildCard(card, { strength: strength, preview: true });
 
     const info = document.createElement("div");
@@ -315,17 +315,20 @@ export function openCardPreview({ card, strength, hint, onConfirm }) {
  * @param {(index: number) => void} [onPick] gdy podany, karty są klikalne,
  *        a okna nie da się zamknąć bez dokonania wyboru
  */
-export function openPileView(title, cards, onPick) {
+export function openPileView(title, cards, onPick, options = {}) {
     const box = ensureOverlay();
     box.replaceChildren();
-    dismissible = !onPick;
+    // Domyślnie wybór z listy jest obowiązkowy (Medyk); wybór dowódcy da się zamknąć
+    dismissible = options.dismissible ?? !onPick;
 
     const inner = document.createElement("div");
     inner.className = "cardoverlay-inner";
 
     const heading = document.createElement("div");
     heading.className = "pileview-title";
-    heading.textContent = title + " — " + cards.length + " kart";
+    heading.textContent = options.showCount === false
+        ? title
+        : title + " — " + cards.length + " kart";
     inner.appendChild(heading);
 
     const strip = document.createElement("div");
@@ -348,9 +351,13 @@ export function openPileView(title, cards, onPick) {
 
     const hintBox = document.createElement("div");
     hintBox.className = "cardoverlay-hint";
-    hintBox.textContent = onPick
-        ? "Wybór jest obowiązkowy — kliknij kartę"
-        : "Przewijaj w bok · kliknij poza kartami, aby zamknąć";
+    if (onPick && !dismissible) {
+        hintBox.textContent = "Wybór jest obowiązkowy — kliknij kartę";
+    } else if (onPick) {
+        hintBox.textContent = "Kliknij kartę, aby wybrać · kliknij poza kartami, aby anulować";
+    } else {
+        hintBox.textContent = "Przewijaj w bok · kliknij poza kartami, aby zamknąć";
+    }
     inner.appendChild(hintBox);
 
     box.appendChild(inner);
@@ -383,6 +390,34 @@ export function openTextView(title, text) {
     inner.appendChild(hintBox);
 
     box.appendChild(inner);
+    pendingConfirm = null;
+    box.classList.remove("hidden");
+}
+
+/** Okno z komunikatem i przyciskiem OK */
+export function openMessage(title, text) {
+    const box = ensureOverlay();
+    box.replaceChildren();
+    dismissible = true;
+
+    const panel = document.createElement("div");
+    panel.className = "messageview";
+    panel.onclick = event => event.stopPropagation();
+
+    const heading = document.createElement("div");
+    heading.className = "messageview-title";
+    heading.textContent = title;
+
+    const body = document.createElement("div");
+    body.className = "messageview-text";
+    body.textContent = text;
+
+    const ok = document.createElement("button");
+    ok.textContent = "OK";
+    ok.onclick = () => closeCardPreview();
+
+    panel.append(heading, body, ok);
+    box.appendChild(panel);
     pendingConfirm = null;
     box.classList.remove("hidden");
 }

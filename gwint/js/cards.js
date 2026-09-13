@@ -23,6 +23,13 @@
  *   "medic"       — Medyk: wskrzesza jednostkę z cmentarza po swojej stronie planszy
  *   "horn"        — jednostka działa jak Róg Dowódcy dla swojego rzędu
  *   "agile"       — Zwinność: przy zagraniu wybierasz rząd wręcz albo dystansowy
+ *   "avenger"     — Wezwanie: gdy karta zejdzie z planszy na koniec rundy, na nową
+ *                   rundę pojawia się karta wskazana polem avengerCard
+ *
+ * Pola dodatkowe:
+ *   musterSummons — grupa przywoływana przez Zgrupowanie, jeśli inna niż własna
+ *                   musterGroup (Gaunter należy do "gaunter", przywołuje "darkness")
+ *   summonOnly    — karta nie może być w talii, pojawia się tylko przez przywołanie
  *   "scorchRow"   — Pożoga: niszczy najsilniejsze jednostki przeciwnika w rzędzie
  *                   wskazanym polem scorchRow, o ile suma sił tego rzędu osiąga
  *                   scorchThreshold (domyślnie 10)
@@ -71,6 +78,17 @@ const RAW_CARDS = [
     { id: "triss", name: "Triss Merigold",  faction: "neutral", type: "hero", row: "melee", strength: 7},
     { id: "regis", name: "Emiel Regis Rohellec Terzieff",  faction: "neutral", type: "unit", row: "melee", strength: 5},
     { id: "ciri", name: "Cirilla",  faction: "neutral", type: "hero", row: "melee", strength: 15},
+    { id: "cow", name: "Krowa", faction: "neutral", type: "unit", row: "ranged", strength: 0,
+      abilities: ["avenger"], avengerCard: "bovine_force" },
+    { id: "gaunter", name: "Gaunter O'Dim", faction: "neutral", type: "unit", row: "siege", strength: 2,
+      abilities: ["muster"], musterGroup: "gaunter", musterSummons: "darkness" },
+    { id: "darkness", name: "Gaunter O'Dim: Cień", faction: "neutral", type: "unit", row: "ranged", strength: 4,
+      abilities: ["muster"], musterGroup: "darkness" },
+    { id: "olgierd", name: "Olgierd von Everec", faction: "neutral", type: "unit", row: "melee", strength: 6,
+      abilities: ["agile"] },
+    { id: "bovine_force", name: "Bydlęce Siły Zbrojne", faction: "neutral", type: "unit", row: "melee", strength: 8,
+      summonOnly: true },
+    { id: "roach", name: "Płotka", faction: "neutral", type: "unit", row: "melee", strength: 3 },
 
     /* ---------- Neutralne karty specjalne ---------- */
     { id: "frost",         name: "Trzaskający Mróz",    faction: "neutral", type: "special", special: "frost" },
@@ -122,6 +140,9 @@ function normalize(card) {
         strength: card.strength ?? 0,
         abilities: card.abilities ?? [],
         musterGroup: card.musterGroup ?? null,
+        musterSummons: card.musterSummons ?? null,
+        avengerCard: card.avengerCard ?? null,
+        summonOnly: card.summonOnly ?? false,
         scorchRow: card.scorchRow ?? null,
         scorchThreshold: card.scorchThreshold ?? 10,
         special: card.special ?? null
@@ -193,6 +214,11 @@ export const DECKS = {
             ["horn", 3],
             ["scorch", 3],
             ["decoy", 3],
+            ["cow", 1],
+            ["gaunter", 1],
+            ["darkness", 3],
+            ["olgierd", 1],
+            ["roach", 1],
             ["blue_stripes", 3],        // Więź: 3 kopie po 4
             ["siege_tower", 2],         // Zagrzewanie
             ["dun_banner_medic", 2],    // Medyk
@@ -223,6 +249,11 @@ export const DECKS = {
             ["horn", 3],
             ["scorch", 3],
             ["decoy", 3],
+            ["cow", 1],
+            ["gaunter", 1],
+            ["darkness", 3],
+            ["olgierd", 1],
+            ["roach", 1],
             ["impera_brigade", 4],        // Więź: 4 kopie po 3
             ["siege_technician", 2],      // Medyk o sile 0
             ["black_infantry_archer", 2],
@@ -257,7 +288,12 @@ export const DECKS = {
             ["clear_weather", 2],
             ["horn", 3],
             ["scorch", 3],
-            ["decoy", 3]
+            ["decoy", 3],
+            ["cow", 1],
+            ["gaunter", 1],
+            ["darkness", 3],
+            ["olgierd", 1],
+            ["roach", 1]
         ]
     },
 
@@ -288,7 +324,12 @@ export const DECKS = {
             ["clear_weather", 2],
             ["horn", 3],
             ["scorch", 3],
-            ["decoy", 3]
+            ["decoy", 3],
+            ["cow", 1],
+            ["gaunter", 1],
+            ["darkness", 3],
+            ["olgierd", 1],
+            ["roach", 1]
         ]
     }
 };
@@ -349,6 +390,9 @@ export function validateDeck(deckOrId) {
         }
         if (card.faction !== faction && card.faction !== "neutral") {
             errors.push(card.name + " należy do frakcji " + card.faction + ", a talia to " + faction);
+        }
+        if (card.summonOnly) {
+            errors.push(card.name + " nie może być w talii — pojawia się tylko przez przywołanie");
         }
         if (card.type === "special") {
             specials += count;

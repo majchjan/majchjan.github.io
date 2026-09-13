@@ -63,6 +63,8 @@ export function poolFor(factionId) {
     }
     const limits = {};
     for (const [cardId, count] of pool.cards) {
+        const card = CARD_BY_ID[cardId];
+        if (card && card.summonOnly) continue;   // tylko przez przywołanie, nie do talii
         limits[cardId] = (limits[cardId] || 0) + count;
     }
     return limits;

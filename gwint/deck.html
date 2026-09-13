@@ -21,42 +21,68 @@
         <a href=".">GWINT - Talie</a>
     </header>
     <section>
-        <div class="stage">
+        <div class="stage deckstage">
 
-            <div class="buildbar">
-                <label>Zapisane talie</label>
-                <select class="deck-select grow"></select>
+            <div class="deckheader">
+                <label>Zapisane talie:</label>
+                <select class="deck-select span2"></select>
                 <button class="new-btn">Nowa talia</button>
                 <button class="nextbutton delete-btn">Usuń</button>
+
+                <label>Nazwa:</label>
+                <input type="text" class="name-input span2" maxlength="60" placeholder="Nazwa talii">
+                <button class="start-btn save-btn span2">Zapisz talię</button>
+
+                <button class="back-btn span5">Wróć do gry</button>
             </div>
 
-            <div class="buildbar">
-                <label>Nazwa</label>
-                <input type="text" class="name-input grow" maxlength="60" placeholder="Nazwa talii">
-                <label>Frakcja</label>
-                <select class="faction-select"></select>
-                <label>Dowódca</label>
-                <select class="leader-select grow"></select>
-            </div>
+            <div class="deckgrid">
+                <div class="colheading pool-head">Kolekcja kart</div>
+                <div class="colheading deck-head">Karty w talii</div>
 
-            <div class="buildbar">
-                <button class="start-btn save-btn">Zapisz talię</button>
-                <button class="export-btn">Eksportuj JSON</button>
-                <button class="import-btn">Wczytaj JSON</button>
-                <input type="file" class="import-input" accept="application/json,.json" hidden>
-                <button class="back-btn">Wróć do gry</button>
-            </div>
+                <div class="filtername pool-filtername">Wszystkie karty</div>
+                <div class="filtername deck-filtername">Wszystkie karty</div>
 
-            <div class="validation"></div>
-            <div class="leadertext"></div>
+                <div class="filterbar pool-filters"></div>
+                <div class="filterbar deck-filters"></div>
 
-            <div class="builder">
-                <div class="panel pool-panel">
-                    <div class="paneltitle">Dostępne karty</div>
+                <div class="deckstrip">
+                    <div class="factionblock">
+                        <div class="factionswitch">
+                            <button class="faction-prev" title="Poprzednia frakcja">&lt;</button>
+                            <div class="factionname">—</div>
+                            <button class="faction-next" title="Następna frakcja">&gt;</button>
+                        </div>
+                        <div class="factionpassive"></div>
+                        <div class="iorow">
+                            <button class="export-btn">Eksportuj talię</button>
+                            <button class="import-btn">Wczytaj talię</button>
+                            <input type="file" class="import-input" accept="application/json,.json" hidden>
+                        </div>
+                    </div>
+
+                    <div class="deckcenter">
+                        <div class="leaderblock">
+                            <div class="statlabel">Dowódca</div>
+                            <div class="leaderslot"></div>
+                        </div>
+                        <div class="statsblock">
+                            <div class="statlabel">Wszystkie karty w talii</div>
+                            <div class="statvalue stat-total">0</div>
+                            <div class="statlabel">Karty specjalne</div>
+                            <div class="statvalue stat-specials">0 / 10</div>
+                            <div class="statlabel">Całkowita siła jednostek</div>
+                            <div class="statvalue stat-strength">0</div>
+                            <div class="statlabel">Karty bohaterów</div>
+                            <div class="statvalue stat-heroes">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cardpanel pool-panel">
                     <div class="cardgrid pool-grid"></div>
                 </div>
-                <div class="panel deck-panel">
-                    <div class="paneltitle">W talii</div>
+                <div class="cardpanel deck-panel">
                     <div class="cardgrid deck-grid"></div>
                 </div>
             </div>
