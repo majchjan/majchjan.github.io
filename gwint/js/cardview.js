@@ -21,21 +21,6 @@ export const PASSIVE_TEXT = {
     resurrectRound3: "W trzeciej rundzie dwie przypadkowe karty ze stosu kart odrzuconych wracają na stół."
 };
 
-/* ============================================================
-   GRAFIKI
-   Katalog frakcji nie zawsze równa się jej identyfikatorowi —
-   Królestwa Północy mają na dysku folder "realms".
-   ============================================================ */
-
-const FACTION_DIR = {
-    northern:  "realms",
-    nilfgaard: "nilfgaard",
-    scoiatael: "scoiatael",
-    monsters:  "monsters",
-    skellige:  "skellige",
-    neutral:   "neutral"
-};
-
 const ICON = {
     melee:        "img/icons/melee.svg",
     ranged:       "img/icons/ranged.svg",
@@ -55,10 +40,9 @@ const ICON = {
 };
 
 export function cardArtUrl(card) {
-    const dir = FACTION_DIR[card.faction];
     return card.isLeader
-        ? "img/cards/" + dir + "/leaders/" + card.id + ".webp"
-        : "img/cards/" + dir + "/" + card.id + ".webp";
+        ? "img/cards/" + card.faction + "/leaders/" + card.id + ".webp"
+        : "img/cards/" + card.faction + "/" + card.id + ".webp";
 }
 
 /** Lider udający kartę — dzięki temu przechodzi przez buildCard i podgląd bez wyjątków. */
@@ -79,11 +63,11 @@ export function leaderCard(leader) {
 }
 
 export function leaderArtUrl(leader) {
-    return "img/cards/" + FACTION_DIR[leader.faction] + "/leaders/" + leader.id + ".webp";
+    return "img/cards/" + leader.faction + "/leaders/" + leader.id + ".webp";
 }
 
 export function backArtUrl(factionId) {
-    return "img/cards/back/" + FACTION_DIR[factionId] + ".webp";
+    return "img/cards/back/" + factionId + ".webp";
 }
 
 /** Ikony do nałożenia na kartę: najpierw rząd, potem zdolności. */
