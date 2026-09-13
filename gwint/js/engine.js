@@ -83,6 +83,7 @@ function log(state, text) {
 
 function setLastMove(state, side, text, iids) {
     state.lastMove = { side: side, text: text, iids: iids || [] };
+    state.reveal = null;
 }
 
 function removeFrom(list, value) {
@@ -142,6 +143,7 @@ export function createLobby(seed) {
         weatherCards: [],
         pending: null,
         lastMove: null,
+        reveal: null,
         history: [],
         log: []
     };
@@ -212,7 +214,9 @@ function dealStart(state) {
         state.hand[side] = [];
     }
     for (const side of SIDES) {
-        draw(state, side, HAND_SIZE);
+        const leader = LEADER_BY_ID[state.leader[side]];
+        const extra = leader && leader.ability === "extraStartCard" ? 1 : 0;
+        draw(state, side, HAND_SIZE + extra);
     }
     state.mulliganLeft = { A: 2, B: 2 };
     state.mulliganDone = { A: false, B: false };
@@ -339,6 +343,9 @@ export function cardStrength(state, boardSide, row, iid) {
     if (hornHits(state, boardSide, row, iid)) {
         value *= 2;
     }
+    if (hasAbility(card, "spy") && leaderActive(state, "doubleSpies")) {
+        value *= 2;
+    }
     return value;
 }
 
@@ -458,6 +465,18 @@ function openMedicChoice(state, playerSide) {
         log(state, playerSide + ": Medyk bez celu — cmentarz pusty");
         return;
     }
+
+    // Najeźdźca Północy u któregokolwiek gracza: zamiast wyboru wskrzeszamy losowo
+    if (randomReviveActive(state)) {
+        const roll = randomInt(state.seed, state.rngCursor, options.length);
+        state.rngCursor = roll.cursor;
+        const iid = options[roll.value];
+        removeFrom(state.grave[playerSide], iid);
+        log(state, playerSide + ": Medyk wskrzesza losową jednostkę — " + cardOf(iid).name);
+        placeUnit(state, playerSide, iid, true);
+        return;
+    }
+
     state.pending = { kind: "medic", side: playerSide, options: options };
 }
 
@@ -488,6 +507,18 @@ export function playCard(state, side, iid, params = {}) {
     return s;
 }
 
+function playWeatherCard(state, side, iid) {
+    const card = cardOf(iid);
+    const active = state.weatherCards.some(other => cardOf(other).special === card.special);
+    if (active) {
+        state.grave[side].push(iid);
+        log(state, side + ": zagrał " + card.name + " — efekt już działał");
+    } else {
+        state.weatherCards.push(iid);
+        log(state, side + ": zagrał " + card.name);
+    }
+}
+
 function applySpecial(state, side, iid, params) {
     const card = cardOf(iid);
 
@@ -495,15 +526,7 @@ function applySpecial(state, side, iid, params) {
         case "frost":
         case "fog":
         case "rain": {
-            const active = state.weatherCards
-                .some(other => cardOf(other).special === card.special);
-            if (active) {
-                state.grave[side].push(iid);
-                log(state, side + ": zagrał " + card.name + " — efekt już działał");
-            } else {
-                state.weatherCards.push(iid);
-                log(state, side + ": zagrał " + card.name);
-            }
+            playWeatherCard(state, side, iid);
             break;
         }
         case "clearWeather": {
@@ -636,6 +659,66 @@ export function resolvePending(state, side, choice) {
         return s;
     }
 
+    if (kind === "takeGrave" || kind === "takeOwnGrave") {
+        if (!s.pending.options.includes(choice)) fail("Wybierz kartę z listy.");
+        const from = kind === "takeGrave" ? opposite(side) : side;
+        const where = from === side ? "ze swojego cmentarza" : "z cmentarza przeciwnika";
+        s.pending = null;
+        removeFrom(s.grave[from], choice);
+        s.hand[side].push(choice);
+        log(s, side + ": zabrał " + where + " kartę " + cardOf(choice).name);
+        setLastMove(s, side, "zabrał " + where + ": " + cardOf(choice).name, []);
+        advanceTurn(s, side);
+        return s;
+    }
+
+    if (kind === "deckWeather") {
+        if (!s.pending.options.includes(choice)) fail("Wybierz kartę z listy.");
+        s.pending = null;
+        removeFrom(s.deck[side], choice);
+        if (cardOf(choice).special === "clearWeather") {
+            clearWeatherField(s);
+            s.grave[side].push(choice);
+            log(s, side + ": zagrał z talii Czystą Pogodę");
+        } else {
+            playWeatherCard(s, side, choice);
+        }
+        setLastMove(s, side, "zagrał z talii: " + cardOf(choice).name, [choice]);
+        advanceTurn(s, side);
+        return s;
+    }
+
+    if (kind === "discard") {
+        if (!s.pending.options.includes(choice)) fail("Wybierz kartę z listy.");
+        const remaining = (s.pending.count || 1) - 1;
+        removeFrom(s.hand[side], choice);
+        s.grave[side].push(choice);
+        log(s, side + ": odrzucił kartę " + cardOf(choice).name);
+
+        if (remaining > 0 && s.hand[side].length > 0) {
+            s.pending = { kind: "discard", side: side, options: s.hand[side].slice().sort(), count: remaining };
+            return s;
+        }
+        if (s.deck[side].length > 0) {
+            s.pending = { kind: "pickDeck", side: side, options: s.deck[side].slice().sort(), count: 0 };
+            return s;
+        }
+        s.pending = null;
+        advanceTurn(s, side);
+        return s;
+    }
+
+    if (kind === "pickDeck") {
+        if (!s.pending.options.includes(choice)) fail("Wybierz kartę z listy.");
+        s.pending = null;
+        removeFrom(s.deck[side], choice);
+        s.hand[side].push(choice);
+        log(s, side + ": wybrał kartę z talii");
+        setLastMove(s, side, "wybrał kartę z talii", []);
+        advanceTurn(s, side);
+        return s;
+    }
+
     if (kind === "medic") {
         const options = s.pending.options;
         if (!options.includes(choice)) fail("Wskrzeszenie jest obowiązkowe — wybierz kartę z listy.");
@@ -659,6 +742,64 @@ export function resolvePending(state, side, choice) {
    LIDER
    ============================================================ */
 
+const WEATHER_CARDS = ["frost", "fog", "rain", "clearWeather"];
+
+export function isLeaderBlocked(state, side) {
+    const opponentLeader = LEADER_BY_ID[state.leader[opposite(side)]];
+    return Boolean(opponentLeader) && opponentLeader.ability === "blockOpponentLeader";
+}
+
+function leaderActive(state, ability) {
+    return SIDES.some(side => {
+        const leader = LEADER_BY_ID[state.leader[side]];
+        return Boolean(leader) && leader.ability === ability;
+    });
+}
+
+function randomReviveActive(state) {
+    return leaderActive(state, "randomRevive");
+}
+
+function graveTakeOptions(state, fromSide) {
+    return state.grave[fromSide].filter(iid => cardOf(iid).type !== "hero");
+}
+
+function deckWeatherOptions(state, side) {
+    return state.deck[side].filter(iid => WEATHER_CARDS.includes(cardOf(iid).special)).sort();
+}
+
+function agileUnits(state, side) {
+    return ["melee", "ranged"].flatMap(row =>
+        state.board[side][row].filter(iid => hasAbility(cardOf(iid), "agile")));
+}
+
+export function canUseLeader(state, side) {
+    const leader = LEADER_BY_ID[state.leader[side]];
+    if (!leader || leader.passive || state.leaderUsed[side]) return false;
+    if (isLeaderBlocked(state, side)) return false;
+
+    switch (leader.ability) {
+        case "deckWeather":
+            return state.deck[side].some(iid => cardOf(iid).special === leader.weather);
+        case "pickDeckWeather":
+            return deckWeatherOptions(state, side).length > 0;
+        case "takeOpponentGrave":
+            return graveTakeOptions(state, opposite(side)).length > 0;
+        case "takeOwnGrave":
+            return graveTakeOptions(state, side).length > 0;
+        case "discardAndDraw":
+            return state.hand[side].length >= 2 && state.deck[side].length > 0;
+        case "scorchRow":
+            return rowScore(state, opposite(side), leader.scorchRow) >= (leader.scorchThreshold || 10);
+        case "horn":
+            return !leader.hornRow || !state.horn[side][leader.hornRow];
+        case "optimizeAgile":
+            return agileUnits(state, side).length > 0;
+        default:
+            return true;
+    }
+}
+
 export function useLeader(state, side, params = {}) {
     const s = clone(state);
     assertCanAct(s, side);
@@ -666,29 +807,97 @@ export function useLeader(state, side, params = {}) {
 
     const leader = LEADER_BY_ID[s.leader[side]];
     if (!leader) fail("Brak lidera dla tego gracza.");
+    if (leader.passive) fail("Ten dowódca ma zdolność bierną — działa bez aktywacji.");
+    if (isLeaderBlocked(s, side)) fail("Zdolność twojego dowódcy jest zablokowana przez przeciwnika.");
+    if (!canUseLeader(s, side)) fail("Tej zdolności nie da się teraz użyć.");
 
-    if (leader.ability === "clearWeather") {
-        clearWeatherField(s);
-    } else if (leader.ability === "weather") {
-        // Lider zagrywa pogodę spoza talii — egzemplarz oznaczamy numerem "leader"
-        s.weatherCards.push(makeIid(side, leader.weather, "leader"));
-    } else if (leader.ability === "horn") {
-        const row = params.row;
-        if (!ROWS.includes(row)) fail("Wskaż rząd dla Rogu Dowódcy.");
-        const previous = s.horn[side][row];
-        if (previous && previous !== "leader") {
-            s.grave[side].push(previous);
+    let revealed = null;
+
+    switch (leader.ability) {
+        case "clearWeather":
+            clearWeatherField(s);
+            break;
+        case "weather":
+            playWeatherCard(s, side, makeIid(side, leader.weather, "leader"));
+            break;
+        case "deckWeather": {
+            const iid = s.deck[side].find(other => cardOf(other).special === leader.weather);
+            removeFrom(s.deck[side], iid);
+            playWeatherCard(s, side, iid);
+            break;
         }
-        s.horn[side][row] = "leader";
-    } else {
-        fail("Nieobsługiwana zdolność lidera: " + leader.ability);
+        case "pickDeckWeather":
+            s.pending = { kind: "deckWeather", side: side, options: deckWeatherOptions(s, side), count: 0 };
+            break;
+        case "horn": {
+            const row = leader.hornRow || params.row;
+            if (!ROWS.includes(row)) fail("Wskaż rząd dla Rogu Dowódcy.");
+            const previous = s.horn[side][row];
+            if (previous && previous !== "leader") {
+                s.grave[side].push(previous);
+            }
+            s.horn[side][row] = "leader";
+            break;
+        }
+        case "scorchRow":
+            resolveScorchRow(s, side, leader.scorchRow, leader.scorchThreshold || 10);
+            break;
+        case "revealHand": {
+            const pool = s.hand[opposite(side)].slice();
+            revealed = [];
+            const count = Math.min(leader.revealCount || 3, pool.length);
+            for (let i = 0; i < count; i++) {
+                const roll = randomInt(s.seed, s.rngCursor, pool.length);
+                s.rngCursor = roll.cursor;
+                revealed.push(pool.splice(roll.value, 1)[0]);
+            }
+            break;
+        }
+        case "takeOpponentGrave":
+            s.pending = { kind: "takeGrave", side: side, options: graveTakeOptions(s, opposite(side)), count: 0 };
+            break;
+        case "takeOwnGrave":
+            s.pending = { kind: "takeOwnGrave", side: side, options: graveTakeOptions(s, side), count: 0 };
+            break;
+        case "discardAndDraw":
+            s.pending = { kind: "discard", side: side, options: s.hand[side].slice().sort(), count: 2 };
+            break;
+        case "optimizeAgile":
+            optimizeAgileUnits(s, side);
+            break;
+        default:
+            fail("Nieobsługiwana zdolność lidera: " + leader.ability);
     }
 
     s.leaderUsed[side] = true;
     log(s, side + ": użył zdolności lidera (" + leader.name + ")");
     setLastMove(s, side, "użył zdolności lidera: " + leader.name, []);
-    advanceTurn(s, side);
+    if (revealed) {
+        s.reveal = { side: side, iids: revealed };
+    }
+    if (!s.pending) {
+        advanceTurn(s, side);
+    }
     return s;
+}
+
+function optimizeAgileUnits(state, side) {
+    for (const iid of agileUnits(state, side)) {
+        const from = state.board[side].melee.includes(iid) ? "melee" : "ranged";
+        const to = from === "melee" ? "ranged" : "melee";
+        const before = cardStrength(state, side, from, iid);
+        const index = state.board[side][from].indexOf(iid);
+
+        state.board[side][from].splice(index, 1);
+        state.board[side][to].push(iid);
+
+        if (cardStrength(state, side, to, iid) <= before) {
+            removeFrom(state.board[side][to], iid);
+            state.board[side][from].splice(index, 0, iid);
+        } else {
+            log(state, side + ": " + cardOf(iid).name + " przechodzi do rzędu " + to);
+        }
+    }
 }
 
 /* ============================================================
@@ -714,8 +923,8 @@ function hasAnyMove(state, side) {
     if (state.hand[side].length > 0) {
         return true;
     }
-    const leader = LEADER_BY_ID[state.leader[side]];
-    return Boolean(leader) && !state.leaderUsed[side];
+
+    return canUseLeader(state, side);
 }
 
 /** Pasuje za graczy, którzy nie mają już żadnego legalnego ruchu. */
@@ -846,6 +1055,7 @@ function resetForNewGame(state) {
     state.weatherCards = [];
     state.pending = null;
     state.lastMove = null;
+    state.reveal = null;
     state.history = [];
     state.log = [];
     log(state, "nowa gra przy tym samym stole — potwierdźcie talie");
@@ -899,6 +1109,7 @@ function beginNextRound(state) {
     state.passed = { A: false, B: false };
     state.pending = null;
     state.lastMove = null;
+    state.reveal = null;
 
     // Pasywka Królestw Północy — zwycięzca rundy dobiera kartę
     const last = state.history[state.history.length - 1];
@@ -950,9 +1161,9 @@ export function legalMoves(state, side) {
         return { type: "play", iid: iid, needs: needs };
     });
 
-    if (!state.leaderUsed[side]) {
+    if (canUseLeader(state, side)) {
         const leader = LEADER_BY_ID[state.leader[side]];
-        moves.push({ type: "leader", needs: leader && leader.ability === "horn" ? "row" : null });
+        moves.push({ type: "leader", needs: leader && leader.ability === "horn" && !leader.hornRow ? "row" : null });
     }
     moves.push({ type: "pass" });
     return moves;
