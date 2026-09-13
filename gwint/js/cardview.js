@@ -8,7 +8,7 @@
  * nie musi mieć jej w swoim HTML-u.
  */
 
-import { hasAbility } from "./cards.js";
+import { hasAbility, CARD_BY_ID } from "./cards.js";
 
 const ROW_NAME = { melee: "wręcz", ranged: "dystansowy", siege: "oblężniczy" };
 
@@ -157,7 +157,7 @@ export function buildCard(card, options = {}) {
 const ABILITY_TEXT = {
     tightBond:   "Więź — karty o tej samej nazwie w jednym rzędzie mnożą swoją siłę przez ich liczbę.",
     moraleBoost: "Zagrzewanie do walki — dodaje 1 do siły wszystkich pozostałych jednostek w rzędzie.",
-    muster:      "Zgrupowanie — przy zagraniu przyciąga z talii i ręki wszystkie karty tej samej grupy.",
+    muster:      "Zgrupowanie — przy zagraniu przyciąga z talii i ręki powiązane karty.",
     spy:         "Szpieg — trafia na stronę przeciwnika, a ty dobierasz 2 karty.",
     medic:       "Medyk — wskrzesza jednostkę z twojego cmentarza i zagrywa ją natychmiast.",
     horn:        "Róg dowódcy — podwaja siłę pozostałych jednostek w swoim rzędzie.",
@@ -188,6 +188,13 @@ export function describeCard(card) {
     }
     if (card.type === "hero") {
         lines.push("Bohater — odporny na pogodę, Róg Dowódcy, Zagrzewanie i Spalenie. Jego siła jest niezmienna.");
+    }
+    if (hasAbility(card, "avenger") && CARD_BY_ID[card.avengerCard]) {
+        lines.push("Wezwanie — gdy zostanie zniszczona albo zejdzie z planszy na koniec rundy, przywołuje "
+            + CARD_BY_ID[card.avengerCard].name + ".");
+    }
+    if (card.summonOnly) {
+        lines.push("Nie można jej umieścić w talii — pojawia się wyłącznie przez przywołanie.");
     }
     if (hasAbility(card, "scorchRow")) {
         lines.push("Pożoga — przy zagraniu niszczy najsilniejsze jednostki przeciwnika w rzędzie "
