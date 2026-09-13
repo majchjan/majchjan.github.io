@@ -322,22 +322,24 @@ section {
     /* ---- Poziomy pasek: frakcja → dowódca → statystyki ---- */
     .deckstrip {
         grid-area: strip;
-        display: flex;
-        align-items: stretch;
-        gap: 12px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        column-gap: 8px;
         overflow-x: auto;
         scrollbar-width: none;
         padding: 2px 0 4px 0;
     }
+
     .factionblock {
         display: flex;
-        flex: 0 0 130px;
+        width: 130px;
+        justify-self: start;
         flex-direction: column;
         justify-content: center;
         gap: 5px;
     }
-    /* [<][>] w jednym wierszu, nazwa frakcji zawija się pod spód.
-       Zmiana samego porządku w CSS — HTML zostaje wspólny z komputerem. */
+
     .factionswitch {
         flex-wrap: wrap;
         justify-content: center;
@@ -367,17 +369,16 @@ section {
     }
 
     .deckcenter {
-        flex: 1 1 auto;
-        min-width: 0;
-        flex-direction: row;
-        align-items: center;
-        gap: 10px;
-        overflow: visible;
+        display: contents;
+    }
+    .leaderblock {
+        justify-self: center;
     }
     .statsblock {
-        flex: 0 1 120px;
+        justify-self: end;
         min-width: 0;
-        align-items: flex-start;
+        align-items: flex-end;
+        text-align: right;
     }
     .statlabel {
         margin-top: 2px;
