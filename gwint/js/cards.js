@@ -100,11 +100,12 @@ const RAW_CARDS = [
     { id: "decoy",         name: "Wabik",               faction: "neutral", type: "special", special: "decoy" },
 
     /* ---------- Królestwa Północy ---------- */
-    { id: "blue_stripes",       name: "Komando Błękitnych Pasów",  faction: "northern", type: "unit", row: "melee",  strength: 4, abilities: ["tightBond"] },
-    { id: "siege_tower",        name: "Wieża oblężnicza",          faction: "northern", type: "unit", row: "siege",  strength: 6 },
-    { id: "dun_banner_medic",   name: "Medyczka Burej Chorągwi", faction: "northern", type: "unit", row: "siege",  strength: 5, abilities: ["medic"] },
-    { id: "sigismund_dijkstra", name: "Sigismund Dijkstra",        faction: "northern", type: "unit", row: "melee",  strength: 4, abilities: ["spy"] },
-    { id: "john_natalis",       name: "Jan Natalis",               faction: "northern", type: "hero", row: "melee",  strength: 10 },
+    { id: "blue_stripes",       name: "Komando Błękitnych Pasów",   faction: "northern", type: "unit", row: "melee",  strength: 4, abilities: ["tightBond"] },
+    { id: "siege_tower",        name: "Wieża oblężnicza",           faction: "northern", type: "unit", row: "siege",  strength: 6 },
+    { id: "dun_banner_medic",   name: "Medyczka Burej Chorągwi",    faction: "northern", type: "unit", row: "siege",  strength: 5, abilities: ["medic"] },
+    { id: "sigismund_dijkstra", name: "Sigismund Dijkstra",         faction: "northern", type: "unit", row: "melee",  strength: 4, abilities: ["spy"] },
+    { id: "john_natalis",       name: "Jan Natalis",                faction: "northern", type: "hero", row: "melee",  strength: 10 },
+    { id: "ballista",           name: "Balista",                    faction: "northern", type: "unit", row: "siege",  strength: 6 },
 
     /* ---------- Cesarstwo Nilfgaardu ---------- */
     { id: "impera_brigade",        name: "Brygada Impera",           faction: "nilfgaard", type: "unit", row: "ranged", strength: 3, abilities: ["tightBond"] },
