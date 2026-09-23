@@ -106,6 +106,24 @@ const RAW_CARDS = [
     { id: "sigismund_dijkstra", name: "Sigismund Dijkstra",         faction: "northern", type: "unit", row: "melee",  strength: 4, abilities: ["spy"] },
     { id: "john_natalis",       name: "Jan Natalis",                faction: "northern", type: "hero", row: "melee",  strength: 10 },
     { id: "ballista",           name: "Balista",                    faction: "northern", type: "unit", row: "siege",  strength: 6 },
+    { id: "catapult",           name: "Katapulta",                  faction: "northern", type: "unit", row: "siege",  strength: 8, abilities: ["tightBond"] },
+    { id: "poor_infantry",      name: "Biedna Pierdolona Piechota", faction: "northern", type: "unit", row: "melee",  strength: 1 },
+    { id: "detmold",            name: "Detmold",                    faction: "northern", type: "unit", row: "ranged", strength: 6 },
+    { id: "esterad",            name: "Esterad Thyssen",            faction: "northern", type: "hero", row: "melee",  strength: 10 },
+    { id: "filippa",            name: "Filippa Eilhart",            faction: "northern", type: "hero", row: "ranged", strength: 10 },
+    { id: "keira",              name: "Keira Metz",                 faction: "northern", type: "unit", row: "ranged", strength: 5 },
+    { id: "stennis",            name: "Książe Stennis",             faction: "northern", type: "unit", row: "melee",  strength: 5, abilities: ["spy"] },
+    { id: "expert",             name: "Mistrz Oblężeń z Kaedwen",   faction: "northern", type: "unit", row: "siege",  strength: 1, abilities: ["moraleBoost"] },
+    { id: "redanian_infantry",  name: "Redański Piechur",           faction: "northern", type: "unit", row: "melee",  strength: 1 },
+    { id: "crinfrid_hunter",    name: "Rębacze z Crinfrid",         faction: "northern", type: "unit", row: "ranged", strength: 5, abilities: ["tightBond"] },
+    { id: "sabrina" ,           name: "Sabrina Glevissig",          faction: "northern", type: "unit", row: "ranged", strength: 4 },
+    { id: "sheala",             name: "Sheala de Tancarville",      faction: "northern", type: "unit", row: "ranged", strength: 5 },
+    { id: "sheldon",            name: "Sheldon Skaggs",             faction: "northern", type: "unit", row: "ranged", strength: 4 },
+    { id: "trebuchet",          name: "Trebusz",                    faction: "northern", type: "unit", row: "siege",  strength: 6 },
+    { id: "roche",              name: "Vernon Roche",               faction: "northern", type: "hero", row: "melee",  strength: 10 },
+    { id: "ves",                name: "Ves",                        faction: "northern", type: "unit", row: "melee",  strength: 5 },
+    { id: "yarpen",             name: "Yarpen Zigrin",              faction: "northern", type: "unit", row: "melee",  strength: 2 },
+    { id: "siegfried",          name: "Zygfryd z Denesle",          faction: "northern", type: "unit", row: "melee" , strength: 5 },
 
     /* ---------- Cesarstwo Nilfgaardu ---------- */
     { id: "impera_brigade",        name: "Brygada Impera",           faction: "nilfgaard", type: "unit", row: "ranged", strength: 3, abilities: ["tightBond"] },
@@ -276,11 +294,29 @@ export const DECKS = {
             ["olgierd", 1],
             ["roach", 1],
             ["blue_stripes", 3],        // Więź: 3 kopie po 4
-            ["siege_tower", 2],         // Zagrzewanie
-            ["dun_banner_medic", 2],    // Medyk
+            ["siege_tower", 1],         // Zagrzewanie
+            ["dun_banner_medic", 1],    // Medyk
             ["sigismund_dijkstra", 1],  // Szpieg
             ["john_natalis", 1],        // Bohater
-            ["ballista", 2]
+            ["ballista", 2],
+            ["poor_infantry", 3],
+            ["detmold", 1],
+            ["esterad", 1],
+            ["filippa", 1],
+            ["catapult", 3],
+            ["keira", 1],
+            ["stennis", 1],
+            ["expert", 1],
+            ["redanian_soldier", 1],
+            ["crinfrid_hunter", 3],
+            ["sabrina", 1],
+            ["sheala", 1],
+            ["sheldon", 1],
+            ["trebuchet", 1],
+            ["roche", 1],
+            ["ves", 1],
+            ["yarpen", 1],
+            ["siegfried", 1],
         ]
     },
 
