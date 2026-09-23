@@ -114,7 +114,7 @@ const RAW_CARDS = [
     { id: "keira",              name: "Keira Metz",                 faction: "northern", type: "unit", row: "ranged", strength: 5 },
     { id: "stennis",            name: "Książe Stennis",             faction: "northern", type: "unit", row: "melee",  strength: 5, abilities: ["spy"] },
     { id: "expert",             name: "Mistrz Oblężeń z Kaedwen",   faction: "northern", type: "unit", row: "siege",  strength: 1, abilities: ["moraleBoost"] },
-    { id: "redanian_infantry",  name: "Redański Piechur",           faction: "northern", type: "unit", row: "melee",  strength: 1 },
+    { id: "redanian_soldier",  name: "Redański Piechur",           faction: "northern", type: "unit", row: "melee",  strength: 1 },
     { id: "crinfrid_hunter",    name: "Rębacze z Crinfrid",         faction: "northern", type: "unit", row: "ranged", strength: 5, abilities: ["tightBond"] },
     { id: "sabrina" ,           name: "Sabrina Glevissig",          faction: "northern", type: "unit", row: "ranged", strength: 4 },
     { id: "sheala",             name: "Sheala de Tancarville",      faction: "northern", type: "unit", row: "ranged", strength: 5 },
@@ -124,6 +124,7 @@ const RAW_CARDS = [
     { id: "ves",                name: "Ves",                        faction: "northern", type: "unit", row: "melee",  strength: 5 },
     { id: "yarpen",             name: "Yarpen Zigrin",              faction: "northern", type: "unit", row: "melee",  strength: 2 },
     { id: "siegfried",          name: "Zygfryd z Denesle",          faction: "northern", type: "unit", row: "melee" , strength: 5 },
+    { id: "talar",              name: "Talar",                      faction: "northern", type: "unit", row: "siege",  strength: 1, abilities: ["spy"] },
 
     /* ---------- Cesarstwo Nilfgaardu ---------- */
     { id: "impera_brigade",        name: "Brygada Impera",           faction: "nilfgaard", type: "unit", row: "ranged", strength: 3, abilities: ["tightBond"] },
@@ -307,7 +308,7 @@ export const DECKS = {
             ["keira", 1],
             ["stennis", 1],
             ["expert", 1],
-            ["redanian_infantry", 1],
+            ["redanian_soldier", 1],
             ["crinfrid_hunter", 3],
             ["sabrina", 1],
             ["sheala", 1],
@@ -316,7 +317,8 @@ export const DECKS = {
             ["roche", 1],
             ["ves", 1],
             ["yarpen", 1],
-            ["siegfried", 1]
+            ["siegfried", 1],
+            ["talar", 1]
         ]
     },
 
