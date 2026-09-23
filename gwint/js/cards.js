@@ -307,7 +307,7 @@ export const DECKS = {
             ["keira", 1],
             ["stennis", 1],
             ["expert", 1],
-            ["redanian_soldier", 1],
+            ["redanian_infantry", 1],
             ["crinfrid_hunter", 3],
             ["sabrina", 1],
             ["sheala", 1],
@@ -316,7 +316,7 @@ export const DECKS = {
             ["roche", 1],
             ["ves", 1],
             ["yarpen", 1],
-            ["siegfried", 1],
+            ["siegfried", 1]
         ]
     },
 
