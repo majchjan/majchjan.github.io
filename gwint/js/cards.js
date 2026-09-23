@@ -279,7 +279,8 @@ export const DECKS = {
             ["siege_tower", 2],         // Zagrzewanie
             ["dun_banner_medic", 2],    // Medyk
             ["sigismund_dijkstra", 1],  // Szpieg
-            ["john_natalis", 1]        // Bohater
+            ["john_natalis", 1],        // Bohater
+            ["ballista", 2]
         ]
     },
 
