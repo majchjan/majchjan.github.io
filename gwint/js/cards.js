@@ -136,9 +136,27 @@ const RAW_CARDS = [
     /* ---------- Scoia'tael ---------- */
     { id: "havekar_smuggler",     name: "Havekarskie wsparcie ",         faction: "scoiatael", type: "unit", row: "melee",  strength: 5, abilities: ["muster"], musterGroup: "havekar" },
     { id: "elven_skirmisher",     name: "Elfi harcownik",             faction: "scoiatael", type: "unit", row: "ranged", strength: 2, abilities: ["muster"], musterGroup: "elven_skirmisher" },
-    { id: "dol_blathanna_archer", name: "Łucznik z Dol Blathanna", faction: "scoiatael", type: "unit", row: "ranged", strength: 10 },
+    { id: "dol_blathanna_archer", name: "Łucznik z Dol Blathanna", faction: "scoiatael", type: "unit", row: "ranged", strength: 4 },
     { id: "schirru",              name: "Schirrú",                    faction: "scoiatael", type: "unit", row: "siege",  strength: 8, abilities: ["scorchRow"], scorchRow: "siege" },
-    { id: "iorveth",              name: "Iorveth",                    faction: "scoiatael", type: "hero", row: "melee",  strength: 10 },
+    { id: "iorveth",              name: "Iorveth",                    faction: "scoiatael", type: "hero", row: "ranged",  strength: 10 },
+    { id: "barclay",              name: "Barclay Els",                faction: "scoiatael", type: "unit", row: "melee",  strength: 6, abilities: ["agile"] },
+    { id: "vrihedd",              name: "Brygada Vrihedd",            faction: "scoiatael", type: "unit", row: "melee",  strength: 5, abilities: ["agile"] },
+    { id: "ciaran",               name: "Ciaran aep Easnillien",      faction: "scoiatael", type: "unit", row: "melee",  strength: 3, abilities: ["agile"] },
+    { id: "dennis",               name: "Dennis Cranmer",             faction: "scoiatael", type: "unit", row: "melee",  strength: 6 },
+    { id: "eithne",               name: "Eithne",                     faction: "scoiatael", type: "hero", row: "ranged", strength: 10 },
+    { id: "filavandrel",          name: "Filavandrel aen Fidhail",    faction: "scoiatael", type: "unit", row: "melee",  strength: 6, abilities: ["agile"] },
+    { id: "medyk",                name: "Havekarski medyk",           faction: "scoiatael", type: "unit", row: "ranged", strength: 0, abilities: ["medic"] },
+    { id: "ida",                  name: "Ida Emean aep Sivney",       faction: "scoiatael", type: "unit", row: "ranged", strength: 6 },
+    { id: "isengrim",             name: "Isengrim Faoiltiarna",       faction: "scoiatael", type: "hero", row: "melee",  strength: 10, abilities: ["moraleBoost"] },
+    { id: "kadet",                name: "Kadet Vrihedd",              faction: "scoiatael", type: "unit", row: "ranged", strength: 4 },
+    { id: "krasnolud",            name: "Krasnolud harcownik",        faction: "scoiatael", type: "unit", row: "melee",  strength: 3, abilities: ["muster"], musterGroup: "krasnolud" },
+    { id: "milva",                name: "Milva",                      faction: "scoiatael", type: "unit", row: "ranged", strength: 10, abilities: ["moraleBoost"] },
+    { id: "obroncy",              name: "Obrońcy Mahakamu",           faction: "scoiatael", type: "unit", row: "melee",  strength: 5 },
+    { id: "riordain",             name: "Riordain",                   faction: "scoiatael", type: "unit", row: "ranged", strength: 1 },
+    { id: "saesenthessis",        name: "Saesenthessis",              faction: "scoiatael", type: "hero", row: "ranged", strength: 10 },
+    { id: "toruviel",             name: "Toruviel",                   faction: "scoiatael", type: "unit", row: "ranged", strength: 2 },
+    { id: "yaevinn",              name: "Yaevinn",                    faction: "scoiatael", type: "unit", row: "melee",  strength: 6, abilities: ["agile"] },
+    { id: "zwiadowca",            name: "Zwiadowca z Dol Blathanna",  faction: "scoiatael", type: "unit", row: "melee",  strength: 6, abilities: ["agile"] },
 
     /* ---------- Potwory ---------- */
     { id: "arachas",       name: "Krabopająk",         faction: "monsters", type: "unit", row: "melee",  strength: 4, abilities: ["muster"], musterGroup: "arachas" },
@@ -362,7 +380,7 @@ export const DECKS = {
         name: "Scoia'tael",
         leader: "francesca_daisy",
         cards: [
-            ["havekar_smuggler", 3],      // Zgrupowanie w rzędzie wręcz
+            ["havekar_smuggler", 4],      // Zgrupowanie w rzędzie wręcz
             ["elven_skirmisher", 3],      // Zgrupowanie w rzędzie dystansowym
             ["dol_blathanna_archer", 2],
             ["schirru", 1],
@@ -388,7 +406,25 @@ export const DECKS = {
             ["gaunter", 1],
             ["darkness", 3],
             ["olgierd", 1],
-            ["roach", 1]
+            ["roach", 1],
+            ["barclay", 1],
+            ["vrihedd", 3],
+            ["ciaran", 1],
+            ["dennis", 1],
+            ["eithne", 1],
+            ["filavandrel", 1],
+            ["medyk", 4],
+            ["ida", 1],
+            ["isengrim", 1],
+            ["kadet", 1],
+            ["krasnolud", 3],
+            ["milva", 1],
+            ["obroncy", 5], 
+            ["riordain", 1], 
+            ["saesenthessis", 1],
+            ["toruviel", 1],
+            ["yaevinn", 1],
+            ["zwiadowca", 3]
         ]
     },
 

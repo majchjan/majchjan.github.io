@@ -14,7 +14,7 @@ const ROW_NAME = { melee: "wręcz", ranged: "dystansowy", siege: "oblężniczy" 
 
 /** Opisy pasywek frakcji — wspólne dla gry i edytora talii. */
 export const PASSIVE_TEXT = {
-    drawOnRoundWin:  "Za każdym razem, kiedy wygrasz bitwę, weź o jednaą kartę więcej.",
+    drawOnRoundWin:  "Za każdym razem, kiedy wygrasz bitwę, weź o jedną kartę więcej.",
     winsDraws:       "Jeśli rozgrywka zakończy się remisem, to ty odnosisz zwycięstwo.",
     choosesStarter:  "Zdecyduj, kto rozpoczyna rozgrywkę",
     keepsRandomUnit: "Zatrzymaj losowo wybraną jednostkę na polu bitwy po każdej rundzie.",
