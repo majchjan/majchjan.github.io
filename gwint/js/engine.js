@@ -325,7 +325,7 @@ export function cardStrength(state, boardSide, row, iid) {
     let value = card.strength;
 
     if (weatherAffects(state, row)) {
-        value = 1;
+        value = Math.min(value, 1);
     }
 
     if (hasAbility(card, "tightBond")) {

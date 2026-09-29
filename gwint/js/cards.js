@@ -127,11 +127,35 @@ const RAW_CARDS = [
     { id: "talar",              name: "Talar",                      faction: "northern", type: "unit", row: "siege",  strength: 1, abilities: ["spy"] },
 
     /* ---------- Cesarstwo Nilfgaardu ---------- */
-    { id: "impera_brigade",        name: "Brygada Impera",           faction: "nilfgaard", type: "unit", row: "ranged", strength: 3, abilities: ["tightBond"] },
+    { id: "impera_brigade",        name: "Brygada Impera",           faction: "nilfgaard", type: "unit", row: "melee", strength: 3, abilities: ["tightBond"] },
     { id: "siege_technician",      name: "Wsparcie oblężnicze",       faction: "nilfgaard", type: "unit", row: "siege",  strength: 0, abilities: ["medic"] },
     { id: "black_infantry_archer", name: "Nilfgaardzki łucznik",  faction: "nilfgaard", type: "unit", row: "ranged", strength: 10 },
     { id: "stefan_skellen",        name: "Stefan Skellen",           faction: "nilfgaard", type: "unit", row: "melee",  strength: 9, abilities: ["spy"] },
-    { id: "menno_coehoorn",        name: "Menno Coehoorn",           faction: "nilfgaard", type: "hero", row: "melee",  strength: 10 },
+    { id: "menno_coehoorn",        name: "Menno Coehoorn",           faction: "nilfgaard", type: "hero", row: "melee",  strength: 10, abilities: ["medic"] },
+    { id: "albrich",               name: "Albrich",                   faction: "nilfgaard", type: "unit", row: "ranged", strength: 2 },
+    { id: "assire",               name: "Assire var Anahid",          faction: "nilfgaard", type: "unit", row: "ranged", strength: 6 },
+    { id: "cahir",               name: "Cahir Mawr Dyffryn aep Ceallach", faction: "nilfgaard", type: "unit", row: "melee", strength: 6 },
+    { id: "cynthia",             name: "Cynthia",                         faction: "nilfgaard", type: "unit", row: "ranged", strength: 4 },
+    { id: "fringilla",             name: "Fringilla Vigo",                faction: "nilfgaard", type: "unit", row: "ranged", strength: 6 },
+    { id: "kawaleria",             name: "Kawaleria Nauzicaa",            faction: "nilfgaard", type: "unit", row: "melee", strength: 2, abilities: ["tightBond"] },
+    { id: "letho",             name: "Letho z Gulety",                    faction: "nilfgaard", type: "hero", row: "melee", strength: 10 },
+    { id: "morteisen",             name: "Morteisen",                         faction: "nilfgaard", type: "unit", row: "melee", strength: 3 },
+    { id: "morvran",             name: "Morvran Voorhis",                         faction: "nilfgaard", type: "hero", row: "siege", strength: 10 },
+    { id: "mlody",             name: "Młody emisariusz",                         faction: "nilfgaard", type: "unit", row: "melee", strength: 5, abilities: ["tightBond"] },
+    { id: "puttkammer",             name: "Putkammer",                         faction: "nilfgaard", type: "unit", row: "ranged", strength: 3 },
+    { id: "rainfarn",             name: "Rainfarn",                         faction: "nilfgaard", type: "unit", row: "melee", strength: 4 },
+    { id: "renuald",             name: "Renuald aep Matsen",                         faction: "nilfgaard", type: "unit", row: "ranged", strength: 5 },
+    { id: "saper",             name: "Saper",                         faction: "nilfgaard", type: "unit", row: "siege", strength: 6 },
+    { id: "shilard",             name: "Shilard Fitz-Oesterlen",                         faction: "nilfgaard", type: "unit", row: "melee", strength: 7, abilities: ["spy"] },
+    { id: "sweers",             name: "Sweers",                         faction: "nilfgaard", type: "unit", row: "ranged", strength: 2 },
+    { id: "tibor",             name: "Tibor Eggebracht",                         faction: "nilfgaard", type: "hero", row: "ranged", strength: 10 },
+    { id: "vanhemar",             name: "Vanhemar",                         faction: "nilfgaard", type: "unit", row: "ranged", strength: 4 },
+    { id: "vattier",             name: "Vattier de Rideaux",                         faction: "nilfgaard", type: "unit", row: "melee", strength: 4, abilities: ["spy"] },
+    { id: "vreemde",             name: "Vreemde",                         faction: "nilfgaard", type: "unit", row: "melee", strength: 2 },
+    { id: "skorpion",             name: "Wielki Ognisty Skorpion",                         faction: "nilfgaard", type: "unit", row: "siege", strength: 10 },
+    { id: "wsparcie",             name: "Wsparcie łuczników",                         faction: "nilfgaard", type: "unit", row: "ranged", strength: 1, abilities: ["medic"] },
+    { id: "mangonela",             name: "Zdezelowana mangonela",                         faction: "nilfgaard", type: "unit", row: "siege", strength: 3 },
+    { id: "zerrikanski",             name: "Zerrikański Ognisty Skorpion",                         faction: "nilfgaard", type: "unit", row: "siege", strength: 5 },
 
     /* ---------- Scoia'tael ---------- */
     { id: "havekar_smuggler",     name: "Havekarskie wsparcie ",         faction: "scoiatael", type: "unit", row: "melee",  strength: 5, abilities: ["muster"], musterGroup: "havekar" },
@@ -368,10 +392,34 @@ export const DECKS = {
             ["olgierd", 1],
             ["roach", 1],
             ["impera_brigade", 4],        // Więź: 4 kopie po 3
-            ["siege_technician", 2],      // Medyk o sile 0
+            ["siege_technician", 1],      // Medyk o sile 0
             ["black_infantry_archer", 2],
             ["stefan_skellen", 1],        // Szpieg o dużej sile
-            ["menno_coehoorn", 1]       // Bohater
+            ["menno_coehoorn", 1],       // Bohater
+            ["letho", 1],
+            ["shilard", 1],
+            ["cahir", 1],
+            ["mlody", 2],
+            ["rainfarn", 1],
+            ["vattier", 1],
+            ["morteisen", 1],
+            ["kawaleria", 4],
+            ["vreemde", 1],
+            ["tibor", 1],
+            ["assire", 1],
+            ["fringilla", 1],
+            ["renuald", 1],
+            ["cynthia", 1],
+            ["vanhemar", 1],
+            ["puttkammer", 1],
+            ["albrich", 1],
+            ["sweers", 1],
+            ["wsparcie", 2],
+            ["morvran", 1],
+            ["skorpion", 1],
+            ["saper", 2],
+            ["zerrikanski", 1],
+            ["mangonela", 1]
         ]
     },
 
