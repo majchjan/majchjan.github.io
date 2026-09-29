@@ -183,12 +183,41 @@ const RAW_CARDS = [
     { id: "zwiadowca",            name: "Zwiadowca z Dol Blathanna",  faction: "scoiatael", type: "unit", row: "melee",  strength: 6, abilities: ["agile"] },
 
     /* ---------- Potwory ---------- */
-    { id: "arachas",       name: "Krabopająk",         faction: "monsters", type: "unit", row: "melee",  strength: 4, abilities: ["muster"], musterGroup: "arachas" },
-    { id: "kayran",        name: "Kejran",          faction: "monsters", type: "unit", row: "melee",  strength: 8, abilities: ["moraleBoost"] },
-    { id: "fiend",         name: "Bies",            faction: "monsters", type: "unit", row: "melee",  strength: 6 },
-    { id: "celaeno_harpy", name: "Harpia Celaeno",  faction: "monsters", type: "unit", row: "melee",  strength: 2, abilities: ["agile"] },
-    { id: "draug",         name: "Draug",           faction: "monsters", type: "hero", row: "melee",  strength: 14 },
-    { id: "toad_prince",   name: "Królewicz Ropuch",faction: "monsters", type: "unit", row: "ranged", strength: 7, abilities: ["scorchRow"], scorchRow: "ranged" }
+    { id: "baba",         name: "Baba cmentarna",            faction: "monsters", type: "unit", row: "ranged",  strength: 5 },
+    { id: "bies",         name: "Bies",            faction: "monsters", type: "unit", row: "melee",  strength: 6 },
+    { id: "draug",         name: "Draug",           faction: "monsters", type: "hero", row: "melee",  strength: 10 },
+    { id: "endriaga",         name: "Endriaga",            faction: "monsters", type: "unit", row: "ranged",  strength: 2 },
+    { id: "gargulec",         name: "Gargulec",            faction: "monsters", type: "unit", row: "ranged",  strength: 2 },
+    { id: "ghul",         name: "Ghul",            faction: "monsters", type: "unit", row: "melee",  strength: 1, abilities: ["muster"], musterGroup: "ghul" },
+    { id: "gryf",         name: "Gryf",            faction: "monsters", type: "unit", row: "melee",  strength: 5 },
+    { id: "harpia",         name: "Harpia",            faction: "monsters", type: "unit", row: "melee",  strength: 2, abilities: ["agile"] },
+    { id: "celaeno", name: "Harpia Celaeno",  faction: "monsters", type: "unit", row: "melee",  strength: 2, abilities: ["agile"] },
+    { id: "imlerith",         name: "Imlerith",            faction: "monsters", type: "hero", row: "melee",  strength: 10 },
+    { id: "kejran",        name: "Kejran",          faction: "monsters", type: "unit", row: "melee",  strength: 8, abilities: ["moraleBoost", "agile"] },
+    { id: "krabopajak",       name: "Krabopająk",         faction: "monsters", type: "unit", row: "melee",  strength: 4, abilities: ["muster"], musterGroup: "krabopajak" },
+    { id: "krolewicz",   name: "Królewicz Ropuch",faction: "monsters", type: "unit", row: "ranged", strength: 7, abilities: ["scorchRow"], scorchRow: "ranged" },
+    { id: "kuroliszek",         name: "Kuroliszek",            faction: "monsters", type: "unit", row: "ranged",  strength: 2 },
+    { id: "leszy",         name: "Leszy",            faction: "monsters", type: "hero", row: "ranged",  strength: 10 },
+    { id: "lodowy_gigant",         name: "Lodowy Gigant",            faction: "monsters", type: "unit", row: "siege",  strength: 5 },
+    { id: "mglak",         name: "Mglak",            faction: "monsters", type: "unit", row: "melee",  strength: 2 },
+    { id: "morowa",         name: "Morowa Dziewica",            faction: "monsters", type: "unit", row: "melee",  strength: 5 },
+    { id: "nekker",         name: "Nekker",            faction: "monsters", type: "unit", row: "melee",  strength: 2, abilities: ["muster"], musterGroup: "nekker" },
+    { id: "olbrzymi",         name: "Olbrzymi Krabopająk",            faction: "monsters", type: "unit", row: "siege",  strength: 6, abilities: ["muster"], musterGroup: "olbrzymi", musterSummons: "krabopajak" },
+    { id: "poroniec",         name: "Poroniec",            faction: "monsters", type: "unit", row: "melee",  strength: 4 },
+    { id: "przeraza",         name: "Przeraza",            faction: "monsters", type: "unit", row: "melee",  strength: 5 },
+    { id: "bruxa",         name: "Wampir: Bruxa",            faction: "monsters", type: "unit", row: "melee",  strength: 4, abilities: ["muster"], musterGroup: "wampir" },
+    { id: "ekimma",         name: "Wampir: Ekimma",            faction: "monsters", type: "unit", row: "melee",  strength: 4, abilities: ["muster"], musterGroup: "wampir" },
+    { id: "fleder",         name: "Wampir: Fleder",            faction: "monsters", type: "unit", row: "melee",  strength: 4, abilities: ["muster"], musterGroup: "wampir" },
+    { id: "garkain",         name: "Wampir: Garkain",            faction: "monsters", type: "unit", row: "melee",  strength: 4, abilities: ["muster"], musterGroup: "wampir" },
+    { id: "katakan",         name: "Wampir: Katakan",            faction: "monsters", type: "unit", row: "melee",  strength: 5, abilities: ["muster"], musterGroup: "wampir" },
+    { id: "widlogon",         name: "Widłogon",            faction: "monsters", type: "unit", row: "melee",  strength: 5 },
+    { id: "kuchta",         name: "Wiedźma: Kuchta",            faction: "monsters", type: "unit", row: "melee",  strength: 6, abilities: ["muster"], musterGroup: "wiedzma" },
+    { id: "przadka",         name: "Wiedźma: Prządka",            faction: "monsters", type: "unit", row: "melee",  strength: 6, abilities: ["muster"], musterGroup: "wiedzma" },
+    { id: "szepciucha",         name: "Wiedźma: Szepciucha",            faction: "monsters", type: "unit", row: "melee",  strength: 6, abilities: ["muster"], musterGroup: "wiedzma" },
+    { id: "wilkolak",         name: "Wilkołak",            faction: "monsters", type: "unit", row: "melee",  strength: 5 },
+    { id: "wiverna",         name: "Wiverna",            faction: "monsters", type: "unit", row: "ranged",  strength: 2 },
+    { id: "ognia",         name: "Żywiołak Ognia",            faction: "monsters", type: "unit", row: "siege",  strength: 6 },
+    { id: "ziemi",         name: "Żywiołak Ziemi",            faction: "monsters", type: "unit", row: "siege",  strength: 6 }
 ];
 
 /** Uzupełnia pola opcjonalne, żeby silnik nie musiał sprawdzać undefined. */
@@ -481,12 +510,14 @@ export const DECKS = {
         name: "Potwory",
         leader: "eredin_king",
         cards: [
-            ["arachas", 3],               // Zgrupowanie
-            ["kayran", 2],                // Zagrzewanie
-            ["fiend", 2],
-            ["celaeno_harpy", 2],
+            ["krabopajak", 3],               // Zgrupowanie
+            ["kejran", 1],                // Zagrzewanie
+            ["bies", 1],
+            ["celaeno", 1],
             ["draug", 1],                 // Bohater o sile 14
-            ["toad_prince", 1], 
+            ["krolewicz", 1], 
+
+
             ["geralt", 1],
             ["dandelion", 1],
             ["mysterious_elf", 1],
@@ -508,7 +539,36 @@ export const DECKS = {
             ["gaunter", 1],
             ["darkness", 3],
             ["olgierd", 1],
-            ["roach", 1]
+            ["roach", 1],
+            ["baba", 1],
+            ["bruxa", 1],
+            ["ekimma", 1],
+            ["endriaga", 1],
+            ["fleder", 1],
+            ["gargulec", 1],
+            ["garkain", 1],
+            ["ghul", 3],
+            ["gryf", 1],
+            ["harpia", 1],
+            ["imlerith", 1],
+            ["katakan", 1],
+            ["kuchta", 1],
+            ["kuroliszek", 1],
+            ["leszy", 1],
+            ["lodowy_gigant", 1],
+            ["mglak", 1],
+            ["morowa", 1],
+            ["nekker", 3],
+            ["ognia", 1],
+            ["olbrzymi", 1],
+            ["poroniec", 1],
+            ["przadka", 1],
+            ["przeraza", 1],
+            ["szepciucha", 1],
+            ["widlogon", 1],
+            ["wilkolak", 1],
+            ["wiverna", 1],
+            ["ziemi", 1]
         ]
     }
 };
