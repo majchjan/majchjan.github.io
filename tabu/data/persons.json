@@ -652,5 +652,12 @@
     "urszula dudziak":["piosenkarka", "jazz", "urbaniak"],
     "cezary pazura":["aktor", "13 posterunek", "kiler"],
     "małgorzata rozenek":["perfekcyjna", "rękawiczka", "sprzątanie"],
-    "angelian jolie":["aktorka","pitt","tomb rider"]
+    "angelian jolie":["aktorka","pitt","tomb rider"],
+    "anthony hopkins": ["aktor", "milczenie owiec", "hannibal lecter"],
+    "tomasz schuchardt": ["aktor", "fokus", "dom dobry"],
+    "vito bambino": ["piosenkarz", "bitamina", "niemcy"],
+    "nemo": ["rybka", "pixar", "gupik"],
+    "tom cruise": ["aktor", "mission impossible", "top gun"],
+    "hans kloss": ["agent", "stawka większa niż życie", "brunner"],
+    "gimper": ["gamer", "youtuber", "lekko nie będzie"]
 }
