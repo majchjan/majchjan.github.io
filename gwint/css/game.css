@@ -26,10 +26,14 @@ section {
     min-height: 0;
 }
 
+body.ingame {
+    background-image: url(../img/wood.png);
+}
 body.ingame .logo,
 body.ingame footer {
     display: none;
 }
+
 /* W grze zdejmujemy ograniczenie szerokości — rzędy i ręka biorą cały ekran */
 body.ingame .stage {
     max-width: none;

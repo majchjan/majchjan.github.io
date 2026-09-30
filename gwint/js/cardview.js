@@ -165,7 +165,7 @@ const ABILITY_TEXT = {
     horn:        "Róg dowódcy — podwaja siłę pozostałych jednostek w swoim rzędzie.",
     scorch:      "Pożoga — przy zagraniu niszczy najsilniejsze jednostki na całej planszy, także własne.",
     berserker:   "Berserker — pod wpływem Mardroeme przemienia się.",
-    mardroeme:   "Mardroeme — przy zagraniu przemienia berserkerów w swoim rzędzie.",
+    mardroeme:   "Mardroeme — dopóki stoi w rzędzie, przemienia w nim berserkerów.",
     agile:       "Zwinność — przy zagraniu wybierasz rząd wręcz albo dystansowy."
 };
 
