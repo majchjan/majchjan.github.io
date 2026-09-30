@@ -36,7 +36,9 @@ const ICON = {
     frost:        "img/icons/frost.svg",
     fog:          "img/icons/fog.svg",
     rain:         "img/icons/rain.svg",
-    clearWeather: "img/icons/clear_weather.svg"
+    clearWeather: "img/icons/clear_weather.svg",
+    mardroeme:    "img/icons/mardroeme.svg",
+    berserker:    "img/icons/berserker.svg"
 };
 
 export function cardArtUrl(card) {
@@ -80,10 +82,10 @@ function rowIcons(card) {
 
 function abilityIcons(card) {
     const paths = [];
-    for (const ability of ["tightBond", "moraleBoost", "muster", "spy", "medic", "horn"]) {
+        for (const ability of ["tightBond", "moraleBoost", "muster", "spy", "medic", "horn", "mardroeme", "berserker"]) {
         if (hasAbility(card, ability)) paths.push(ICON[ability]);
     }
-    if (hasAbility(card, "scorchRow")) paths.push(ICON.scorch);
+    if (hasAbility(card, "scorchRow") || hasAbility(card, "scorch")) paths.push(ICON.scorch);
     return paths;
 }
 
@@ -161,6 +163,9 @@ const ABILITY_TEXT = {
     spy:         "Szpieg — trafia na stronę przeciwnika, a ty dobierasz 2 karty.",
     medic:       "Medyk — wskrzesza jednostkę z twojego cmentarza i zagrywa ją natychmiast.",
     horn:        "Róg dowódcy — podwaja siłę pozostałych jednostek w swoim rzędzie.",
+    scorch:      "Pożoga — przy zagraniu niszczy najsilniejsze jednostki na całej planszy, także własne.",
+    berserker:   "Berserker — pod wpływem Mardroeme przemienia się.",
+    mardroeme:   "Mardroeme — przy zagraniu przemienia berserkerów w swoim rzędzie.",
     agile:       "Zwinność — przy zagraniu wybierasz rząd wręcz albo dystansowy."
 };
 
@@ -171,7 +176,8 @@ const SPECIAL_TEXT = {
     clearWeather: "Czysta Pogoda — usuwa wszystkie efekty pogody.",
     horn:         "Róg Dowódcy — podwaja siłę jednostek we wskazanym rzędzie.",
     scorch:       "Spalenie — niszczy najsilniejsze jednostki na całej planszy. Bohaterowie są odporni.",
-    decoy:        "Wabik — zamienia się miejscem z twoją jednostką, która wraca do ręki."
+    decoy:        "Wabik — zamienia się miejscem z twoją jednostką, która wraca do ręki.",
+    mardroeme:    "Mardroeme — przemienia berserkerów we wskazanym rzędzie."
 };
 
 /** Pełny opis karty do okna podglądu. */

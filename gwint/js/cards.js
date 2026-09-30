@@ -55,7 +55,7 @@ export const PASSIVES = {
     nilfgaard: "winsDraws",          // wygrywa rundę remisową
     scoiatael: "choosesStarter",     // decyduje, kto zaczyna pierwszą rundę
     monsters:  "keepsRandomUnit",    // po rundzie zostawia na planszy losową jednostkę
-    skellige:  "resurrectRound3"     // ZAREZERWOWANE — implementacja na później
+    skellige:  "resurrectRound3"
 };
 
 /** Limity talii wg zasad z Wiedźmina 3. */
@@ -217,7 +217,52 @@ const RAW_CARDS = [
     { id: "wilkolak",         name: "Wilkołak",            faction: "monsters", type: "unit", row: "melee",  strength: 5 },
     { id: "wiverna",         name: "Wiverna",            faction: "monsters", type: "unit", row: "ranged",  strength: 2 },
     { id: "ognia",         name: "Żywiołak Ognia",            faction: "monsters", type: "unit", row: "siege",  strength: 6 },
-    { id: "ziemi",         name: "Żywiołak Ziemi",            faction: "monsters", type: "unit", row: "siege",  strength: 6 }
+    { id: "ziemi",         name: "Żywiołak Ziemi",            faction: "monsters", type: "unit", row: "siege",  strength: 6 },
+
+    /* ---------- Skellige ---------- */
+    { id: "berserker", name: "Berserker", faction: "skellige", type: "unit", row: "melee", strength: 4,
+      abilities: ["berserker"], transformTo: "przemieniony" },
+    { id: "birna", name: "Birna Bran", faction: "skellige", type: "unit", row: "melee", strength: 2,
+      abilities: ["medic"] },
+    { id: "cerys", name: "Cerys", faction: "skellige", type: "hero", row: "melee", strength: 10,
+      abilities: ["muster"], musterGroup: "cerys", musterSummons: "tarczowniczka" },
+    { id: "donar", name: "Donar an Hindar", faction: "skellige", type: "unit", row: "melee", strength: 4 },
+    { id: "draig", name: "Draig Bon-Dhu", faction: "skellige", type: "unit", row: "siege", strength: 2,
+      abilities: ["horn"] },
+    { id: "drakkar", name: "Drakkar wojenny", faction: "skellige", type: "unit", row: "siege", strength: 6,
+      abilities: ["tightBond"] },
+    { id: "hemdal", name: "Hemdall", faction: "skellige", type: "hero", row: "melee", strength: 11,
+      summonOnly: true },
+    { id: "hjalmar", name: "Hjalmar", faction: "skellige", type: "hero", row: "ranged", strength: 10 },
+    { id: "holger", name: "Holger Czarna Ręka", faction: "skellige", type: "unit", row: "siege", strength: 4 },
+    { id: "kambi", name: "Kambi", faction: "skellige", type: "unit", row: "melee", strength: 0,
+      abilities: ["avenger"], avengerCard: "hemdal" },
+    { id: "lekki", name: "Lekki drakkar", faction: "skellige", type: "unit", row: "ranged", strength: 4,
+      abilities: ["muster"], musterGroup: "drakkar" },
+    { id: "lucznik", name: "Łucznik klanu Brokvar", faction: "skellige", type: "unit", row: "ranged", strength: 6 },
+    { id: "mardroeme", name: "Mardroeme", faction: "skellige", type: "special", special: "mardroeme" },
+    { id: "mlody_berserker", name: "Młody berserker", faction: "skellige", type: "unit", row: "ranged", strength: 2,
+      abilities: ["berserker"], transformTo: "przemieniony_mlody" },
+    { id: "myszowor", name: "Myszowór", faction: "skellige", type: "hero", row: "ranged", strength: 8,
+      abilities: ["mardroeme"] },
+    { id: "olaf", name: "Olaf", faction: "skellige", type: "unit", row: "melee", strength: 12,
+      abilities: ["agile", "moraleBoost"] },
+    { id: "pirat", name: "Pirat z klanu Dimun", faction: "skellige", type: "unit", row: "ranged", strength: 6,
+      abilities: ["scorch"] },
+    { id: "platnerz", name: "Płatnerz klanu Tordarroch", faction: "skellige", type: "unit", row: "melee", strength: 4 },
+    { id: "przemieniony", name: "Przemieniony berserker", faction: "skellige", type: "unit", row: "melee", strength: 14,
+      abilities: ["moraleBoost"], summonOnly: true },
+    { id: "przemieniony_mlody", name: "Przemieniony młody berserker", faction: "skellige", type: "unit", row: "ranged", strength: 8,
+      abilities: ["tightBond"], summonOnly: true },
+    { id: "siny", name: "Lugos siny", faction: "skellige", type: "unit", row: "melee", strength: 6 },
+    { id: "skald", name: "Skald klanu Heymaey", faction: "skellige", type: "unit", row: "melee", strength: 4 },
+    { id: "svanrige", name: "Svanrige", faction: "skellige", type: "unit", row: "melee", strength: 4 },
+    { id: "szalony", name: "Lugos szalony", faction: "skellige", type: "unit", row: "melee", strength: 6 },
+    { id: "tarczowniczka1", name: "Tarczowniczka klanu Drummond", faction: "skellige", type: "unit", row: "melee", strength: 4,
+      abilities: ["tightBond"] },
+    { id: "udalryk", name: "Udalryk", faction: "skellige", type: "unit", row: "melee", strength: 4 },
+    { id: "wojownik", name: "Wojownik klanu Craite", faction: "skellige", type: "unit", row: "melee", strength: 6,
+      abilities: ["tightBond"] }
 ];
 
 /** Uzupełnia pola opcjonalne, żeby silnik nie musiał sprawdzać undefined. */
@@ -232,6 +277,7 @@ function normalize(card) {
         abilities: card.abilities ?? [],
         musterGroup: card.musterGroup ?? null,
         musterSummons: card.musterSummons ?? null,
+        transformTo: card.transformTo ?? null,
         avengerCard: card.avengerCard ?? null,
         summonOnly: card.summonOnly ?? false,
         scorchRow: card.scorchRow ?? null,
@@ -327,7 +373,14 @@ export const LEADERS = [
       text: "Podwaja siłę twoich jednostek dalekiego zasięgu (o ile w ich rzędzie nie ma już Rogu Dowódcy)." },
     { id: "francesca_daisy", name: "Francesca Findabair: Stokrotka z Dolin", faction: "scoiatael",
       ability: "extraStartCard", passive: true,
-      text: "Weź o jedną kartę więcej na początku bitwy." }
+      text: "Weź o jedną kartę więcej na początku bitwy." },
+
+    { id: "crach_an_craite", name: "Crach an Craite", faction: "skellige",
+      ability: "shuffleGraves",
+      text: "Przetasuj wszystkie karty z cmentarzy obu graczy z powrotem do ich talii." },
+    { id: "king_bran", name: "Król Bran", faction: "skellige",
+      ability: "halveWeather", passive: true,
+      text: "Jednostki tracą pod wpływem pogody tylko połowę siły." }
 ];
 
 export const LEADER_BY_ID = Object.fromEntries(LEADERS.map(leader => [leader.id, leader]));
@@ -569,6 +622,60 @@ export const DECKS = {
             ["wilkolak", 1],
             ["wiverna", 1],
             ["ziemi", 1]
+        ]
+    },
+
+    skellige: {
+        id: "skellige",
+        name: "Skellige",
+        leader: "crach_an_craite",
+        cards: [
+            ["berserker", 1],
+            ["birna", 1],
+            ["cerys", 1],
+            ["ciri", 1],
+            ["clear_weather", 2],
+            ["cow", 1],
+            ["dandelion", 1],
+            ["darkness", 3],
+            ["decoy", 3],
+            ["donar", 1],
+            ["draig", 1],
+            ["drakkar", 3],
+            ["fog", 3],
+            ["frost", 3],
+            ["gaunter", 1],
+            ["geralt", 1],
+            ["hjalmar", 1],
+            ["holger", 1],
+            ["horn", 3],
+            ["kambi", 1],
+            ["lekki", 3],
+            ["lucznik", 3],
+            ["mardroeme", 3],
+            ["mlody_berserker", 3],
+            ["mysterious_elf", 1],
+            ["myszowor", 1],
+            ["olaf", 1],
+            ["olgierd", 1],
+            ["pirat", 1],
+            ["platnerz", 1],
+            ["rain", 2],
+            ["regis", 1],
+            ["roach", 1],
+            ["scorch", 3],
+            ["siny", 1],
+            ["skald", 1],
+            ["svanrige", 1],
+            ["szalony", 1],
+            ["tarczowniczka1", 3],
+            ["triss", 1],
+            ["udalryk", 1],
+            ["vesemir", 1],
+            ["villentretenmerth", 1],
+            ["wojownik", 3],
+            ["yennefer", 1],
+            ["zoltan_chivay", 1]
         ]
     }
 };
