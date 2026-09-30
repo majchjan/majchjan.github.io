@@ -487,16 +487,9 @@ function hasDecoyTarget() {
         .some(iid => engine.cardOf(iid).type === "unit"));
 }
 
-function hasBerserker() {
-    const side = bottomSide();
-    return ROWS.some(row => view.state.board[side][row]
-        .some(iid => hasAbility(engine.cardOf(iid), "berserker")));
-}
-
 function canPlay(iid) {
     const card = engine.cardOf(iid);
     if (card.special === "decoy") return hasDecoyTarget();
-    if (card.special === "mardroeme") return hasBerserker();
     return true;
 }
 

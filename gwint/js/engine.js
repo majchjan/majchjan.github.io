@@ -391,17 +391,18 @@ function placeUnit(state, playerSide, iid, triggerAbilities, chosenRow) {
         + (isSpy ? " jako szpiega na stronę " + boardSide : "")
         + " (" + row + ")");
 
-    const slot = state.horn[boardSide][row];
-    if (slot && slot !== "leader" && cardOf(slot).special === "mardroeme") {
+    if (state.board[boardSide][row].some(other => hasAbility(cardOf(other), "mardroeme"))) {
         transformBerserkers(state, boardSide, [row]);
     }
 
     if (!triggerAbilities) {
         return;
     }
+
     if (isSpy) {
         draw(state, playerSide, 2);
     }
+
     if (hasAbility(card, "scorchRow")) {
         resolveScorchRow(state, playerSide, card.scorchRow, card.scorchThreshold);
     }
@@ -410,9 +411,6 @@ function placeUnit(state, playerSide, iid, triggerAbilities, chosenRow) {
     }
     if (hasAbility(card, "scorch")) {
         resolveScorch(state);
-    }
-    if (hasAbility(card, "mardroeme")) {
-        transformBerserkers(state, boardSide, [row]);
     }
     if (hasAbility(card, "medic")) {
         openMedicChoice(state, playerSide);
@@ -576,24 +574,21 @@ function applySpecial(state, side, iid, params) {
         case "horn": {
             const row = params.row;
             if (!ROWS.includes(row)) fail("Wskaż rząd dla Rogu Dowódcy.");
-            const previous = state.horn[side][row];
-            if (previous && previous !== "leader") {
-                state.grave[side].push(previous);
+            if (state.horn[side][row]) {
+                state.grave[side].push(iid);
+                log(state, side + ": zagrał Róg Dowódcy na rząd " + row + " — miejsce było zajęte");
+            } else {
+                state.horn[side][row] = iid;
+                log(state, side + ": zagrał Róg Dowódcy na rząd " + row);
             }
-            state.horn[side][row] = iid;
-            log(state, side + ": zagrał Róg Dowódcy na rząd " + row);
             break;
         }
 
         case "mardroeme": {
             const row = params.row;
             if (!ROWS.includes(row)) fail("Wskaż rząd dla Mardroeme.");
-            const previous = state.horn[side][row];
-            if (previous && previous !== "leader") {
-                state.grave[side].push(previous);
-            }
-            state.horn[side][row] = iid;
             transformBerserkers(state, side, [row]);
+            state.grave[side].push(iid);
             log(state, side + ": zagrał " + card.name + " na rząd " + row);
             break;
         }
@@ -830,24 +825,10 @@ export function canUseLeader(state, side) {
     if (isLeaderBlocked(state, side)) return false;
 
     switch (leader.ability) {
-        case "deckWeather":
-            return state.deck[side].some(iid => cardOf(iid).special === leader.weather);
         case "pickDeckWeather":
             return deckWeatherOptions(state, side).length > 0;
-        case "takeOpponentGrave":
-            return graveTakeOptions(state, opposite(side)).length > 0;
-        case "takeOwnGrave":
-            return graveTakeOptions(state, side).length > 0;
         case "discardAndDraw":
             return state.hand[side].length >= 2 && state.deck[side].length > 0;
-        case "scorchRow":
-            return rowScore(state, opposite(side), leader.scorchRow) >= (leader.scorchThreshold || 10);
-        case "horn":
-            return !leader.hornRow || !state.horn[side][leader.hornRow];
-        case "optimizeAgile":
-            return agileUnits(state, side).length > 0;
-        case "shuffleGraves":
-            return SIDES.some(player => state.grave[player].length > 0);
         default:
             return true;
     }
@@ -875,8 +856,12 @@ export function useLeader(state, side, params = {}) {
             break;
         case "deckWeather": {
             const iid = s.deck[side].find(other => cardOf(other).special === leader.weather);
-            removeFrom(s.deck[side], iid);
-            playWeatherCard(s, side, iid);
+            if (iid) {
+                removeFrom(s.deck[side], iid);
+                playWeatherCard(s, side, iid);
+            } else {
+                log(s, side + ": w talii nie ma tej karty pogody");
+            }
             break;
         }
         case "pickDeckWeather":
@@ -885,11 +870,11 @@ export function useLeader(state, side, params = {}) {
         case "horn": {
             const row = leader.hornRow || params.row;
             if (!ROWS.includes(row)) fail("Wskaż rząd dla Rogu Dowódcy.");
-            const previous = s.horn[side][row];
-            if (previous && previous !== "leader") {
-                s.grave[side].push(previous);
+            if (s.horn[side][row]) {
+                log(s, side + ": miejsce na Róg w tym rzędzie jest już zajęte");
+            } else {
+                s.horn[side][row] = "leader";
             }
-            s.horn[side][row] = "leader";
             break;
         }
         case "scorchRow":
@@ -906,12 +891,24 @@ export function useLeader(state, side, params = {}) {
             }
             break;
         }
-        case "takeOpponentGrave":
-            s.pending = { kind: "takeGrave", side: side, options: graveTakeOptions(s, opposite(side)), count: 0 };
+        case "takeOpponentGrave": {
+            const options = graveTakeOptions(s, opposite(side));
+            if (options.length > 0) {
+                s.pending = { kind: "takeGrave", side: side, options: options, count: 0 };
+            } else {
+                log(s, side + ": cmentarz przeciwnika jest pusty");
+            }
             break;
-        case "takeOwnGrave":
-            s.pending = { kind: "takeOwnGrave", side: side, options: graveTakeOptions(s, side), count: 0 };
+        }
+        case "takeOwnGrave": {
+            const options = graveTakeOptions(s, side);
+            if (options.length > 0) {
+                s.pending = { kind: "takeOwnGrave", side: side, options: options, count: 0 };
+            } else {
+                log(s, side + ": twój cmentarz jest pusty");
+            }
             break;
+        }
         case "discardAndDraw":
             s.pending = { kind: "discard", side: side, options: s.hand[side].slice().sort(), count: 2 };
             break;

@@ -225,7 +225,7 @@ const RAW_CARDS = [
     { id: "birna", name: "Birna Bran", faction: "skellige", type: "unit", row: "melee", strength: 2,
       abilities: ["medic"] },
     { id: "cerys", name: "Cerys", faction: "skellige", type: "hero", row: "melee", strength: 10,
-      abilities: ["muster"], musterGroup: "cerys", musterSummons: "tarczowniczka" },
+      abilities: ["muster"], musterGroup: "cerys", musterSummons: "tarczowniczka1" },
     { id: "donar", name: "Donar an Hindar", faction: "skellige", type: "unit", row: "melee", strength: 4 },
     { id: "draig", name: "Draig Bon-Dhu", faction: "skellige", type: "unit", row: "siege", strength: 2,
       abilities: ["horn"] },
