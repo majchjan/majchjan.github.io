@@ -310,7 +310,11 @@ function clearHornCards(state) {
 }
 
 function hornHits(state, boardSide, row, iid) {
-    if (state.horn[boardSide][row]) {
+    const slot = state.horn[boardSide][row];
+    if (slot === "leader") {
+        return true;
+    }
+    if (slot && cardOf(slot).special === "horn") {
         return true;
     }
     return state.board[boardSide][row].some(other =>
@@ -325,7 +329,9 @@ export function cardStrength(state, boardSide, row, iid) {
     let value = card.strength;
 
     if (weatherAffects(state, row)) {
-        value = Math.min(value, 1);
+        value = leaderActive(state, "halveWeather")
+            ? Math.ceil(value / 2)
+            : Math.min(value, 1);
     }
 
     if (hasAbility(card, "tightBond")) {
@@ -385,6 +391,11 @@ function placeUnit(state, playerSide, iid, triggerAbilities, chosenRow) {
         + (isSpy ? " jako szpiega na stronę " + boardSide : "")
         + " (" + row + ")");
 
+    const slot = state.horn[boardSide][row];
+    if (slot && slot !== "leader" && cardOf(slot).special === "mardroeme") {
+        transformBerserkers(state, boardSide, [row]);
+    }
+
     if (!triggerAbilities) {
         return;
     }
@@ -396,6 +407,12 @@ function placeUnit(state, playerSide, iid, triggerAbilities, chosenRow) {
     }
     if (hasAbility(card, "muster")) {
         resolveMuster(state, playerSide, card.musterSummons || card.musterGroup);
+    }
+    if (hasAbility(card, "scorch")) {
+        resolveScorch(state);
+    }
+    if (hasAbility(card, "mardroeme")) {
+        transformBerserkers(state, boardSide, [row]);
     }
     if (hasAbility(card, "medic")) {
         openMedicChoice(state, playerSide);
@@ -519,6 +536,27 @@ function playWeatherCard(state, side, iid) {
     }
 }
 
+function transformBerserkers(state, side, rows) {
+    let changed = 0;
+    for (const row of rows) {
+        const cards = state.board[side][row];
+        for (let i = 0; i < cards.length; i++) {
+            const card = cardOf(cards[i]);
+            if (!hasAbility(card, "berserker") || !card.transformTo) continue;
+
+            const into = getCard(card.transformTo);
+            const prefix = side + ":" + into.id + "#summon";
+            const number = allIids(state).filter(other => other.startsWith(prefix)).length + 1;
+
+            state.grave[side].push(cards[i]);
+            cards[i] = prefix + number;
+            changed++;
+            log(state, side + ": " + card.name + " przemienia się w " + into.name);
+        }
+    }
+    return changed;
+}
+
 function applySpecial(state, side, iid, params) {
     const card = cardOf(iid);
 
@@ -544,6 +582,19 @@ function applySpecial(state, side, iid, params) {
             }
             state.horn[side][row] = iid;
             log(state, side + ": zagrał Róg Dowódcy na rząd " + row);
+            break;
+        }
+
+        case "mardroeme": {
+            const row = params.row;
+            if (!ROWS.includes(row)) fail("Wskaż rząd dla Mardroeme.");
+            const previous = state.horn[side][row];
+            if (previous && previous !== "leader") {
+                state.grave[side].push(previous);
+            }
+            state.horn[side][row] = iid;
+            transformBerserkers(state, side, [row]);
+            log(state, side + ": zagrał " + card.name + " na rząd " + row);
             break;
         }
 
@@ -795,6 +846,8 @@ export function canUseLeader(state, side) {
             return !leader.hornRow || !state.horn[side][leader.hornRow];
         case "optimizeAgile":
             return agileUnits(state, side).length > 0;
+        case "shuffleGraves":
+            return SIDES.some(player => state.grave[player].length > 0);
         default:
             return true;
     }
@@ -864,6 +917,15 @@ export function useLeader(state, side, params = {}) {
             break;
         case "optimizeAgile":
             optimizeAgileUnits(s, side);
+            break;
+        case "shuffleGraves":
+            for (const player of SIDES) {
+                if (s.grave[player].length === 0) continue;
+                const shuffled = shuffle(s.deck[player].concat(s.grave[player]), s.seed, s.rngCursor);
+                s.deck[player] = shuffled.items;
+                s.rngCursor = shuffled.cursor;
+                s.grave[player] = [];
+            }
             break;
         default:
             fail("Nieobsługiwana zdolność lidera: " + leader.ability);
@@ -1126,6 +1188,20 @@ function beginNextRound(state) {
 
     // Ręki nie uzupełnia się między rundami, więc do nowej rundy można wejść
     // bez jednej karty — wtedy pasujemy za takiego gracza od razu.
+    for (const side of SIDES) {
+        if (state.round !== 3 || PASSIVES[state.faction[side]] !== "resurrectRound3") continue;
+        for (let i = 0; i < 2; i++) {
+            const options = state.grave[side].filter(iid => cardOf(iid).type === "unit");
+            if (options.length === 0) break;
+            const roll = randomInt(state.seed, state.rngCursor, options.length);
+            state.rngCursor = roll.cursor;
+            const iid = options[roll.value];
+            removeFrom(state.grave[side], iid);
+            log(state, side + " (Skellige): wraca na planszę " + cardOf(iid).name);
+            placeUnit(state, side, iid, false);
+        }
+    }
+
     autoPassStuckPlayers(state);
     if (state.passed.A && state.passed.B) {
         finishRound(state);
