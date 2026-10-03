@@ -225,7 +225,7 @@ const RAW_CARDS = [
     { id: "birna", name: "Birna Bran", faction: "skellige", type: "unit", row: "melee", strength: 2,
       abilities: ["medic"] },
     { id: "cerys", name: "Cerys", faction: "skellige", type: "hero", row: "melee", strength: 10,
-      abilities: ["muster"], musterGroup: "cerys", musterSummons: "tarczowniczka1" },
+      abilities: ["muster"], musterGroup: "cerys", musterSummons: "tarczowniczka" },
     { id: "donar", name: "Donar an Hindar", faction: "skellige", type: "unit", row: "melee", strength: 4 },
     { id: "draig", name: "Draig Bon-Dhu", faction: "skellige", type: "unit", row: "siege", strength: 2,
       abilities: ["horn"] },
@@ -259,7 +259,7 @@ const RAW_CARDS = [
     { id: "svanrige", name: "Svanrige", faction: "skellige", type: "unit", row: "melee", strength: 4 },
     { id: "szalony", name: "Lugos szalony", faction: "skellige", type: "unit", row: "melee", strength: 6 },
     { id: "tarczowniczka1", name: "Tarczowniczka klanu Drummond", faction: "skellige", type: "unit", row: "melee", strength: 4,
-      abilities: ["tightBond"] },
+      abilities: ["tightBond"], musterGroup: "tarczowniczka" },
     { id: "udalryk", name: "Udalryk", faction: "skellige", type: "unit", row: "melee", strength: 4 },
     { id: "wojownik", name: "Wojownik klanu Craite", faction: "skellige", type: "unit", row: "melee", strength: 6,
       abilities: ["tightBond"] }
