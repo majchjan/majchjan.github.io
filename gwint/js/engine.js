@@ -482,7 +482,7 @@ function openMedicChoice(state, playerSide) {
     }
 
     // Najeźdźca Północy u któregokolwiek gracza: zamiast wyboru wskrzeszamy losowo
-    if (randomReviveActive(state)) {
+    if (randomReviveActive(state) || state.pending) {
         const roll = randomInt(state.seed, state.rngCursor, options.length);
         state.rngCursor = roll.cursor;
         const iid = options[roll.value];
@@ -546,7 +546,6 @@ function transformBerserkers(state, side, rows) {
             const prefix = side + ":" + into.id + "#summon";
             const number = allIids(state).filter(other => other.startsWith(prefix)).length + 1;
 
-            state.grave[side].push(cards[i]);
             cards[i] = prefix + number;
             changed++;
             log(state, side + ": " + card.name + " przemienia się w " + into.name);
@@ -917,11 +916,12 @@ export function useLeader(state, side, params = {}) {
             break;
         case "shuffleGraves":
             for (const player of SIDES) {
-                if (s.grave[player].length === 0) continue;
-                const shuffled = shuffle(s.deck[player].concat(s.grave[player]), s.seed, s.rngCursor);
+                const returning = s.grave[player].filter(iid => cardOf(iid).type !== "hero");
+                if (returning.length === 0) continue;
+                const shuffled = shuffle(s.deck[player].concat(returning), s.seed, s.rngCursor);
                 s.deck[player] = shuffled.items;
                 s.rngCursor = shuffled.cursor;
-                s.grave[player] = [];
+                s.grave[player] = s.grave[player].filter(iid => cardOf(iid).type === "hero");
             }
             break;
         default:
@@ -1195,7 +1195,7 @@ function beginNextRound(state) {
             const iid = options[roll.value];
             removeFrom(state.grave[side], iid);
             log(state, side + " (Skellige): wraca na planszę " + cardOf(iid).name);
-            placeUnit(state, side, iid, false);
+            placeUnit(state, side, iid, true);
         }
     }
 
