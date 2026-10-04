@@ -7,7 +7,7 @@
 
 import * as net from "./net.js";
 import * as engine from "./engine.js";
-import { DECKS, PASSIVES, LEADER_BY_ID, ROWS, hasAbility, validateDeck } from "./cards.js";
+import { DECKS, PASSIVES, LEADER_BY_ID, ROWS, getCard, hasAbility, validateDeck } from "./cards.js";
 import * as storage from "./decks-storage.js";
 import { openCardPreview, openPileView, openTextView, closeCardPreview, describeCard,
          buildCard, leaderCard, backArtUrl, enableDragScroll } from "./cardview.js";
@@ -435,9 +435,17 @@ function renderBoard() {
         const hornValue = state.horn[side][row];
         const slot = rowElement.querySelector(".hornslot");
         slot.replaceChildren();
-        slot.classList.toggle("filled", Boolean(hornValue) && hornValue !== "leader");
+        slot.classList.toggle("filled", Boolean(hornValue));
         slot.classList.toggle("leaderhorn", hornValue === "leader");
-        if (hornValue && hornValue !== "leader") {
+        if (hornValue === "leader") {
+            const hornCard = getCard("horn");
+            const hornEl = buildCard(hornCard, { clickable: true });
+            hornEl.onclick = event => {
+                event.stopPropagation();
+                openCardPreview({ card: hornCard });
+            };
+            slot.appendChild(hornEl);
+        } else if (hornValue) {
             const hornEl = cardElement(hornValue, { clickable: true });
             hornEl.onclick = event => {
                 event.stopPropagation();
