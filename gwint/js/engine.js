@@ -806,7 +806,7 @@ function randomReviveActive(state) {
 }
 
 function graveTakeOptions(state, fromSide) {
-    return state.grave[fromSide].filter(iid => cardOf(iid).type !== "hero");
+    return state.grave[fromSide].filter(iid => cardOf(iid).type === "unit");
 }
 
 function deckWeatherOptions(state, side) {
