@@ -728,11 +728,22 @@ export function validateDeck(deckOrId) {
     let units = 0;
     let specials = 0;
 
+    const limits = {};
+    if (DECKS[faction]) {
+        for (const [cardId, count] of DECKS[faction].cards) {
+            limits[cardId] = (limits[cardId] || 0) + count;
+        }
+    }
+
     for (const [cardId, count] of deck.cards) {
         const card = CARD_BY_ID[cardId];
         if (!card) {
             errors.push("Nieznana karta w talii: " + cardId);
             continue;
+        }
+        if (count > (limits[cardId] || 0)) {
+            errors.push(card.name + ": " + count + " kopii, a pula frakcji pozwala na "
+                + (limits[cardId] || 0));
         }
         if (card.faction !== faction && card.faction !== "neutral") {
             errors.push(card.name + " należy do frakcji " + card.faction + ", a talia to " + faction);
