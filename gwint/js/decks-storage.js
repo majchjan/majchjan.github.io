@@ -49,6 +49,16 @@ function newId() {
     return "d" + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
 }
 
+function sameName(a, b) {
+    return String(a).trim().toLowerCase() === String(b).trim().toLowerCase();
+}
+
+/** Zapisana talia o tej nazwie albo null. */
+export function findDeckByName(name) {
+    const wanted = String(name || "Bez nazwy").trim();
+    return readAll().find(deck => sameName(deck.name, wanted)) || null;
+}
+
 /* ============================================================
    PULA KART FRAKCJI
    DECKS[faction] to zbiór wszystkich kart dostępnych dla frakcji,
@@ -90,8 +100,9 @@ export function getDeck(id) {
 /** Zapisuje talię. Bez id — tworzy nową. Zwraca zapisaną talię. */
 export function saveDeck(deck) {
     const decks = readAll();
+    const match = findDeckByName(deck.name);
     const stored = {
-        id: deck.id && !String(deck.id).startsWith("builtin:") ? deck.id : newId(),
+        id: match ? match.id : newId(),
         version: DECK_VERSION,
         name: (deck.name || "Bez nazwy").trim(),
         faction: deck.faction,

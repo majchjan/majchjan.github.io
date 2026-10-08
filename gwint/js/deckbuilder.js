@@ -325,9 +325,12 @@ function bindEvents() {
             openMessage("Nie można zapisać talii", errors.join("\n"));
             return;
         }
+        const existing = storage.findDeckByName(deck.name);
         try {
             deck = storage.saveDeck(deck);
-            note("Zapisano talię „" + deck.name + "”.");
+            note(existing
+                ? "Nadpisano talię „" + deck.name + "”."
+                : "Zapisano nową talię „" + deck.name + "”.");
         } catch (error) {
             note(error.message, true);
         }
