@@ -710,8 +710,9 @@ export function expandDeckList(deckOrId) {
 /**
  * Sprawdza talię wg zasad z W3.
  * Zwraca { ok, errors, warnings }.
- *   errors   — łamią zasady: obca frakcja, za dużo kart specjalnych, nieznana karta
- *   warnings — do czasu rozbudowy talii: mniej niż 22 jednostki
+ *   errors   — łamią zasady: obca frakcja, za dużo kart specjalnych,
+ *              za mało jednostek, nieznana karta
+ *   warnings — zarezerwowane, obecnie puste
  */
 export function validateDeck(deckOrId) {
     const errors = [];
@@ -762,7 +763,7 @@ export function validateDeck(deckOrId) {
         errors.push("Za dużo kart specjalnych: " + specials + " (limit " + DECK_LIMITS.maxSpecials + ")");
     }
     if (units < DECK_LIMITS.minUnits) {
-        warnings.push("Tylko " + units + " jednostek (docelowo min. " + DECK_LIMITS.minUnits + ")");
+        errors.push("Za mało jednostek: " + units + " (wymagane min. " + DECK_LIMITS.minUnits + ")");
     }
 
     const leader = LEADER_BY_ID[deck.leader];

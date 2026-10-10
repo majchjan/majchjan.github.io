@@ -195,6 +195,10 @@ function renderStats() {
 
     $(".stat-total").textContent = String(total);
 
+    const unitsBox = $(".stat-units");
+    unitsBox.textContent = units + " / " + DECK_LIMITS.minUnits;
+    unitsBox.classList.toggle("bad", units < DECK_LIMITS.minUnits);
+
     const specialsBox = $(".stat-specials");
     specialsBox.textContent = specials + " / " + DECK_LIMITS.maxSpecials;
     specialsBox.classList.toggle("bad", specials > DECK_LIMITS.maxSpecials);
