@@ -36,6 +36,7 @@
  *
  * Wartości special:
  *   "frost" | "fog" | "rain" — pogoda dla rzędu wręcz / dystansowego / oblężniczego
+ *   "storm"                  — pogoda dla rzędu dystansowego i oblężniczego naraz
  *   "clearWeather"           — usuwa całą pogodę
  *   "horn"                   — Róg Dowódcy na wskazany rząd
  *   "scorch"                 — Spalenie
@@ -94,6 +95,7 @@ const RAW_CARDS = [
     { id: "frost",         name: "Trzaskający Mróz",    faction: "neutral", type: "special", special: "frost" },
     { id: "fog",           name: "Nieprzenikliwa Mgła", faction: "neutral", type: "special", special: "fog" },
     { id: "rain",          name: "Ulewny Deszcz",       faction: "neutral", type: "special", special: "rain" },
+    { id: "storm",         name: "Sztorm na Skellige",  faction: "neutral", type: "special", special: "storm" },
     { id: "clear_weather", name: "Czysta Pogoda",       faction: "neutral", type: "special", special: "clearWeather" },
     { id: "horn",          name: "Róg Dowódcy",         faction: "neutral", type: "special", special: "horn" },
     { id: "scorch",        name: "Spalenie",            faction: "neutral", type: "special", special: "scorch" },
@@ -409,6 +411,7 @@ export const DECKS = {
             ["frost", 3],
             ["fog", 3],
             ["rain", 2],
+            ["storm", 3],
             ["clear_weather", 2],
             ["horn", 3],
             ["scorch", 3],
@@ -464,6 +467,7 @@ export const DECKS = {
             ["frost", 3],
             ["fog", 3],
             ["rain", 2],
+            ["storm", 3],
             ["clear_weather", 2],
             ["horn", 3],
             ["scorch", 3],
@@ -528,6 +532,7 @@ export const DECKS = {
             ["frost", 3],
             ["fog", 3],
             ["rain", 2],
+            ["storm", 3],
             ["clear_weather", 2],
             ["horn", 3],
             ["scorch", 3],
@@ -584,6 +589,7 @@ export const DECKS = {
             ["frost", 3],
             ["fog", 3],
             ["rain", 2],
+            ["storm", 3],
             ["clear_weather", 2],
             ["horn", 3],
             ["scorch", 3],
@@ -666,6 +672,7 @@ export const DECKS = {
             ["scorch", 3],
             ["siny", 1],
             ["skald", 1],
+            ["storm", 3],
             ["svanrige", 1],
             ["szalony", 1],
             ["tarczowniczka1", 3],
@@ -710,8 +717,9 @@ export function expandDeckList(deckOrId) {
 /**
  * Sprawdza talię wg zasad z W3.
  * Zwraca { ok, errors, warnings }.
- *   errors   — łamią zasady: obca frakcja, za dużo kart specjalnych, nieznana karta
- *   warnings — do czasu rozbudowy talii: mniej niż 22 jednostki
+ *   errors   — łamią zasady: obca frakcja, za dużo kart specjalnych,
+ *              za mało jednostek, nieznana karta
+ *   warnings — zarezerwowane, obecnie puste
  */
 export function validateDeck(deckOrId) {
     const errors = [];
@@ -762,7 +770,7 @@ export function validateDeck(deckOrId) {
         errors.push("Za dużo kart specjalnych: " + specials + " (limit " + DECK_LIMITS.maxSpecials + ")");
     }
     if (units < DECK_LIMITS.minUnits) {
-        warnings.push("Tylko " + units + " jednostek (docelowo min. " + DECK_LIMITS.minUnits + ")");
+        errors.push("Za mało jednostek: " + units + " (wymagane min. " + DECK_LIMITS.minUnits + ")");
     }
 
     const leader = LEADER_BY_ID[deck.leader];

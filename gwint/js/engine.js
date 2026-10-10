@@ -30,7 +30,12 @@ import { randomInt, shuffle } from "./rng.js";
 
 export const SIDES = ["A", "B"];
 
-const WEATHER_ROW = { frost: "melee", fog: "ranged", rain: "siege" };
+const WEATHER_ROWS = {
+    frost: ["melee"],
+    fog: ["ranged"],
+    rain: ["siege"],
+    storm: ["ranged", "siege"]
+};
 const MAX_LOG = 60;
 const HAND_SIZE = 10;
 
@@ -285,7 +290,8 @@ function determineStarter(state) {
 
 /** Czy rząd jest objęty pogodą — wynika z kart leżących na wspólnym polu pogody. */
 export function weatherAffects(state, row) {
-    return state.weatherCards.some(iid => WEATHER_ROW[cardOf(iid).special] === row);
+    return state.weatherCards.some(iid =>
+        (WEATHER_ROWS[cardOf(iid).special] || []).includes(row));
 }
 
 /** Karty pogody wracają na cmentarze tych, którzy je zagrali. */
@@ -560,7 +566,8 @@ function applySpecial(state, side, iid, params) {
     switch (card.special) {
         case "frost":
         case "fog":
-        case "rain": {
+        case "rain":
+        case "storm": {
             playWeatherCard(state, side, iid);
             break;
         }
@@ -787,7 +794,7 @@ export function resolvePending(state, side, choice) {
    LIDER
    ============================================================ */
 
-const WEATHER_CARDS = ["frost", "fog", "rain", "clearWeather"];
+const WEATHER_CARDS = ["frost", "fog", "rain", "storm", "clearWeather"];
 
 export function isLeaderBlocked(state, side) {
     const opponentLeader = LEADER_BY_ID[state.leader[opposite(side)]];

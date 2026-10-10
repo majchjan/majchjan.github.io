@@ -12,7 +12,7 @@ import { openCardPreview, openPileView, openMessage, buildCard, buildPreviewFram
          PASSIVE_TEXT } from "./cardview.js";
 
 const FACTION_ORDER = Object.keys(DECKS);
-const WEATHER = ["frost", "fog", "rain", "clearWeather"];
+const WEATHER = ["frost", "fog", "rain", "storm", "clearWeather"];
 const ROW_ORDER = { melee: 0, ranged: 1, siege: 2 };
 
 const FILTERS = [
@@ -194,6 +194,10 @@ function renderStats() {
     }
 
     $(".stat-total").textContent = String(total);
+
+    const unitsBox = $(".stat-units");
+    unitsBox.textContent = units + " / " + DECK_LIMITS.minUnits;
+    unitsBox.classList.toggle("bad", units < DECK_LIMITS.minUnits);
 
     const specialsBox = $(".stat-specials");
     specialsBox.textContent = specials + " / " + DECK_LIMITS.maxSpecials;
