@@ -36,7 +36,6 @@ const ICON = {
     frost:        "img/icons/frost.svg",
     fog:          "img/icons/fog.svg",
     rain:         "img/icons/rain.svg",
-    storm:        "img/icons/storm.svg",
     clearWeather: "img/icons/clear_weather.svg",
     mardroeme:    "img/icons/mardroeme.svg",
     berserker:    "img/icons/berserker.svg"
@@ -79,6 +78,13 @@ function rowIcons(card) {
         return [ICON.melee, ICON.ranged];   // Zwinność = oba rzędy
     }
     return ICON[card.row] ? [ICON[card.row]] : [];
+}
+
+function specialIcons(card) {
+    if (card.special === "storm") {
+        return [ICON.rain, ICON.fog];
+    }
+    return ICON[card.special] ? [ICON[card.special]] : [];
 }
 
 function abilityIcons(card) {
@@ -129,7 +135,12 @@ export function buildCard(card, options = {}) {
     if (card.type === "leader") {
         element.classList.add("leadercard");
     } else if (card.type === "special") {
-        element.appendChild(pip("specialpip", ICON[card.special]));
+        const specialbar = document.createElement("div");
+        specialbar.className = "specialbar";
+        for (const path of specialIcons(card)) {
+            specialbar.appendChild(pip("specialpip", path));
+        }
+        element.appendChild(specialbar);
     } else {
         const shown = options.strength !== undefined ? options.strength : card.strength;
         const strength = pip("strength", null, String(shown));
