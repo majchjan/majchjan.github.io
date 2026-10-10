@@ -36,6 +36,7 @@ const ICON = {
     frost:        "img/icons/frost.svg",
     fog:          "img/icons/fog.svg",
     rain:         "img/icons/rain.svg",
+    storm:        "img/icons/storm.svg",
     clearWeather: "img/icons/clear_weather.svg",
     mardroeme:    "img/icons/mardroeme.svg",
     berserker:    "img/icons/berserker.svg"
@@ -173,6 +174,7 @@ const SPECIAL_TEXT = {
     frost:        "Trzaskający Mróz — obniża siłę jednostek w rzędzie wręcz do 1.",
     fog:          "Nieprzenikliwa Mgła — obniża siłę jednostek w rzędzie dystansowym do 1.",
     rain:         "Ulewny Deszcz — obniża siłę jednostek w rzędzie oblężniczym do 1.",
+    storm:        "Sztorm na Skellige — obniża siłę jednostek w rzędzie dystansowym i oblężniczym do 1.",
     clearWeather: "Czysta Pogoda — usuwa wszystkie efekty pogody.",
     horn:         "Róg Dowódcy — podwaja siłę jednostek we wskazanym rzędzie.",
     scorch:       "Spalenie — niszczy najsilniejsze jednostki na całej planszy. Bohaterowie są odporni.",

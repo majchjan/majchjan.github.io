@@ -36,6 +36,7 @@
  *
  * Wartości special:
  *   "frost" | "fog" | "rain" — pogoda dla rzędu wręcz / dystansowego / oblężniczego
+ *   "storm"                  — pogoda dla rzędu dystansowego i oblężniczego naraz
  *   "clearWeather"           — usuwa całą pogodę
  *   "horn"                   — Róg Dowódcy na wskazany rząd
  *   "scorch"                 — Spalenie
@@ -94,6 +95,7 @@ const RAW_CARDS = [
     { id: "frost",         name: "Trzaskający Mróz",    faction: "neutral", type: "special", special: "frost" },
     { id: "fog",           name: "Nieprzenikliwa Mgła", faction: "neutral", type: "special", special: "fog" },
     { id: "rain",          name: "Ulewny Deszcz",       faction: "neutral", type: "special", special: "rain" },
+    { id: "storm",         name: "Sztorm na Skellige",  faction: "neutral", type: "special", special: "storm" },
     { id: "clear_weather", name: "Czysta Pogoda",       faction: "neutral", type: "special", special: "clearWeather" },
     { id: "horn",          name: "Róg Dowódcy",         faction: "neutral", type: "special", special: "horn" },
     { id: "scorch",        name: "Spalenie",            faction: "neutral", type: "special", special: "scorch" },
@@ -409,6 +411,7 @@ export const DECKS = {
             ["frost", 3],
             ["fog", 3],
             ["rain", 2],
+            ["storm", 3],
             ["clear_weather", 2],
             ["horn", 3],
             ["scorch", 3],
@@ -464,6 +467,7 @@ export const DECKS = {
             ["frost", 3],
             ["fog", 3],
             ["rain", 2],
+            ["storm", 3],
             ["clear_weather", 2],
             ["horn", 3],
             ["scorch", 3],
@@ -528,6 +532,7 @@ export const DECKS = {
             ["frost", 3],
             ["fog", 3],
             ["rain", 2],
+            ["storm", 3],
             ["clear_weather", 2],
             ["horn", 3],
             ["scorch", 3],
@@ -584,6 +589,7 @@ export const DECKS = {
             ["frost", 3],
             ["fog", 3],
             ["rain", 2],
+            ["storm", 3],
             ["clear_weather", 2],
             ["horn", 3],
             ["scorch", 3],
@@ -666,6 +672,7 @@ export const DECKS = {
             ["scorch", 3],
             ["siny", 1],
             ["skald", 1],
+            ["storm", 3],
             ["svanrige", 1],
             ["szalony", 1],
             ["tarczowniczka1", 3],
