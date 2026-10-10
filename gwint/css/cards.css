@@ -61,12 +61,15 @@
 
 /* Siła i karta specjalna — zawsze lewy górny róg */
 .card .pip.strength,
-.card .pip.specialpip {
+.card .specialbar {
     position: absolute;
     font-size: 0.8em;
     top: 0.3em;
     left: 0.3em;
+    display: flex;
+    gap: 0.18em;
 }
+
 .card.hero .pip.strength     { background-color: #ffcc33; }
 /* Siła inna niż bazowa — pogoda, Więź, Zagrzewanie albo Róg */
 .card .pip.strength.affected { color: #ff8c1a; }
