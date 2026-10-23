@@ -616,7 +616,7 @@
     "hubert urbański":["milionerzy", "koło ratunkowe", "siwy"],
     "ludwik XIV":["król", "francja", "paryż"],
     "aryna sabalenka":["tenis", "krzyk", "białoruś"],
-    "wednesday adams":["warkocze", "taniec", "rączka"],
+    "wednesday addams":["warkocze", "taniec", "rączka"],
     "zeus":["pierun", "bóg", "olimp"],
     "maria magdalena":["jezus", "kobieta", "prostytutka"],
     "syrenka":["warszawa", "miecz", "symbol"],
@@ -625,7 +625,7 @@
     "pablo escobar":["narkotyki", "kolumbia", "kartel"],
     "jezus chrystus":["bóg", "ukrzyżowanie", "syn"],
     "czerwony kapturek":["bajka", "wilk", "babcia"],
-    "barbie":["lalka", "różowy", "lalka"],
+    "barbie":["lalka", "różowy", "ken"],
     "joanna jędrzejczyk":["mma", "polka", "standup"],
     "jan tomaszewski":["piłka nożna", "reprezentacja", "bramkarz"],
     "denzel washington":["aktor", "amerykanin", "czarnoskóry"],
@@ -672,5 +672,17 @@
     "friz": ["youtuber", "ekipa", "chmurka"],
     "ważniak": ["smerf", "okulary", "gargamel"],
     "księżniczka leia": ["gwiezdne wojny", "luke", "carrie fisher"],
-    "harry styles": ["piosenkarz", "one direction", "garnitur"]
+    "harry styles": ["piosenkarz", "one direction", "garnitur"],
+    "jim carrey": ["aktor", "maska", "ace ventura"],
+    "krzysztof zalewski": ["piosenkarz", "'polsko'", "polak"],
+    "severus snape": ["harry potter", "nauczyciel", "czarna szata"],
+    "małgorzata foremniak": ["aktorka", "mam talent", "na dobre i na złe"],
+    "chandler bing": ["matthew perry", "rzyjaciele", "ross"],
+    "piasek": ["plaża", "złotopolscy", "andrzej piaseczny"],
+    "roxie więgiel": ["piosenkarka", "taniec z gwiazdami", "kopalnia"],
+    "osioł":["shrek", "stuhr", "upór"],
+    "jeremy clarkson": ["top gear", "samochody", "wielka brytania"],
+    "vito corleone": ["ojciec chrzestny", "marlon brando", "kot"],
+    "maciej lampe": ["koszykarz", "nba", "polak"]
+    
 }
